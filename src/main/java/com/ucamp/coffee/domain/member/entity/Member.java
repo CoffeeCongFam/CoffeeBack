@@ -9,6 +9,7 @@ import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -20,9 +21,6 @@ public class Member extends BaseEntity {
 
     @Column(nullable = false, length = 50)
     private String email;
-
-    @Column(nullable = false, length = 50)
-    private String password;
 
     @Column(nullable = false, length = 20)
     private String tel;
