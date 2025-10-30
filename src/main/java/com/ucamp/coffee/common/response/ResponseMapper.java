@@ -7,12 +7,12 @@ import org.springframework.http.ResponseEntity;
 
 @Slf4j
 public class ResponseMapper {
-    public static <T> ResponseEntity<ApiResponse<T>> successOf(T data) {
-        ApiResponse<T> response = ApiResponse.<T>builder()
-                .success(true)
-                .data(data)
-                .message("요청이 성공적으로 처리되었습니다.")
-                .build();
+    public static ResponseEntity<ApiResponse<?>> successOf(Object data) {
+        ApiResponse<?> response = ApiResponse.builder()
+            .success(true)
+            .data(data)
+            .message("요청이 성공적으로 처리되었습니다.")
+            .build();
         return ResponseEntity.ok(response);
     }
 
@@ -20,10 +20,10 @@ public class ResponseMapper {
         log.error("[{}] 오류가 발생했습니다.", origin.getSimpleName());
 
         ApiResponse<Object> response = ApiResponse.builder()
-                .success(false)
-                .data(null)
-                .message("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
-                .build();
+            .success(false)
+            .data(null)
+            .message("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+            .build();
         return ResponseEntity.status(status).body(response);
     }
 
@@ -31,10 +31,10 @@ public class ResponseMapper {
         log.error("[{}] 오류가 발생했습니다. {}", origin.getSimpleName(), e.getMessage());
 
         ApiResponse<Object> response = ApiResponse.builder()
-                .success(false)
-                .data(null)
-                .message(e.getMessage())
-                .build();
+            .success(false)
+            .data(null)
+            .message(e.getMessage())
+            .build();
         return ResponseEntity.status(e.getStatus().getHttpStatus()).body(response);
     }
 }
