@@ -1,9 +1,9 @@
 package com.ucamp.coffee.domain.orders.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
@@ -12,8 +12,10 @@ import com.ucamp.coffee.domain.member.repository.MemberRepository;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO.MenuDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersDetailResponseDTO;
+import com.ucamp.coffee.domain.orders.dto.OrdersTodayResponseDTO;
 import com.ucamp.coffee.domain.orders.entity.OrderMenu;
 import com.ucamp.coffee.domain.orders.entity.Orders;
+import com.ucamp.coffee.domain.orders.mapper.OrdersMapper;
 import com.ucamp.coffee.domain.orders.repository.OrderMenuRepository;
 import com.ucamp.coffee.domain.orders.repository.OrdersRepository;
 import com.ucamp.coffee.domain.orders.type.OrderStatusType;
@@ -26,7 +28,6 @@ import com.ucamp.coffee.domain.subscription.entity.SubscriptionUsageHistory;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionUsageHistoryRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -41,6 +42,8 @@ public class OrdersService {
 	private final SubscriptionUsageHistoryRepository subscriptionUsageHistoryRepository;
 	private final MenuRepository menuRepository;
 	private final OrderMenuRepository orderMenuRepository;
+
+	private final OrdersMapper ordersMapper;
 
 	// 주문 생성
 	@Transactional
@@ -91,41 +94,28 @@ public class OrdersService {
 	}
 
 	// 소비자 주문 상세 조회
-	@Transactional
-	public void selectOrdersById(Long orderId) {
+	@Transactional(readOnly = true)
+	public OrdersDetailResponseDTO selectOrdersById(Long orderId) {
 
-		// 주문 데이터 가져오기
-		Orders order = ordersRepository.findById(orderId)
-				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다."));
+		OrdersDetailResponseDTO response = ordersMapper.selectOrderDetailResponse(orderId);
 
-		// 메뉴 정보
-		List<OrderMenu> orderMenuList = orderMenuRepository.findAllByOrders(order);
-
-		// MenuDTO 리스트 생성
-		List<OrdersDetailResponseDTO.MenuDTO> menuList = new ArrayList<>();
-
-		for (OrderMenu orderMenu : orderMenuList) {
-			Menu menu = orderMenu.getMenu();
-
-			OrdersDetailResponseDTO.MenuDTO menuDTO = OrdersDetailResponseDTO.MenuDTO.builder().menuId(menu.getMenuId())
-					.menuName(menu.getMenuName()).menuType(menu.getMenuType().name()).quantity(orderMenu.getQuantity())
-					.build();
-
-			menuList.add(menuDTO);
+		if (response == null) {
+			throw new CommonException(ApiStatus.NOT_FOUND, "해당 주문 정보를 찾을 수 없습니다.");
 		}
 
-		// StoreDTO 생성
-		Store store = order.getStore();
-		OrdersDetailResponseDTO.StoreDTO storeDTO = OrdersDetailResponseDTO.StoreDTO.builder()
-				.storeName(store.getStoreName()).storeId(store.getPartnerStoreId()).build();
-		
-		// SubscriptionDTO 생성
-//		MemberSubscription subscription = order.getMemberSubscription();
-//		OrdersDetailResponseDTO.SubscriptionDTO subscriptionDTO = OrdersDetailResponseDTO.SubscriptionDTO.builder()
-//				.subscriptionId(subscription.getMemberSubscriptionId()).subscriptionType(subscription.get)
+		return response;
+	}
 
-		// 응담용 DTO 생성
-//	    OrdersDetailResponseDTO response = OrdersDetailResponseDTO.builder().orderId(orderId).orderStatus(order.getOrderStatus().name()).
+	// 소비자 특정 날짜 주문 조회
+	@Transactional(readOnly = true)
+	public List<OrdersTodayResponseDTO> selectTodayOrders(Long memberId) {
 
+		if (!memberRepository.existsById(memberId)) {
+			throw new CommonException(ApiStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다.");
+		}
+
+		List<OrdersTodayResponseDTO> response = ordersMapper.selectTodayOrdersByMember(memberId);
+
+		return response;
 	}
 }

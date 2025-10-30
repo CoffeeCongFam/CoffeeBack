@@ -1,5 +1,7 @@
 package com.ucamp.coffee.domain.orders.entity;
 
+import java.time.LocalDateTime;
+
 import com.ucamp.coffee.common.entity.BaseEntity;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.orders.type.OrderStatusType;
@@ -42,4 +44,7 @@ public class Orders extends BaseEntity {
 
     private String rejectedReason;
     private Integer orderNumber;
+    private LocalDateTime canceledAt;
+    private LocalDateTime rejectedAt;
+    
 }

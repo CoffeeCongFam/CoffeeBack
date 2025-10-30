@@ -8,4 +8,5 @@ import com.ucamp.coffee.domain.orders.entity.Orders;
 @Repository
 public interface OrdersRepository extends JpaRepository<Orders, Long> {
 
+
 }
