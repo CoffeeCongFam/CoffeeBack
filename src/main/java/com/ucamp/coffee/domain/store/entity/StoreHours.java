@@ -1,11 +1,8 @@
 package com.ucamp.coffee.domain.store.entity;
 
 import com.ucamp.coffee.domain.store.type.DayOfWeekType;
-import com.ucamp.coffee.domain.store.type.IsClosedType;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -19,13 +16,12 @@ public class StoreHours {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long storeHoursId;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private IsClosedType isClosed;
+    private String isClosed;
 
-    private LocalDateTime openTime;
+    private String openTime;
 
-    private LocalDateTime closeTime;
+    private String closeTime;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

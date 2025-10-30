@@ -1,14 +1,10 @@
 package com.ucamp.coffee.domain.store.service;
 
 import com.ucamp.coffee.common.service.KakaoService;
-import com.ucamp.coffee.common.util.DateTimeUtil;
 import com.ucamp.coffee.domain.member.entity.Member;
-import com.ucamp.coffee.domain.member.type.ActiveStatusType;
-import com.ucamp.coffee.domain.member.type.GenderType;
-import com.ucamp.coffee.domain.member.type.MemberType;
 import com.ucamp.coffee.domain.store.dto.StoreCreateDto;
-import com.ucamp.coffee.domain.store.dto.StoreHoursResponseDto;
 import com.ucamp.coffee.domain.store.dto.StoreResponseDto;
+import com.ucamp.coffee.domain.store.dto.StoreUpdateDto;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.entity.StoreHours;
 import com.ucamp.coffee.domain.store.mapper.StoreMapper;
@@ -28,68 +24,44 @@ import java.util.List;
 public class StoreService {
     private final KakaoService kakaoService;
     private final StoreRepository repository;
-    // private final MemberService memberService;
     private final MemberRepository memberRepository;
 
-    @Transactional
-    public void createMember() {
-        memberRepository.save(Member.builder()
-            .email("user@example.com")
-            .tel("010-1234-5678")
-            .gender(GenderType.F)
-            .name("홍길동")
-            .memberType(MemberType.STORE)
-            .activeStatus(ActiveStatusType.ACTIVE)
-            .build());
-    }
+    // TODO: [메서드 공통] 카카오 OAuth 인증 기능 구현 후 이메일 잘 추출되는지 테스트 필요
 
     @Transactional
-    public void createStoreInfo(StoreCreateDto dto, String accessToken) {
-        // TODO: 카카오 OAuth 인증 기능 구현 후 이메일 잘 추출되는지 테스트 필요
-        // String email = kakaoService.getEmailFromAccessToken(accessToken);
+    public void createStoreInfo(String accessToken, StoreCreateDto dto) {
         String email = "user@example.com";
-        Member member = memberRepository.findByEmail(email).orElse(null);
-
-        // Member member = memberService.findByEmail(dto.getEmail()).orElse(null);
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
         repository.save(StoreMapper.toEntity(dto, member));
     }
 
     public StoreResponseDto readStoreInfo(String accessToken) {
-        // TODO: 카카오 OAuth 인증 기능 구현 후 이메일 잘 추출되는지 테스트 필요
-        // String email = kakaoService.getEmailFromAccessToken(accessToken);
         String email = "user@example.com";
-        Member member = memberRepository.findByEmail(email).orElse(null);
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+        Store store = repository.findByMember(member)
+            .orElseThrow(() -> new IllegalArgumentException("매장이 존재하지 않습니다."));
 
-        List<Object[]> results = repository.findStoreDetails(2L);
+        List<StoreHours> results = repository.findStoreDetails(store.getPartnerStoreId());
 
         if (results.isEmpty()) return null;
 
-        Store store = (Store) results.get(0)[0];
+        return StoreMapper.toStoreResponseDto(results, store, member);
+    }
 
-        List<StoreHoursResponseDto> storeHoursDtos = results.stream()
-            .map(
-            row -> {
-                StoreHours sh = (StoreHours) row[1];
+    @Transactional
+    public void updateStoreInfo(Long partnerStoreId, String accessToken, StoreUpdateDto dto) {
+        String email = "user@example.com";
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-                return new StoreHoursResponseDto(
-                    sh.getDayOfWeek().name(),
-                    DateTimeUtil.toUtcDateTime(sh.getOpenTime()),
-                    DateTimeUtil.toUtcDateTime(sh.getCloseTime()),
-                    sh.getIsClosed().name()
-                );
-            })
-            .toList();
+        // TODO: 점주 멤버의 전화번호 수정하기
 
-        return new StoreResponseDto(
-            store.getStoreName(),
-            store.getStoreTel(),
-            member.getTel(),
-            store.getRoadAddress(),
-            store.getDetailAddress(),
-            store.getBusinessNumber(),
-            store.getDetailInfo(),
-            storeHoursDtos
-        );
+        Store store = repository.findById(partnerStoreId)
+            .orElseThrow(() -> new IllegalArgumentException("매장이 존재하지 않습니다."));
+
+        store.update(dto);
     }
 }
