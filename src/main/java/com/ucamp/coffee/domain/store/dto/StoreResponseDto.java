@@ -11,6 +11,7 @@ import java.util.List;
 @Builder
 @ToString
 public class StoreResponseDto {
+    private Long partnerStoreId;
     private String storeName;
     private String storeTel;
     private String tel;

@@ -2,6 +2,7 @@ package com.ucamp.coffee.domain.store.entity;
 
 import com.ucamp.coffee.common.entity.BaseEntity;
 import com.ucamp.coffee.domain.member.entity.Member;
+import com.ucamp.coffee.domain.store.dto.StoreUpdateDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,4 +48,38 @@ public class Store extends BaseEntity {
 
     @Column(nullable = false)
     private Double yPoint;
+
+    public void update(StoreUpdateDto dto) {
+        if (dto.getStoreName() != null && !dto.getStoreName().isEmpty()) {
+            this.storeName = dto.getStoreName();
+        }
+
+        if (dto.getRoadAddress() != null && !dto.getRoadAddress().isEmpty()) {
+            this.roadAddress = dto.getRoadAddress();
+        }
+
+        if (dto.getDetailAddress() != null && !dto.getDetailAddress().isEmpty()) {
+            this.detailAddress = dto.getDetailAddress();
+        }
+
+        if (dto.getDetailInfo() != null && !dto.getDetailInfo().isEmpty()) {
+            this.detailInfo = dto.getDetailInfo();
+        }
+
+        if (dto.getStoreImg() != null && !dto.getStoreImg().isEmpty()) {
+            this.storeImg = dto.getStoreImg();
+        }
+
+        if (dto.getStoreTel() != null && !dto.getStoreTel().isEmpty()) {
+            this.storeTel = dto.getStoreTel();
+        }
+
+        if (dto.getXPoint() != null) {
+            this.xPoint = dto.getXPoint();
+        }
+
+        if (dto.getYPoint() != null) {
+            this.yPoint = dto.getYPoint();
+        }
+    }
 }
