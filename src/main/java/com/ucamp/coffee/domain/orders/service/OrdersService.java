@@ -118,4 +118,19 @@ public class OrdersService {
 
 		return response;
 	}
+
+	// 소비자 주문취소 업데이트
+	@Transactional
+	public void updateCancelOrders(Long orderId) {
+
+		Orders order = ordersRepository.findById(orderId)
+				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
+		
+		order.cancelOrder();
+	}
+	
+	// 점주 주문 업데이트
+	@Transactional
+	public void 
+	
 }
