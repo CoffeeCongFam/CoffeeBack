@@ -1,8 +1,8 @@
 package com.ucamp.coffee.domain.subscription.service;
 
 import com.ucamp.coffee.domain.member.entity.Member;
+import com.ucamp.coffee.domain.member.repository.MemberRepository;
 import com.ucamp.coffee.domain.store.entity.Store;
-import com.ucamp.coffee.domain.store.repository.MemberRepository;
 import com.ucamp.coffee.domain.store.repository.StoreRepository;
 import com.ucamp.coffee.domain.subscription.dto.SubscriptionCreateDto;
 import com.ucamp.coffee.domain.subscription.dto.SubscriptionResponseDto;
