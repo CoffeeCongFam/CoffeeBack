@@ -1,8 +1,8 @@
 package com.ucamp.coffee.domain.store.entity;
 
 import com.ucamp.coffee.common.entity.BaseEntity;
+import com.ucamp.coffee.domain.store.dto.MenuUpdateDto;
 import com.ucamp.coffee.domain.store.type.MenuType;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +13,6 @@ import lombok.*;
 @Builder
 @Table(name = "menu")
 public class Menu extends BaseEntity {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long menuId;
@@ -32,5 +31,13 @@ public class Menu extends BaseEntity {
 	private String menuImg;
 	private String menuDesc;
 	private String menuStatus;
-	
+
+    public void update(MenuUpdateDto dto) {
+        if (dto.getMenuName() != null) this.menuName = dto.getMenuName();
+        if (dto.getPrice() != null) this.price = dto.getPrice();
+        if (dto.getMenuImg() != null) this.menuImg = dto.getMenuImg();
+        if (dto.getMenuDesc() != null) this.menuDesc = dto.getMenuDesc();
+        if (dto.getMenuType() != null) this.menuType = MenuType.valueOf(dto.getMenuType());
+        if (dto.getMenuStatus() != null) this.menuStatus = dto.getMenuStatus();
+    }
 }

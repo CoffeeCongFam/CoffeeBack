@@ -1,19 +1,20 @@
-package com.ucamp.coffee.domain.store.controller;
+package com.ucamp.coffee.domain.store.controller.owner;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
+import com.ucamp.coffee.domain.store.dto.MenuCreateDto;
 import com.ucamp.coffee.domain.store.dto.StoreCreateDto;
 import com.ucamp.coffee.domain.store.dto.StoreUpdateDto;
-import com.ucamp.coffee.domain.store.service.StoreService;
+import com.ucamp.coffee.domain.store.service.owner.OwnerStoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/stores")
+@RequestMapping("/stores/owners")
 @RequiredArgsConstructor
-public class StoreController {
-    private final StoreService service;
+public class OwnerStoreController {
+    private final OwnerStoreService service;
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createStore(
@@ -38,6 +39,11 @@ public class StoreController {
         @RequestBody StoreUpdateDto dto
     ) {
         service.updateStoreInfo(partnerStoreId, accessToken, dto);
+        return ResponseMapper.successOf(null);
+    }
+
+    @PostMapping("/menus")
+    public ResponseEntity<ApiResponse<?>> createMenuInfo(@RequestBody MenuCreateDto dto) {
         return ResponseMapper.successOf(null);
     }
 }

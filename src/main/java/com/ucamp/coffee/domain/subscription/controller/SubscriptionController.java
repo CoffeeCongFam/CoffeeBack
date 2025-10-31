@@ -31,6 +31,11 @@ public class SubscriptionController {
         return ResponseMapper.successOf(service.readSubscriptionList(accessToken));
     }
 
+//    @GetMapping("/stores/{storeId}")
+//    public ResponseEntity<ApiResponse<?>> customerReadSubscriptionList(@PathVariable Long storeId) {
+//        return ResponseMapper.successOf(service.readSubscriptionList(storeId));
+//    }
+
     @GetMapping("/{subscriptionId}")
     public ResponseEntity<ApiResponse<?>> readSubscriptionInfo(
         @PathVariable Long subscriptionId

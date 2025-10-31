@@ -1,33 +1,26 @@
-package com.ucamp.coffee.domain.store.service;
-
-
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+package com.ucamp.coffee.domain.store.service.owner;
 
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import com.ucamp.coffee.domain.store.dto.OwnerStoreResponseDto;
 import com.ucamp.coffee.domain.store.dto.StoreCreateDto;
-import com.ucamp.coffee.domain.store.dto.StoreResponseDto;
 import com.ucamp.coffee.domain.store.dto.StoreUpdateDto;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.entity.StoreHours;
 import com.ucamp.coffee.domain.store.mapper.StoreMapper;
 import com.ucamp.coffee.domain.store.repository.StoreRepository;
-
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
+import java.util.List;
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class StoreService {
+public class OwnerStoreService {
     private final StoreRepository repository;
     private final MemberRepository memberRepository;
-
-    // TODO: [메서드 공통] 카카오 OAuth 인증 기능 구현 후 이메일 잘 추출되는지 테스트 필요
 
     @Transactional
     public void createStoreInfo(String accessToken, StoreCreateDto dto) {
@@ -38,7 +31,7 @@ public class StoreService {
         repository.save(StoreMapper.toEntity(dto, member));
     }
 
-    public StoreResponseDto readStoreInfo(String accessToken) {
+    public OwnerStoreResponseDto readStoreInfo(String accessToken) {
         String email = "user@example.com";
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
@@ -49,7 +42,7 @@ public class StoreService {
 
         if (results.isEmpty()) return null;
 
-        return StoreMapper.toStoreResponseDto(results, store, member);
+        return StoreMapper.toOwnerStoreResponseDto(results, store, member);
     }
 
     @Transactional
@@ -65,4 +58,5 @@ public class StoreService {
 
         store.update(dto);
     }
+
 }
