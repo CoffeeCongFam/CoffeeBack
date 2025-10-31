@@ -1,11 +1,10 @@
 package com.ucamp.coffee.domain.store.mapper;
 
 import com.ucamp.coffee.domain.member.entity.Member;
-import com.ucamp.coffee.domain.store.dto.StoreCreateDto;
-import com.ucamp.coffee.domain.store.dto.StoreHoursResponseDto;
-import com.ucamp.coffee.domain.store.dto.StoreResponseDto;
+import com.ucamp.coffee.domain.store.dto.*;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.entity.StoreHours;
+import com.ucamp.coffee.domain.subscription.dto.SubscriptionResponseDto;
 
 import java.util.List;
 
@@ -25,8 +24,8 @@ public class StoreMapper {
             .build();
     }
 
-    public static StoreResponseDto toStoreResponseDto(List<StoreHours> storeHours, Store store, Member member) {
-        return StoreResponseDto.builder()
+    public static OwnerStoreResponseDto toOwnerStoreResponseDto(List<StoreHours> storeHours, Store store, Member member) {
+        return OwnerStoreResponseDto.builder()
             .partnerStoreId(store.getPartnerStoreId())
             .storeName(store.getStoreName())
             .storeTel(store.getStoreTel())
@@ -36,6 +35,20 @@ public class StoreMapper {
             .businessNumber(store.getBusinessNumber())
             .detailInfo(store.getDetailInfo())
             .storeHours(toStoreHoursResponseDto(storeHours))
+            .build();
+    }
+
+    public static CustomerStoreResponseDto toCustomerStoreDto(List<StoreHours> storeHours, Store store, List<MenuResponseDto> menus, List<SubscriptionResponseDto> subscriptions) {
+        return CustomerStoreResponseDto.builder()
+            .partnerStoreId(store.getPartnerStoreId())
+            .storeName(store.getStoreName())
+            .storeTel(store.getStoreTel())
+            .roadAddress(store.getRoadAddress())
+            .detailAddress(store.getDetailAddress())
+            .detailInfo(store.getDetailInfo())
+            .storeHours(toStoreHoursResponseDto(storeHours))
+            .menus(menus)
+            .subscriptions(subscriptions)
             .build();
     }
 
