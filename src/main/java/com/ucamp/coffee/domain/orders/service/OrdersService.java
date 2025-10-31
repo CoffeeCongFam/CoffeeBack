@@ -9,9 +9,14 @@ import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import com.ucamp.coffee.domain.orders.dto.OrderStatusRequestDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO.MenuDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersDetailResponseDTO;
+import com.ucamp.coffee.domain.orders.dto.OrdersMessageDTO;
+import com.ucamp.coffee.domain.orders.dto.OrdersStorePastRequestDTO;
+import com.ucamp.coffee.domain.orders.dto.OrdersStorePastResponseDTO;
+import com.ucamp.coffee.domain.orders.dto.OrdersStoreResponseDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersTodayResponseDTO;
 import com.ucamp.coffee.domain.orders.entity.OrderMenu;
 import com.ucamp.coffee.domain.orders.entity.Orders;
@@ -19,6 +24,7 @@ import com.ucamp.coffee.domain.orders.mapper.OrdersMapper;
 import com.ucamp.coffee.domain.orders.repository.OrderMenuRepository;
 import com.ucamp.coffee.domain.orders.repository.OrdersRepository;
 import com.ucamp.coffee.domain.orders.type.OrderStatusType;
+import com.ucamp.coffee.domain.sms.SmsService;
 import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.repository.MenuRepository;
@@ -45,6 +51,8 @@ public class OrdersService {
 
 	private final OrdersMapper ordersMapper;
 
+	private final SmsService smsService;
+
 	// 주문 생성
 	@Transactional
 	public Long createOrder(OrdersCreateDTO request) {
@@ -62,6 +70,10 @@ public class OrdersService {
 		for (MenuDTO menu : request.getMenu()) {
 			quantity += menu.getCount();
 		}
+		
+		if (subscription.getIsExpired() == "Y" || subscription.getDailyRemainCount() < quantity) {
+		    throw new CommonException(ApiStatus.BAD_REQUEST, "사용할 수 없는 구독권입니다.");
+		}
 
 		// 일 잔여 횟수 차감 후 저장
 		int remain = subscription.getDailyRemainCount();
@@ -76,8 +88,8 @@ public class OrdersService {
 
 		// 주문 생성
 		Orders orders = Orders.builder().store(store).member(member).memberSubscription(subscription)
-				.orderType(request.getOrderType()).orderStatus(OrderStatusType.REQUEST) // 기본값 예시
-				.totalQuantity(quantity).orderNumber(orderNumber).build();
+				.orderType(request.getOrderType()).orderStatus(OrderStatusType.REQUEST).totalQuantity(quantity)
+				.orderNumber(orderNumber).build();
 
 		ordersRepository.save(orders);
 
@@ -88,6 +100,12 @@ public class OrdersService {
 			OrderMenu orderMenu = OrderMenu.builder().menu(menuItem).orders(orders).quantity(menu.getCount()).build();
 			orderMenuRepository.save(orderMenu);
 		}
+
+		//주문 메시지 객체 생성(추후 수정)
+		OrdersMessageDTO message = OrdersMessageDTO.builder().name("주현석").storeName(store.getStoreName())
+				.tel("01091205456").orderNumber(orders.getOrderNumber()).build();
+		
+		smsService.sendCustomerOrderCompletedMessage(message);
 
 		return orders.getOrderId();
 
@@ -125,12 +143,46 @@ public class OrdersService {
 
 		Orders order = ordersRepository.findById(orderId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
-		
+
 		order.cancelOrder();
 	}
-	
+
 	// 점주 주문 업데이트
 	@Transactional
-	public void 
-	
+	public void updateOrderStatus(Long orderId, OrderStatusRequestDTO request) {
+
+		Orders order = ordersRepository.findById(orderId)
+				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
+
+		order.changeOrderStatus(request.getOrderStatus());
+	}
+
+	// 점주 주문 거부
+	@Transactional
+	public void rejectOrder(Long orderId, OrderStatusRequestDTO request) {
+
+		Orders order = ordersRepository.findById(orderId)
+				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
+
+		order.rejectOrder(request.getRejectedReason());
+	}
+
+	// 점주 주문 당일 조회
+	@Transactional(readOnly = true)
+	public List<OrdersStoreResponseDTO> selectTodayStoreOrders(Long parnterStoreId) {
+
+		List<OrdersStoreResponseDTO> response = ordersMapper.selectTodayStoreOrders(parnterStoreId);
+
+		return response;
+	}
+
+	// 점주 과거 주문 내역 전체 조회
+	@Transactional(readOnly = true)
+	public List<OrdersStorePastResponseDTO> selectPastOrders(OrdersStorePastRequestDTO request) {
+
+		List<OrdersStorePastResponseDTO> response = ordersMapper.selectStoreOrdersByDate(request);
+
+		return response;
+	}
+
 }
