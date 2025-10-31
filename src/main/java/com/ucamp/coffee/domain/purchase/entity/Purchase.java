@@ -34,26 +34,26 @@ public class Purchase extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long purchaseId;
-	
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Member member;
-	
+
 	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_member_id")
     private Member receiverMember;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "subscription_id")
 	private Subscription subscription;
-	
+
 	@Enumerated(EnumType.STRING)
 	private PaymentStatus paymentStatus;
-	
+
 	private LocalDateTime refundedAt;
-	
+
 	private String isGift;
 	private String giftMessage;
 	private String purchaseType;
-	
+
 }
