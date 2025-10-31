@@ -53,4 +53,18 @@ public class Subscription extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private SubscriptionStatusType subscriptionStatus;
+
+    public void update(Integer totalSale, Integer remainSalesQuantity, SubscriptionStatusType subscriptionStatus) {
+        if (totalSale != null) {
+            this.totalSale = totalSale;
+        }
+
+        if (remainSalesQuantity != null) {
+            this.remainSalesQuantity = remainSalesQuantity;
+        }
+
+        if (subscriptionStatus != null) {
+            this.subscriptionStatus = subscriptionStatus;
+        }
+    }
 }

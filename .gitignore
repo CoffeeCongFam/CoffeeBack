@@ -670,3 +670,6 @@ FodyWeavers.xsd
 
 #.classpath
 .classpath
+
+#.project
+.project

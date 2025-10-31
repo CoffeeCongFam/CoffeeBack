@@ -1,0 +1,21 @@
+package com.ucamp.coffee.domain.subscription.dto;
+
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString
+public class SubscriptionCreateDto {
+    private Long partnerStoreId;
+    private String subscriptionName;
+    private Long price;
+    private String subscriptionDesc;
+    private String subscriptionImg;
+    private Long salesLimitQuantity;
+    private String subscriptionType;
+    private Long subscriptionPeriod;
+    private Long maxDailyUsage;
+}
