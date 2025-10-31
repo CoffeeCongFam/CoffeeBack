@@ -1,5 +1,6 @@
 package com.ucamp.coffee.domain.store.dto;
 
+import com.ucamp.coffee.domain.subscription.dto.SubscriptionResponseDto;
 import lombok.*;
 
 import java.util.List;
@@ -10,14 +11,14 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @ToString
-public class StoreResponseDto {
+public class CustomerStoreResponseDto {
     private Long partnerStoreId;
     private String storeName;
     private String storeTel;
-    private String tel;
     private String roadAddress;
     private String detailAddress;
-    private String businessNumber;
     private String detailInfo;
     private List<StoreHoursResponseDto> storeHours;
+    private List<MenuResponseDto> menus;
+    private List<SubscriptionResponseDto> subscriptions;
 }
