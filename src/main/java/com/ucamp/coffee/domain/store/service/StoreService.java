@@ -2,13 +2,13 @@ package com.ucamp.coffee.domain.store.service;
 
 import com.ucamp.coffee.common.service.KakaoService;
 import com.ucamp.coffee.domain.member.entity.Member;
+import com.ucamp.coffee.domain.member.repository.MemberRepository;
 import com.ucamp.coffee.domain.store.dto.StoreCreateDto;
 import com.ucamp.coffee.domain.store.dto.StoreResponseDto;
 import com.ucamp.coffee.domain.store.dto.StoreUpdateDto;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.entity.StoreHours;
 import com.ucamp.coffee.domain.store.mapper.StoreMapper;
-import com.ucamp.coffee.domain.store.repository.MemberRepository;
 import com.ucamp.coffee.domain.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
