@@ -33,6 +33,7 @@ import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
 import com.ucamp.coffee.domain.subscription.entity.SubscriptionUsageHistory;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionUsageHistoryRepository;
+import com.ucamp.coffee.domain.subscription.type.UsageStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -71,10 +72,16 @@ public class OrdersService {
 			quantity += menu.getCount();
 		}
 		
-		if (subscription.getIsExpired() == "Y" || subscription.getDailyRemainCount() < quantity) {
+		//만료되었거나 주문 수가 당일 잔여 수보다 적으면
+		if (subscription.getUsageStatus() == UsageStatus.EXPIRED || subscription.getDailyRemainCount() < quantity) {
 		    throw new CommonException(ApiStatus.BAD_REQUEST, "사용할 수 없는 구독권입니다.");
 		}
 
+		//만약 사용한적 없는 구독권이라면 상태 변경
+		if(subscription.getUsageStatus() == UsageStatus.NOT_ACTIVATED) {
+			subscription.activateSubscription();
+		}
+		
 		// 일 잔여 횟수 차감 후 저장
 		int remain = subscription.getDailyRemainCount();
 		subscription.setDailyRemainCount(remain - quantity);
