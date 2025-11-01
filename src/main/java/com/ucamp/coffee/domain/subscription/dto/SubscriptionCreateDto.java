@@ -2,6 +2,8 @@ package com.ucamp.coffee.domain.subscription.dto;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,4 +20,5 @@ public class SubscriptionCreateDto {
     private String subscriptionType;
     private Long subscriptionPeriod;
     private Long maxDailyUsage;
+    private List<Long> menuIds;
 }

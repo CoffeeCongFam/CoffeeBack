@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class SubscriptionResponseDto {
+public class OwnerSubscriptionResponseDto {
     private Long subscriptionId;
     private Long partnerStoreId;
     private String subscriptionName;

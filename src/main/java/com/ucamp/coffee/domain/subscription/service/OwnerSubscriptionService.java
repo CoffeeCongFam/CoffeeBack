@@ -2,13 +2,17 @@ package com.ucamp.coffee.domain.subscription.service;
 
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
-import com.ucamp.coffee.domain.store.repository.StoreRepository;
+import com.ucamp.coffee.domain.store.service.MenuHelperService;
+import com.ucamp.coffee.domain.store.service.StoreHelperService;
+import com.ucamp.coffee.domain.subscription.dto.OwnerSubscriptionResponseDto;
 import com.ucamp.coffee.domain.subscription.dto.SubscriptionCreateDto;
-import com.ucamp.coffee.domain.subscription.dto.SubscriptionResponseDto;
 import com.ucamp.coffee.domain.subscription.dto.SubscriptionStatusDto;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
+import com.ucamp.coffee.domain.subscription.entity.SubscriptionMenu;
 import com.ucamp.coffee.domain.subscription.mapper.SubscriptionMapper;
+import com.ucamp.coffee.domain.subscription.repository.SubscriptionMenuRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
 import lombok.RequiredArgsConstructor;
@@ -21,42 +25,57 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class SubscriptionService {
+public class OwnerSubscriptionService {
+    private final StoreHelperService storeHelperService;
+    private final MenuHelperService menuHelperService;
     private final SubscriptionRepository repository;
     private final MemberRepository memberRepository;
-    private final StoreRepository storeRepository;
+    private final SubscriptionMenuRepository subscriptionMenuRepository;
 
     @Transactional
-    public void createSubscriptionInfo(String accessToken, SubscriptionCreateDto dto) {
-        String email = "user@example.com";
+    public void createSubscriptionInfo(SubscriptionCreateDto dto) {
+        String email = "store1@example.com";
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
-        Store store = storeRepository.findByMember(member)
+        Store store = storeHelperService.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
 
-        repository.save(SubscriptionMapper.toEntity(dto, store));
+        Subscription subscription = repository.save(SubscriptionMapper.toEntity(dto, store));
+
+        if (dto.getMenuIds() != null && !dto.getMenuIds().isEmpty()) {
+            List<Menu> menus = menuHelperService.findByIds(dto.getMenuIds());
+
+            List<SubscriptionMenu> subscriptionMenus = menus.stream()
+                .map(menu -> SubscriptionMenu.builder()
+                    .subscription(subscription)
+                    .menu(menu)
+                    .build())
+                .toList();
+
+            subscriptionMenuRepository.saveAll(subscriptionMenus);
+        }
     }
 
-    public List<SubscriptionResponseDto> readSubscriptionList(String accessToken) {
+    public List<OwnerSubscriptionResponseDto> readSubscriptionList() {
         String email = "user@example.com";
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
-        Store store = storeRepository.findByMember(member)
+        Store store = storeHelperService.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
 
         return repository.findByStore(store)
             .stream()
-            .map(SubscriptionMapper::toResponseDto)
+            .map(SubscriptionMapper::toOwnerResponseDto)
             .collect(Collectors.toList());
     }
 
-    public SubscriptionResponseDto readSubscriptionInfo(Long subscriptionId) {
-        return SubscriptionMapper.toResponseDto(repository.findById(subscriptionId)
+    public OwnerSubscriptionResponseDto readSubscriptionInfo(Long subscriptionId) {
+        return SubscriptionMapper.toOwnerResponseDto(repository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다.")));
     }
 
     @Transactional
-    public void updateSubscriptionStatus(String accessToken, Long subscriptionId, SubscriptionStatusDto dto) {
+    public void updateSubscriptionStatus(Long subscriptionId, SubscriptionStatusDto dto) {
         String email = "user@example.com";
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
@@ -66,4 +85,6 @@ public class SubscriptionService {
 
         subscription.update(null, null, SubscriptionStatusType.valueOf(dto.getSubscriptionStatus()));
     }
+
+    /* TODO: 구독권 삭제 시 구독권-메뉴 테이블 SOFT DELETE 처리 */
 }

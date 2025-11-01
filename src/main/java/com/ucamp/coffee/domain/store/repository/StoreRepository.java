@@ -22,4 +22,18 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<StoreHours> findStoreDetails(@Param("storeId") Long storeId);
 
     Optional<Store> findByMember(Member member);
+
+    @Query(value = """
+        SELECT *
+        FROM partner_store s
+        WHERE 6371 * 2 *
+            ASIN(SQRT(
+                POWER(SIN((:xPoint - s.x_point) * 3.141592653589793 / 180 / 2), 2) +
+                COS(:xPoint * 3.141592653589793 / 180) * COS(s.x_point * 3.141592653589793 / 180) *
+                POWER(SIN((:yPoint - s.y_point) * 3.141592653589793 / 180 / 2), 2)
+            )) <= :radius
+    """, nativeQuery = true)
+    List<Store> findStoresWithinRadius(@Param("xPoint") Double xPoint,
+                                       @Param("yPoint") Double yPoint,
+                                       @Param("radius") Double radius);
 }
