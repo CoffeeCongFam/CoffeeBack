@@ -49,7 +49,7 @@ public class KakaoController {
             	
             	// 회원가입시 추가 입력을 위해 일반회원/점주 회원가입 페이지로 이동
             	String redirectUrl = String.format(
-            			"http://localhost:5173/signup/%s", role);
+            			"http://localhost:5173/signup?role=%s", role);
             	return ResponseEntity.ok(Map.of("redirectUrl", redirectUrl)); 
             }
             
@@ -58,10 +58,10 @@ public class KakaoController {
             
             // role에 따라 일반회원/점주 홈 화면으로 이동
             String redirectUrl = "";
-            if("me".equalsIgnoreCase(role)) {
+            if("member".equalsIgnoreCase(role)) {
             	redirectUrl = "http://localhost:5173/me";
             }
-            else if("stores".equalsIgnoreCase(role)) {
+            else if("customer".equalsIgnoreCase(role)) {
             	redirectUrl = "http://localhost:5173/stores";
             }
             else {
