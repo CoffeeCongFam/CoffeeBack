@@ -1,9 +1,7 @@
 package com.ucamp.coffee.domain.member.repository;
 
 import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.ucamp.coffee.domain.member.entity.Member;
 
 public interface MemberRepository extends JpaRepository<Member, Long>{
