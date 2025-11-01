@@ -1,4 +1,4 @@
-package com.ucamp.coffee.domain.store.service.owner;
+package com.ucamp.coffee.domain.store.service;
 
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
@@ -23,15 +23,15 @@ public class OwnerStoreService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public void createStoreInfo(String accessToken, StoreCreateDto dto) {
-        String email = "user@example.com";
+    public void createStoreInfo(StoreCreateDto dto) {
+        String email = "user1@example.com";
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
         repository.save(StoreMapper.toEntity(dto, member));
     }
 
-    public OwnerStoreResponseDto readStoreInfo(String accessToken) {
+    public OwnerStoreResponseDto readStoreInfo() {
         String email = "user@example.com";
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
@@ -46,7 +46,7 @@ public class OwnerStoreService {
     }
 
     @Transactional
-    public void updateStoreInfo(Long partnerStoreId, String accessToken, StoreUpdateDto dto) {
+    public void updateStoreInfo(Long partnerStoreId, StoreUpdateDto dto) {
         String email = "user@example.com";
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));

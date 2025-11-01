@@ -7,7 +7,6 @@ import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.mapper.MenuMapper;
 import com.ucamp.coffee.domain.store.repository.MenuRepository;
-import com.ucamp.coffee.domain.store.service.helper.StoreHelperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

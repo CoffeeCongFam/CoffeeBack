@@ -1,6 +1,6 @@
 package com.ucamp.coffee.domain.store.dto;
 
-import com.ucamp.coffee.domain.subscription.dto.SubscriptionResponseDto;
+import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDto;
 import lombok.*;
 
 import java.util.List;
@@ -20,5 +20,5 @@ public class CustomerStoreResponseDto {
     private String detailInfo;
     private List<StoreHoursResponseDto> storeHours;
     private List<MenuResponseDto> menus;
-    private List<SubscriptionResponseDto> subscriptions;
+    private List<CustomerSubscriptionResponseDto> subscriptions;
 }
