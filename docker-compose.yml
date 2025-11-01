@@ -1,0 +1,11 @@
+services:
+  coffee-back:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coffee-back
+    ports:
+      - "${SERVER_PORT_IN}:${SERVER_PORT_OUT}"
+    env_file:
+      - .env
+    restart: always
