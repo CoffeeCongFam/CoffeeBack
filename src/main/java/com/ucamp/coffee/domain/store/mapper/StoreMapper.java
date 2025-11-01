@@ -2,9 +2,12 @@ package com.ucamp.coffee.domain.store.mapper;
 
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.store.dto.*;
+import com.ucamp.coffee.domain.store.dto.CustomerStoreResponseDto;
+import com.ucamp.coffee.domain.store.dto.OwnerStoreResponseDto;
+import com.ucamp.coffee.domain.store.dto.StoreCreateDto;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.entity.StoreHours;
-import com.ucamp.coffee.domain.subscription.dto.SubscriptionResponseDto;
+import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDto;
 
 import java.util.List;
 
@@ -38,7 +41,7 @@ public class StoreMapper {
             .build();
     }
 
-    public static CustomerStoreResponseDto toCustomerStoreDto(List<StoreHours> storeHours, Store store, List<MenuResponseDto> menus, List<SubscriptionResponseDto> subscriptions) {
+    public static CustomerStoreResponseDto toCustomerStoreDto(List<StoreHours> storeHours, Store store, List<MenuResponseDto> menus, List<CustomerSubscriptionResponseDto> subscriptions) {
         return CustomerStoreResponseDto.builder()
             .partnerStoreId(store.getPartnerStoreId())
             .storeName(store.getStoreName())
