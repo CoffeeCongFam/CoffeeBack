@@ -6,14 +6,16 @@
 	namespace="com.ucamp.coffee.domain.purchase.mapper.PurchaseMapper">
 
 	<!-- 소비자의 전체 주문 조회 -->
-	<select id="selectAllPurchase" parameterType="long"
+	<select id="selectAllPurchase" parameterType="map"
 		resultType="PurchaseAllResponseDTO">
 		SELECT bm.NAME AS sender, rm.NAME AS receiver,
 		s.SUBSCRIPTION_NAME,
 		s.SUBSCRIPTION_ID,
-		p.CREATED_AT, p.PURCHASE_ID,
+		p.CREATED_AT as paidAt, p.PURCHASE_ID,
 		ms.MEMBER_SUBSCRIPTION_ID,
-		p.PAYMENT_STATUS, p.IS_GIFT, s.PRICE As paymentAmount
+		p.PAYMENT_STATUS, p.IS_GIFT, s.PRICE As
+		paymentAmount,
+		p.GIFT_MESSAGE
 		FROM
 		PURCHASE p
 		JOIN MEMBER bm ON
@@ -28,8 +30,16 @@
 		p.PURCHASE_ID =
 		ms.PURCHASE_ID
 		WHERE bm.MEMBER_ID = #{memberId}
+
+		<if test="type == 'gift'">
+			AND p.IS_GIFT = 'Y'
+		</if>
+		<if test="type == 'mine'">
+			AND p.IS_GIFT = 'N'
+		</if>
+
 		ORDER BY
-		created_at desc
+		p.created_at desc
 	</select>
 
 </mapper>

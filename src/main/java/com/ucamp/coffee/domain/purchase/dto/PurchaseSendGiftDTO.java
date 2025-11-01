@@ -7,17 +7,18 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class PurchaseAllResponseDTO {
+public class PurchaseSendGiftDTO {
 
+	private Long purchaseId;
 	private String sender;
 	private String receiver;
-	private Long subscriptionId;
-	private String subscriptionName;
+	private String productName;
+	private int price;
+	private int subscriptionPeriod;
+	private String storeName;
 	private LocalDateTime paidAt;
-	private Long purchaseId;
-	private Long memberSubscriptionId;
-	private String paymentStatus;
-	private String isGift;
+	private String purchaseType;
 	private String giftMessage;
-	private Integer paymentAmount;
+	private String subscriptionType;
+	private String subscriptionImg;
 }

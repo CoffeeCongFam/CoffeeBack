@@ -5,8 +5,11 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ucamp.coffee.common.response.ApiResponse;
@@ -27,23 +30,52 @@ public class PurchaseController {
 	@PostMapping("api/me/purchase/new")
 	public ResponseEntity<ApiResponse<?>> createPurchase(@RequestBody PurchaseCreateDTO request){
 		
-		Long memberId = 1L;
+		Long memberId = 2L;
 		Long purchaseId = purchaseService.insertPurchase(memberId, request);
 		
 		return ResponseMapper.successOf(Map.of("purchaseId", purchaseId));
 	}
 	
-	// 소비자 구매 내역 전체 조회
+	// 소비자 구매 내역 조회(전체, 선물, 직접구매)
 	@GetMapping("api/me/purchase")
-	public ResponseEntity<ApiResponse<?>> searchAllPurchase(){
+	public ResponseEntity<ApiResponse<?>> searchAllPurchase(@RequestParam(required = false) String type){
 		
 		Long memberId = 1L;
 		
-		List<PurchaseAllResponseDTO> response = purchaseService.selectAllPurchase(memberId);
+		List<PurchaseAllResponseDTO> response = purchaseService.selectAllPurchase(memberId, type);
 		return ResponseMapper.successOf(response);
 	}
 	
-	// 소비자 구매 내역 상세 조회(선물 or 직접 구매)
 	
 	// 소비자 환불하기
+	@PatchMapping("/api/me/purchase/{purchaseId}")
+	public ResponseEntity<ApiResponse<?>> modifyPurchaseRefunded(@PathVariable Long purchaseId){
+		
+		purchaseService.updatePurchaseRefunded(purchaseId);
+		
+		return ResponseMapper.successOf(null);
+	}
+	
+	//선물 전체 목록 조회
+	@GetMapping("/api/me/purchase/gift")
+	public ResponseEntity<ApiResponse<?>> searchAllGift(){
+		
+		return ResponseMapper.successOf(null);
+	}
+	
+	
+	
+//	//보낸 선물 전체 조회
+//	@GetMapping("/api/me/purchase/gift/send")
+//	public ResponseEntity<ApiResponse<?>> searchSendGift(){
+//		
+//		return ResponseMapper.successOf(null);
+//	}
+//	
+//	//받은 선물 전체 조회
+//	@GetMapping("/api/me/purchase/gift/receive")
+//	public ResponseEntity<ApiResponse<?>> searchReceiveGift(){
+//		
+//		return ResponseMapper.successOf(null);
+//	}
 }

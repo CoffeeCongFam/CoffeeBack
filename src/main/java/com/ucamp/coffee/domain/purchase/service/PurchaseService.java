@@ -1,7 +1,10 @@
 package com.ucamp.coffee.domain.purchase.service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
+import com.ucamp.coffee.domain.subscription.type.UsageStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,7 +35,7 @@ public class PurchaseService {
 	private final SubscriptionRepository subscriptionRepository;
 	private final PurchaseRepository purchaseRepository;
 	private final MemberSubscriptionRepository memberSubscriptionRepository;
-	
+
 	private final PurchaseMapper purchaseMapper;
 
 	/**
@@ -80,6 +84,7 @@ public class PurchaseService {
 
 	/**
 	 * 보유 구독권 생성
+	 * 
 	 * @param receiver
 	 * @param purchase
 	 * @param subscription
@@ -100,14 +105,55 @@ public class PurchaseService {
 		memberSubscriptionRepository.save(memberSubscription);
 
 	}
-	
+
 	/**
-	 * 소비자 전체 주문 내역 조회
+	 * 소비자 전체 주문 내역 조회(전체, 직접구매, 선물)
+	 * 
 	 * @param memberId
 	 * @return
 	 */
-	public List<PurchaseAllResponseDTO> selectAllPurchase(Long memberId) {
+	@Transactional(readOnly = true)
+	public List<PurchaseAllResponseDTO> selectAllPurchase(Long memberId, String type) {
+
+		Map<String, Object> param = new HashMap<>();
+		param.put("memberId", memberId);
+		param.put("type", type);
+
+		return purchaseMapper.selectAllPurchase(param);
+	}
+
+	/**
+	 * 소비자 주문 환불 처리
+	 * 
+	 * @param purchaseId
+	 */
+	@Transactional
+	public void updatePurchaseRefunded(Long purchaseId) {
+
+		Purchase purchase = purchaseRepository.findById(purchaseId)
+				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구매 정보가 존재하지 않습니다."));
 		
-		return purchaseMapper.selectAllPurchase(memberId);
+		//이미 환불한 구매건이면 반려
+		if (purchase.getPaymentStatus() == PaymentStatus.REFUNDED) {
+		    throw new CommonException(ApiStatus.CONFLICT, "이미 환불 처리된 구매 건입니다.");
+		}
+
+		// 구독권 사용한적 있으면 반려
+		MemberSubscription subscription = memberSubscriptionRepository.findByPurchase_PurchaseId(purchase.getPurchaseId())
+				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구독권 정보가 존재하지 않습니다."));
+
+		if (subscription.getUsageStatus() != UsageStatus.NOT_ACTIVATED)
+			throw new CommonException(ApiStatus.CONFLICT, "이미 사용한 구독권입니다.");
+
+		// 사용한적 없어도 7일 지났으면 반려
+		LocalDateTime purchasedAt = purchase.getCreatedAt();
+		LocalDateTime today = LocalDateTime.now();
+		
+		if (today.isAfter(purchasedAt.plusDays(7))) {
+		    throw new CommonException(ApiStatus.CONFLICT, "구매 후 7일이 지난 구독권은 환불할 수 없습니다.");
+		}
+		
+		//환불 처리
+		purchase.refundedPurchase();
 	}
 }

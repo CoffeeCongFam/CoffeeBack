@@ -55,5 +55,11 @@ public class Purchase extends BaseEntity {
 	private String isGift;
 	private String giftMessage;
 	private String purchaseType;
+	
+	//환불 처리
+	public void refundedPurchase() {
+		this.paymentStatus = PaymentStatus.REFUNDED;
+		this.refundedAt = LocalDateTime.now();
+	}
 
 }
