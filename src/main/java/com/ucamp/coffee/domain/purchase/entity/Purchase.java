@@ -54,6 +54,7 @@ public class Purchase extends BaseEntity {
 
 	private String isGift;
 	private String giftMessage;
+
 	private String purchaseType;
 
 }
