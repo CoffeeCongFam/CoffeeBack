@@ -1,22 +1,30 @@
 package com.ucamp.coffee.domain.member.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ucamp.coffee.domain.member.dto.KakaoUserDto;
-import com.ucamp.coffee.domain.member.type.GenderType;
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ucamp.coffee.domain.member.dto.KakaoUserDto;
+import com.ucamp.coffee.domain.member.entity.Member;
+import com.ucamp.coffee.domain.member.repository.MemberRepository;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class KakaoService {
-    private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final MemberRepository memberRepository;
 
     @Value("${kakao.client-id}")
     private String clientId;
@@ -95,4 +103,9 @@ public class KakaoService {
             throw new RuntimeException("카카오 사용자 정보 조회 실패", e);
         }
     }
+
+    // 이메일로 회원 조회
+	public Optional<Member> findByEmail(String email) {
+		return memberRepository.findByEmail(email);
+	}
 }
