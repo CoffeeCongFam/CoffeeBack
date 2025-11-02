@@ -43,16 +43,18 @@ public class JwtTokenProvider {
     }
 
     // 임시 토큰 (회원가입 추가정보 전달용)
-    public String generateTempToken(String email, String role) {
-        Claims claims = Jwts.claims().setSubject(email);
-        claims.put("role", role);
-        claims.put("type", "TEMP"); // 구분용 클레임
+    public String generateTempToken(String email) {
+        
+        // TODO
+        // singup 회원가입 / auth 로그인인증여부
 
         Date now = new Date(); // 현재 시각
         Date expiry = new Date(now.getTime() + tempTokenValidTime);  // 만료 시각
 
         return Jwts.builder()
-                .setClaims(claims)
+        		.claim("email", email)
+        		.claim("type", "TEMP")
+        		.claim("purpos", "singup")
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)  // 비밀키 반환
