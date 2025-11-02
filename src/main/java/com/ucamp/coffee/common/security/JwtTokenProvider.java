@@ -20,19 +20,18 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private final long accessTokenValidTime = 1000L * 60 * 60; // 1시간
-    private final long tempTokenValidTime = 1000L * 60 * 10;   // 10분 (임시 토큰)
+    private static final long ACCESS_TOKEN_VALID_TIME = 1000L * 60 * 60; // 1시간
+    private static final long REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 14; // 14일
+    private static final long TEMP_TOKEN_VALID_TIME = 1000L * 60 * 10;   // 10분 (임시 토큰)
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    // 서비스용 JWT 발급 (로그인 등)
-    public String generateToken(Long memberId) {
-        Claims claims = Jwts.claims().setSubject(String.valueOf(memberId));
-
+    // 토큰 생성 공통 코드
+    private String generateToken(Claims claims, long validity) {
         Date now = new Date();  // 현재 시각
-        Date expiry = new Date(now.getTime() + accessTokenValidTime);  // 만료 시각
+        Date expiry = new Date(now.getTime() + validity);  // 만료 시각
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -40,6 +39,22 @@ public class JwtTokenProvider {
                 .setExpiration(expiry)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)  // 비밀키 반환
                 .compact();  // JWT를 문자열로 직렬화
+    }
+
+    // 서비스용 JWT 발급 (로그인 등)
+    public String generateAccessToken(Long memberId) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(memberId));
+        claims.put("type", "ACCESS");
+
+        return generateToken(claims, ACCESS_TOKEN_VALID_TIME);
+    }
+
+    // 리프레시 토큰 발급 (AccessToken 만료 시 재발급을 위해 사용되는 토큰)
+    public String generateRefreshToken(Long memberId) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(memberId));
+        claims.put("type", "REFRESH");
+
+        return generateToken(claims, REFRESH_TOKEN_VALID_TIME);
     }
 
     // 임시 토큰 (회원가입 추가정보 전달용)
@@ -48,16 +63,10 @@ public class JwtTokenProvider {
         claims.put("role", role);
         claims.put("type", "TEMP"); // 구분용 클레임
 
-        Date now = new Date(); // 현재 시각
-        Date expiry = new Date(now.getTime() + tempTokenValidTime);  // 만료 시각
-
-        return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(expiry)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)  // 비밀키 반환
-                .compact();  // JWT를 문자열로 직렬화
+        return generateToken(claims, TEMP_TOKEN_VALID_TIME);
     }
+
+
 
     // 토큰 파싱 (검증 포함)
     public Claims getClaims(String token) {
