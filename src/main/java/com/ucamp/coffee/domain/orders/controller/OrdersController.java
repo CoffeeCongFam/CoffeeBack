@@ -101,7 +101,7 @@ public class OrdersController {
 	}
 
 	// 점주 지난 주문 내역 전체 및 날짜별 조회
-	@GetMapping("api/stores/orders/{partnerStoreId}")
+	@GetMapping("api/stores/orders/past/{partnerStoreId}")
 	public ResponseEntity<ApiResponse<?>> searchAllOrders(@PathVariable Long partnerStoreId,
 			@ModelAttribute OrdersStorePastRequestDTO request) {
 

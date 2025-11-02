@@ -26,6 +26,8 @@ public class OrdersStoreResponseDTO {
 	private String tel;
 	private String name;
 	
+	private int dailyRemainCount;
+	
 	private List<MenuDTO> menuList;
 	
 	@Data

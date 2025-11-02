@@ -13,18 +13,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OrdersStorePastResponseDTO {
 
-	private Integer orderNumber;
-	private String orderStatus;
+	private Long orderId;
+	private int orderNumber;
 	private LocalDateTime createdAt;
-	private List<MenuDTO> menuList;
+	private String orderStatus;
+	private Long memberSubscriptionId;
 	private String subscriptionName;
+	private String orderType;
 	private String name;
 	private String tel;
+	private List<MenuDTO> menuList;
 	
 	@Data
 	@NoArgsConstructor
 	public static class MenuDTO{
+		private Long menuId;
 		private String menuName;
-		private Integer quantity;
+		private int quantity;
 	}
 }

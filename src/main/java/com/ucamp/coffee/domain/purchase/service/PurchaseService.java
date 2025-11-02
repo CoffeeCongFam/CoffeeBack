@@ -183,6 +183,17 @@ public class PurchaseService {
 
 		return purchaseMapper.selectAllSendGift(memberId);
 	}
+	
+	/**
+	 * 소비자의 특정 보낸 선물 상세 조회
+	 * @param memberSubscriptionId
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public PurchaseSendGiftDTO selectSendGiftDetail(Long purchaseId) {
+		
+		return purchaseMapper.selectSendGiftDetail(purchaseId);
+	}
 
 	/**
 	 * 소비자의 모든 받은 선물 조회
@@ -193,11 +204,28 @@ public class PurchaseService {
 	@Transactional(readOnly = true)
 	public List<PurchaseReceiveGiftDTO> selectAllReceivedGift(Long memberId) {
 
-		return purchaseMapper.selectAllReceivedGift(memberId);
+		List<PurchaseReceiveGiftDTO> list = purchaseMapper.selectAllReceivedGift(memberId);
+		for (PurchaseReceiveGiftDTO dto : list) {
+			dto.setUsageHistoryList(purchaseMapper.selectUsageHistoryBySubscriptionId(dto.getMemberSubscriptionId()));
+		}
+		return list;
 	}
 
 	/**
-	 * 소비자의 보낸 선물 상세 조회
+	 * 소비자의 특정 받은 선물 상세 조회
+	 * @param memberSubscriptionId
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public PurchaseReceiveGiftDTO selectReceivedGiftDetail(Long memberSubscriptionId) {
+
+		PurchaseReceiveGiftDTO response = purchaseMapper.selectReceivedGiftDetail(memberSubscriptionId);
+		response.setUsageHistoryList(purchaseMapper.selectUsageHistoryBySubscriptionId(memberSubscriptionId));
+		return response;
+	}
+
+	/**
+	 * 소비자의 보낸 선물 상세 조회(선물 보낸 직후)
 	 * 
 	 * @param purchaseId
 	 * @return

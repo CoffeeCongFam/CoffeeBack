@@ -154,6 +154,7 @@
 		<result property="createdAt" column="CREATED_AT" />
 		<result property="tel" column="TEL" />
 		<result property="name" column="NAME" />
+		<result property="dailyRemainCount" column="DAILY_REMAIN_COUNT" />
 
 		<collection property="menuList"
 			ofType="com.ucamp.coffee.domain.orders.dto.OrdersStoreResponseDTO$MenuDTO">
@@ -179,7 +180,8 @@
 		om.QUANTITY,
 		m.MENU_NAME,
 		m2.TEL ,
-		m2.NAME
+		m2.NAME,
+		ms.DAILY_REMAIN_COUNT
 		FROM
 		ORDERS o
 		JOIN
@@ -189,6 +191,7 @@
 		m.MENU_ID =
 		om.MENU_ID
 		JOIN MEMBER m2 ON m2.MEMBER_ID = o.MEMBER_ID
+		JOIN MEMBER_SUBSCRIPTION ms ON ms.member_subscription_id = o.MEMBER_SUBSCRIPTION_ID
 		WHERE
 		TRUNC(o.CREATED_AT) = TRUNC(sysdate)
 		AND o.PARTNER_STORE_ID =
@@ -198,16 +201,18 @@
 	<!-- 점주의 과거 날짜별 or 전체 주문 내역 -->
 	<resultMap type="OrdersStorePastResponseDTO"
 		id="OrderStorePastResponseMap">
-		<id column="ORDER_ID" />
+		<id property="orderId" column="ORDER_ID" />
 		<result property="orderNumber" column="ORDER_NUMBER" />
 		<result property="orderStatus" column="ORDER_STATUS" />
 		<result property="createdAt" column="CREATED_AT" />
 		<result property="subscriptionName" column="SUBSCRIPTION_NAME" />
 		<result property="name" column="NAME" />
 		<result property="tel" column="TEL" />
+		<result property="memberSubscriptionId" column="MEMBER_SUBSCRIPTION_ID" />
+		<result property="orderType" column="ORDER_TYPE" />
 		<collection property="menuList"
 			ofType="com.ucamp.coffee.domain.orders.dto.OrdersStorePastResponseDTO$MenuDTO">
-			<id column="ORDER_MENU_ID" />
+			<id property="menuId" column="MENU_ID" />
 			<result property="menuName" column="MENU_NAME" />
 			<result property="quantity" column="QUANTITY" />
 		</collection>
@@ -222,8 +227,10 @@
 		o.ORDER_NUMBER,
 		o.ORDER_STATUS,
 		o.CREATED_AT,
-		om.ORDER_MENU_ID,
+		m.MENU_ID,
 		om.QUANTITY,
+		ms.MEMBER_SUBSCRIPTION_ID ,
+		o.ORDER_TYPE ,
 		m.MENU_NAME,
 		s.SUBSCRIPTION_NAME,
 		m2.NAME,

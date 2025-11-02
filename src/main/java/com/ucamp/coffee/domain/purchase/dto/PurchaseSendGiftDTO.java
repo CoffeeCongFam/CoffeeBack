@@ -1,6 +1,7 @@
 package com.ucamp.coffee.domain.purchase.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,13 @@ public class PurchaseSendGiftDTO {
 	private String giftMessage;
 	private String subscriptionType;
 	private String subscriptionImg;
+	private int maxDailyUsage;
+	private List<MenuDTO> menuList;
+	
+	@Data
+	@NoArgsConstructor
+	public static class MenuDTO {
+		private Long menuId;
+		private String menuName;
+	}
 }

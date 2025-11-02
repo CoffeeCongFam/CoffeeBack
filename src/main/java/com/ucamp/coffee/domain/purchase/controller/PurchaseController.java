@@ -71,22 +71,40 @@ public class PurchaseController {
 
 	// 보낸 선물 전체 조회
 	@GetMapping("/api/me/purchase/gift/send")
-	public ResponseEntity<ApiResponse<?>> searchSendGift() {
+	public ResponseEntity<ApiResponse<?>> searchSendGift(@RequestParam(required = false) String purchaseId) {
 
 		Long memberId = 1L; // -----------------------------로그인 추후 수정
 
-		List<PurchaseSendGiftDTO> response = purchaseService.selectAllSendGift(memberId);
+		Object response;
+
+		if (purchaseId != null) {
+			Long parsedId = Long.parseLong(purchaseId);
+			PurchaseSendGiftDTO giftDetail = purchaseService.selectSendGiftDetail(parsedId);
+			response = giftDetail;
+		} else {
+			List<PurchaseSendGiftDTO> giftList = purchaseService.selectAllSendGift(memberId);
+			response = giftList;
+		}
 
 		return ResponseMapper.successOf(response);
 	}
 
 	// 받은 선물 전체 조회
 	@GetMapping("/api/me/purchase/gift/receive")
-	public ResponseEntity<ApiResponse<?>> searchReceiveGift() {
+	public ResponseEntity<ApiResponse<?>> searchReceiveGift(
+			@RequestParam(required = false) String memberSubscriptionId) {
 
 		Long memberId = 1L; // -----------------------------로그인 추후 수정
 
-		List<PurchaseReceiveGiftDTO> response = purchaseService.selectAllReceivedGift(memberId);
+		Object response;
+		if (memberSubscriptionId != null) {
+			Long parsedId = Long.parseLong(memberSubscriptionId);
+			PurchaseReceiveGiftDTO giftDetail = purchaseService.selectReceivedGiftDetail(parsedId);
+			response = giftDetail;
+		} else {
+			List<PurchaseReceiveGiftDTO> giftList = purchaseService.selectAllReceivedGift(memberId);
+			response = giftList;
+		}
 
 		return ResponseMapper.successOf(response);
 
@@ -97,7 +115,7 @@ public class PurchaseController {
 	public ResponseEntity<ApiResponse<?>> searchDetailGift(@PathVariable Long purchaseId) {
 
 		PurchaseSendGiftDTO response = purchaseService.selectDetailSendGift(purchaseId);
-		
+
 		return ResponseMapper.successOf(response);
 	}
 }
