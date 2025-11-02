@@ -1,7 +1,6 @@
 package com.ucamp.coffee.domain.purchase.service;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +12,11 @@ import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import com.ucamp.coffee.domain.purchase.dto.PurchaseAllGiftDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseAllResponseDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseCreateDTO;
+import com.ucamp.coffee.domain.purchase.dto.PurchaseReceiveGiftDTO;
+import com.ucamp.coffee.domain.purchase.dto.PurchaseSendGiftDTO;
 import com.ucamp.coffee.domain.purchase.entity.Purchase;
 import com.ucamp.coffee.domain.purchase.mapper.PurchaseMapper;
 import com.ucamp.coffee.domain.purchase.repository.PurchaseRepository;
@@ -132,14 +134,15 @@ public class PurchaseService {
 
 		Purchase purchase = purchaseRepository.findById(purchaseId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구매 정보가 존재하지 않습니다."));
-		
-		//이미 환불한 구매건이면 반려
+
+		// 이미 환불한 구매건이면 반려
 		if (purchase.getPaymentStatus() == PaymentStatus.REFUNDED) {
-		    throw new CommonException(ApiStatus.CONFLICT, "이미 환불 처리된 구매 건입니다.");
+			throw new CommonException(ApiStatus.CONFLICT, "이미 환불 처리된 구매 건입니다.");
 		}
 
 		// 구독권 사용한적 있으면 반려
-		MemberSubscription subscription = memberSubscriptionRepository.findByPurchase_PurchaseId(purchase.getPurchaseId())
+		MemberSubscription subscription = memberSubscriptionRepository
+				.findByPurchase_PurchaseId(purchase.getPurchaseId())
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구독권 정보가 존재하지 않습니다."));
 
 		if (subscription.getUsageStatus() != UsageStatus.NOT_ACTIVATED)
@@ -148,12 +151,60 @@ public class PurchaseService {
 		// 사용한적 없어도 7일 지났으면 반려
 		LocalDateTime purchasedAt = purchase.getCreatedAt();
 		LocalDateTime today = LocalDateTime.now();
-		
+
 		if (today.isAfter(purchasedAt.plusDays(7))) {
-		    throw new CommonException(ApiStatus.CONFLICT, "구매 후 7일이 지난 구독권은 환불할 수 없습니다.");
+			throw new CommonException(ApiStatus.CONFLICT, "구매 후 7일이 지난 구독권은 환불할 수 없습니다.");
 		}
-		
-		//환불 처리
+
+		// 환불 처리
 		purchase.refundedPurchase();
+	}
+
+	/**
+	 * 소비자의 모든 선물 목록 조회
+	 * 
+	 * @param memberId
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public List<PurchaseAllGiftDTO> selectAllGift(Long memberId) {
+
+		return purchaseMapper.selectAllGift(memberId);
+	}
+
+	/**
+	 * 소비자의 모든 보낸 선물 조회
+	 * 
+	 * @param memberId
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public List<PurchaseSendGiftDTO> selectAllSendGift(Long memberId) {
+
+		return purchaseMapper.selectAllSendGift(memberId);
+	}
+
+	/**
+	 * 소비자의 모든 받은 선물 조회
+	 * 
+	 * @param memberId
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public List<PurchaseReceiveGiftDTO> selectAllReceivedGift(Long memberId) {
+
+		return purchaseMapper.selectAllReceivedGift(memberId);
+	}
+
+	/**
+	 * 소비자의 보낸 선물 상세 조회
+	 * 
+	 * @param purchaseId
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public PurchaseSendGiftDTO selectDetailSendGift(Long purchaseId) {
+
+		return purchaseMapper.selectDetailSendGift(purchaseId);
 	}
 }

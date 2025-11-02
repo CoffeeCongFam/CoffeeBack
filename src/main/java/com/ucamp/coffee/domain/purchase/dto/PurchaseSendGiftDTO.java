@@ -12,7 +12,7 @@ public class PurchaseSendGiftDTO {
 	private Long purchaseId;
 	private String sender;
 	private String receiver;
-	private String productName;
+	private String subscriptionName;
 	private int price;
 	private int subscriptionPeriod;
 	private String storeName;

@@ -35,7 +35,9 @@ public class OrdersController {
 	@PostMapping("api/me/orders/new")
 	public ResponseEntity<ApiResponse<?>> registerOrder(@RequestBody OrdersCreateDTO request) {
 
-		Long orderId = ordersService.createOrder(request);
+		Long memberId = 1L; //-------------------로그인 구현 후 수정 예정
+		
+		Long orderId = ordersService.createOrder(memberId, request);
 
 		return ResponseMapper.successOf(Map.of("orderId", orderId));
 	}
@@ -49,11 +51,12 @@ public class OrdersController {
 		return ResponseMapper.successOf(response);
 	}
 
-	// 소비자 특정 날짜 주문 조회 - 인증 구현 후 수정
+	// 소비자 오늘(특정) 날짜 주문 조회 - 인증 구현 후 수정
 	@GetMapping("api/me/orders/today")
 	public ResponseEntity<ApiResponse<?>> searchTodayOrder() {
 
-		Long memberId = 23L;
+		Long memberId = 1L; //-------------------로그인 구현 후 수정 예정
+		
 		List<OrdersTodayResponseDTO> response = ordersService.selectTodayOrders(memberId);
 		return ResponseMapper.successOf(response);
 	}

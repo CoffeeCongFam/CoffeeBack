@@ -18,7 +18,6 @@ import lombok.Setter;
 
 public class OrdersCreateDTO {
 
-	private Long memberId;
 	private Long storeId;
 	private Long memberSubscriptionId;
 	private OrderType orderType;

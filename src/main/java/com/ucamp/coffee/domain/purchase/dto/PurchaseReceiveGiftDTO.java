@@ -12,15 +12,15 @@ public class PurchaseReceiveGiftDTO {
 	private Long memberSubscriptionId;
 	private String sender;
 	private String receiver;
-	private String productName;
+	private String subscriptionName;
 	private int price;
 	private int subscriptionPeriod;
+	private LocalDateTime subscriptionStart;
 	private LocalDateTime subscriptionEnd;
 	private String subscriptionType;
 	private String subscriptionImg;
 	private String storeName;
 	private String giftMessage;
-	private LocalDateTime createdAt;
-	private String status;
-	private int maxDailyUsage;
+	private String usageStatus;
+	private int dailyRemainCount;
 }
