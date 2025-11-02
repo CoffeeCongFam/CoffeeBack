@@ -44,7 +44,7 @@ public class JwtTokenProvider {
 
     // 임시 토큰 (회원가입 추가정보 전달용)
     public String generateTempToken(String email) {
-        
+
         // TODO
         // singup 회원가입 / auth 로그인인증여부
 

@@ -18,9 +18,9 @@ public class CustomerMemberSubscriptionResponseDto {
     private String subName;
     private String isGift;
     private String isExpired;
-    private LocalDateTime subStart;
-    private LocalDateTime subEnd;
+    private String subStart;
+    private String subEnd;
     private Integer remainingCount;
     private List<String> menu;
-    private List<LocalDateTime> usedAt;
+    private List<String> usedAt;
 }

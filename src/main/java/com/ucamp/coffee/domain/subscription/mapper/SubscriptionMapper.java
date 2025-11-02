@@ -1,5 +1,6 @@
 package com.ucamp.coffee.domain.subscription.mapper;
 
+import com.ucamp.coffee.common.util.DateTimeUtil;
 import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDto;
 import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
@@ -86,11 +87,11 @@ public class SubscriptionMapper {
             .subName(subscription.getSubscriptionName())
             .isGift(memberSubscription.getIsGift())
             .isExpired(memberSubscription.getUsageStatus().name())
-            .subStart(memberSubscription.getSubscriptionStart())
-            .subEnd(memberSubscription.getSubscriptionEnd())
+            .subStart(DateTimeUtil.toUtcDateTime(memberSubscription.getSubscriptionStart()))
+            .subEnd(DateTimeUtil.toUtcDateTime(memberSubscription.getSubscriptionEnd()))
             .remainingCount(memberSubscription.getDailyRemainCount())
             .menu(menus.stream().map(Menu::getMenuName).toList())
-            .usedAt(subscriptionUsageHistories.stream().map(SubscriptionUsageHistory::getCreatedAt).sorted().toList())
+            .usedAt(subscriptionUsageHistories.stream().map(SubscriptionUsageHistory::getCreatedAt).map(DateTimeUtil::toUtcDateTime).sorted().toList())
             .build();
     }
 }

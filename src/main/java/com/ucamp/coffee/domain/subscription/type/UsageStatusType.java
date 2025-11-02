@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum UsageStatusType {
     NOT_ACTIVATED("미사용"),
-    ACTIVATED("사용"),
+    ACTIVE("사용"),
     EXPIRED("만료");
 
     private final String description;

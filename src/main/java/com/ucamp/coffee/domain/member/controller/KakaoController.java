@@ -1,5 +1,7 @@
 package com.ucamp.coffee.domain.member.controller;
 
+import com.ucamp.coffee.common.exception.CommonException;
+import com.ucamp.coffee.common.response.ApiStatus;
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +20,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
+@Slf4j
 @RestController
 @RequestMapping("/auth/kakao")
 @RequiredArgsConstructor
@@ -32,13 +41,13 @@ public class KakaoController {
     		@RequestParam(required = false) String state,
     						HttpServletRequest request,
                              HttpServletResponse response) {
-    	
+
     	String redirectUrl = "http://localhost:5173/";
-    	
+
         try {
             // 카카오 토큰 발급
             String accessToken = kakaoService.getKakaoAccessToken(code);
-            
+
             // 카카오 사용자 정보 조회
             KakaoUserDto kakaoUser = kakaoService.getUserInfo(accessToken);
             String email = kakaoUser.getEmail();
@@ -55,7 +64,7 @@ public class KakaoController {
             	
             	String baseUrl = "http://localhost:5173/";
             	String page = "member".equals(state) ? "MemberSignup" : "CustomerSignUp";
-            	
+
             	redirectUrl = baseUrl + page + "?token=" + tempJwt;
             }
             else {
@@ -70,7 +79,7 @@ public class KakaoController {
                 cookie.setPath("/");
                 cookie.setMaxAge(60 * 60); // 1시간
                 response.addCookie(cookie);
-                
+
                 // 세션 등록
                 HttpSession session = request.getSession();
                 session.setAttribute("user", member);
@@ -80,11 +89,12 @@ public class KakaoController {
             	String page = MemberType.GENERAL.equals(member.getMemberType()) ? "me" : "store";
                 redirectUrl = baseUrl + page;
             }
-        
+
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new CommonException(ApiStatus.INTERNAL_SERVER_ERROR);
         }
-        
+
         try {
         	response.sendRedirect(redirectUrl);
 		} catch (Exception e) {

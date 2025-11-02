@@ -1,5 +1,8 @@
 package com.ucamp.coffee.domain.subscription.service;
 
+import com.ucamp.coffee.common.exception.CommonException;
+import com.ucamp.coffee.common.response.ApiStatus;
+import com.ucamp.coffee.common.util.DateTimeUtil;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
 import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDto;
@@ -19,6 +22,8 @@ import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionUsageHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,8 +66,14 @@ public class CustomerSubscriptionService {
     }
 
     public List<CustomerMemberSubscriptionResponseDto> readMemberSubscriptionList() {
-        String email = "user1@example.com";
-        Member member = memberRepository.findByEmail(email)
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CommonException(ApiStatus.UNAUTHORIZED);
+        }
+
+        Long memberId = Long.parseLong(authentication.getName());
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
         List<MemberSubscription> subscriptions =
@@ -84,7 +95,6 @@ public class CustomerSubscriptionService {
         List<Long> memberSubscriptionIds = subscriptions.stream()
             .map(MemberSubscription::getMemberSubscriptionId)
             .toList();
-
         List<SubscriptionUsageHistory> usageHistories =
             subscriptionUsageHistoryRepository.findByMemberSubscriptionIds(memberSubscriptionIds);
         Map<Long, List<SubscriptionUsageHistory>> usageMap = usageHistories.stream()
