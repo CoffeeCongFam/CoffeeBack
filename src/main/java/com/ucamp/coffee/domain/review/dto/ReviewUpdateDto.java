@@ -7,11 +7,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReviewCreateDto {
-    private Long memberId;
-    private Long partnerStoreId;
-    private Long subscriptionId;
+public class ReviewUpdateDto {
     private String reviewContent;
     private Integer rating;
     private String reviewImg;
 }
+

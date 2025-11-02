@@ -2,7 +2,9 @@ package com.ucamp.coffee.domain.review.entity;
 
 import com.ucamp.coffee.common.entity.BaseEntity;
 import com.ucamp.coffee.domain.member.entity.Member;
+import com.ucamp.coffee.domain.review.dto.ReviewUpdateDto;
 import com.ucamp.coffee.domain.store.entity.Store;
+import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +27,10 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "partner_store_id", nullable = false)
     private Store store;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "subscription_id")
+    private Subscription subscription;
+
     @Column(length = 100, nullable = false)
     private String reviewContent;
 
@@ -34,17 +40,17 @@ public class Review extends BaseEntity {
     @Column(length = 200)
     private String reviewImg;
 
-    public void update(String reviewContent, Integer rating, String reviewImg) {
-        if (reviewContent != null && !reviewContent.isBlank()) {
-            this.reviewContent = reviewContent;
+    public void update(ReviewUpdateDto dto) {
+        if (dto.getReviewContent() != null && !dto.getReviewContent().isBlank()) {
+            this.reviewContent = dto.getReviewContent();
         }
 
-        if (rating != null) {
-            this.rating = rating;
+        if (dto.getRating() != null) {
+            this.rating = dto.getRating();
         }
 
-        if (reviewImg != null && !reviewImg.isBlank()) {
-            this.reviewImg = reviewImg;
+        if (dto.getReviewImg() != null) {
+            this.reviewImg = dto.getReviewImg();
         }
     }
 }
