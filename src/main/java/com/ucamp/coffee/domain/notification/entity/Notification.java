@@ -32,4 +32,14 @@ public class Notification extends BaseEntity {
 	private LocalDateTime readAt;
 	private String notificationContent;
 	
+	//알림 읽음처리
+	public void readNotification() {
+		this.readAt = LocalDateTime.now();
+	}
+	
+	//알림 삭제
+	public void deleteNotification() {
+		setDeletedAt(LocalDateTime.now());
+	}
+	
 }

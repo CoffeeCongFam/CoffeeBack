@@ -14,20 +14,21 @@ import com.ucamp.coffee.domain.orders.dto.OrderStatusRequestDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO.MenuDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersDetailResponseDTO;
-import com.ucamp.coffee.domain.orders.dto.OrdersMessageDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStorePastRequestDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStorePastResponseDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStoreResponseDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersTodayResponseDTO;
 import com.ucamp.coffee.domain.orders.entity.OrderMenu;
 import com.ucamp.coffee.domain.orders.entity.Orders;
+import com.ucamp.coffee.domain.orders.event.OrderCanceledEvent;
 import com.ucamp.coffee.domain.orders.event.OrderCompletedEvent;
+import com.ucamp.coffee.domain.orders.event.OrderInprogressEvent;
+import com.ucamp.coffee.domain.orders.event.OrderRejectedEvent;
 import com.ucamp.coffee.domain.orders.event.OrderRequestEvent;
 import com.ucamp.coffee.domain.orders.mapper.OrdersMapper;
 import com.ucamp.coffee.domain.orders.repository.OrderMenuRepository;
 import com.ucamp.coffee.domain.orders.repository.OrdersRepository;
 import com.ucamp.coffee.domain.orders.type.OrderStatusType;
-import com.ucamp.coffee.domain.sms.SmsService;
 import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.repository.MenuRepository;
@@ -55,9 +56,7 @@ public class OrdersService {
 
 	private final OrdersMapper ordersMapper;
 
-	private final SmsService smsService;
-	
-	 private final ApplicationEventPublisher publisher;
+	private final ApplicationEventPublisher publisher;
 
 	/**
 	 * 소비자 주문 생성
@@ -119,17 +118,8 @@ public class OrdersService {
 			orderMenuRepository.save(orderMenu);
 		}
 
-		// 주문 메시지 객체 생성(추후 수정)
-		OrdersMessageDTO message = OrdersMessageDTO.builder().name("주현석").storeName(store.getStoreName())
-				.tel("01091205456").orderNumber(orders.getOrderNumber()).build();
-
-//		smsService.sendCustomerOrderCompletedMessage(message);
-		
-		//주문 접수 후 소비자 알림 생성
-		publisher.publishEvent(new OrderCompletedEvent(memberId, store.getPartnerStoreId()));
-		
-		//주문 접수 후 점주 알림 생성
-		publisher.publishEvent(new OrderRequestEvent(memberId, store.getPartnerStoreId()));
+		// 주문 접수 후 소비자 및 점주 알림 생성 및 sms 전송
+		publisher.publishEvent(new OrderRequestEvent(orders.getOrderId()));
 
 		return orders.getOrderId();
 
@@ -181,8 +171,9 @@ public class OrdersService {
 
 		Orders order = ordersRepository.findById(orderId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
-		
-		//소비자 주문 취소 알림
+
+		// 주문 취소 알림 및 점주에게 SMS 전송
+		publisher.publishEvent(new OrderCanceledEvent(orderId));
 
 		order.cancelOrder();
 	}
@@ -199,6 +190,15 @@ public class OrdersService {
 		Orders order = ordersRepository.findById(orderId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
 
+		// 주문 접수 완료 알림 및 소비자에게 SMS 전송
+		if (request.getOrderStatus() == OrderStatusType.INPROGRESS) {
+			publisher.publishEvent(new OrderInprogressEvent(orderId));
+		}
+
+		// 제조 완료 알림 및 소비자에게 SMS 전송
+		if(request.getOrderStatus() == OrderStatusType.COMPLETED) {
+			publisher.publishEvent(new OrderCompletedEvent(orderId));
+		}
 		order.changeOrderStatus(request.getOrderStatus());
 	}
 
@@ -214,6 +214,8 @@ public class OrdersService {
 		Orders order = ordersRepository.findById(orderId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
 
+		publisher.publishEvent(new OrderRejectedEvent(orderId));
+		
 		order.rejectOrder(request.getRejectedReason());
 	}
 
