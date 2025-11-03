@@ -2,12 +2,14 @@ package com.ucamp.coffee;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
+@EnableAsync
 public class CoffeeBackApplication {
 
 	public static void main(String[] args) {

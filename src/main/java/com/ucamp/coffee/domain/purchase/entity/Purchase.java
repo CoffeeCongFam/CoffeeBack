@@ -37,11 +37,11 @@ public class Purchase extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
-	private Member member;
+	private Member buyer;
 
 	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_member_id")
-    private Member receiverMember;
+    private Member receiver;
 
 	@ManyToOne
 	@JoinColumn(name = "subscription_id")
@@ -55,5 +55,11 @@ public class Purchase extends BaseEntity {
 	private String isGift;
 	private String giftMessage;
 	private String purchaseType;
+	
+	//환불 처리
+	public void refundedPurchase() {
+		this.paymentStatus = PaymentStatus.REFUNDED;
+		this.refundedAt = LocalDateTime.now();
+	}
 
 }

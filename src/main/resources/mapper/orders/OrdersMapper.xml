@@ -5,7 +5,7 @@
 <mapper
 	namespace="com.ucamp.coffee.domain.orders.mapper.OrdersMapper">
 
-	<!-- 상세 조회 Result Map -->
+	<!-- 상세 조회 -->
 	<resultMap id="OrderDetailResponseMap"
 		type="OrdersDetailResponseDTO">
 
@@ -41,7 +41,6 @@
 		</collection>
 	</resultMap>
 
-	<!-- 상세 조회 Query -->
 	<select id="selectOrderDetailResponse" parameterType="long"
 		resultMap="OrderDetailResponseMap">
 		SELECT
@@ -83,14 +82,36 @@
 	</select>
 
 	<!-- 유저의 오늘 날짜 주문 내역 조회 -->
-	<select id="selectTodayOrdersByMember" parameterType="long" resultType="OrdersTodayResponseDTO">
+	<resultMap type="OrdersTodayResponseDTO"
+		id="OrdersTodayResultMap">
+		<id property="orderId" column="ORDER_ID" />
+		<result property="createdAt" column="CREATED_AT" />
+		<result property="orderStatus" column="ORDER_STATUS" />
+		<result property="subscriptionType" column="SUBSCRIPTION_TYPE" />
+		<result property="subscriptionName" column="SUBSCRIPTION_NAME" />
+		<result property="storeName" column="STORE_NAME" />
+		<result property="storeImg" column="STORE_IMG" />
+		<collection property="menuList"
+			ofType="com.ucamp.coffee.domain.orders.dto.OrdersTodayResponseDTO$MenuDTO">
+			<id column="MENU_ID" />
+			<result property="menuName" column="MENU_NAME" />
+			<result property="quantity" column="QUANTITY" />
+		</collection>
+	</resultMap>
+
+	<select id="selectTodayOrdersByMember" parameterType="long"
+		resultMap="OrdersTodayResultMap">
 		SELECT
 		o.ORDER_ID,
 		o.CREATED_AT,
 		o.ORDER_STATUS,
 		s.SUBSCRIPTION_TYPE,
 		s.SUBSCRIPTION_NAME,
-		ps.STORE_NAME
+		ps.STORE_NAME,
+		ps.STORE_IMG,
+		m.MENU_ID,
+		m.MENU_NAME,
+		om.QUANTITY
 		FROM
 		ORDERS o
 		JOIN
@@ -106,9 +127,139 @@
 		JOIN SUBSCRIPTION s ON
 		s.SUBSCRIPTION_ID =
 		p.SUBSCRIPTION_ID
+		JOIN ORDER_MENU om ON
+		o.ORDER_ID =
+		om.ORDER_ID
+		JOIN menu
+		m ON
+		m.MENU_ID =
+		om.MENU_ID
 		WHERE
 		TRUNC(o.CREATED_AT) = TRUNC(SYSDATE)
 		AND
 		o.MEMBER_ID = #{memberId}
 	</select>
+
+	<!-- 점주의 오늘 주문 내역 + 상세 주문 내역 -->
+	<resultMap type="OrdersStoreResponseDTO"
+		id="OrderStoreResponseMap">
+
+		<id property="orderId" column="ORDER_ID" />
+		<result property="memberSubscriptionId"
+			column="MEMBER_SUBSCRIPTION_ID" />
+		<result property="orderType" column="ORDER_TYPE" />
+		<result property="orderStatus" column="ORDER_STATUS" />
+		<result property="rejectedReason" column="REJECTED_REASON" />
+		<result property="orderNumber" column="ORDER_NUMBER" />
+		<result property="createdAt" column="CREATED_AT" />
+		<result property="tel" column="TEL" />
+		<result property="name" column="NAME" />
+		<result property="dailyRemainCount" column="DAILY_REMAIN_COUNT" />
+
+		<collection property="menuList"
+			ofType="com.ucamp.coffee.domain.orders.dto.OrdersStoreResponseDTO$MenuDTO">
+			<id column="ORDER_MENU_ID" />
+			<result property="menuId" column="MENU_ID" />
+			<result property="quantity" column="QUANTITY" />
+			<result property="menuName" column="MENU_NAME" />
+		</collection>
+	</resultMap>
+
+	<select id="selectTodayStoreOrders"
+		resultMap="OrderStoreResponseMap" parameterType="long">
+		SELECT
+		o.ORDER_ID,
+		o.MEMBER_SUBSCRIPTION_ID ,
+		o.ORDER_TYPE ,
+		o.ORDER_STATUS ,
+		o.REJECTED_REASON ,
+		o.ORDER_NUMBER ,
+		o.CREATED_AT ,
+		om.ORDER_MENU_ID ,
+		om.MENU_ID ,
+		om.QUANTITY,
+		m.MENU_NAME,
+		m2.TEL ,
+		m2.NAME,
+		ms.DAILY_REMAIN_COUNT
+		FROM
+		ORDERS o
+		JOIN
+		ORDER_MENU om ON
+		om.ORDER_ID = o.ORDER_ID
+		JOIN MENU m ON
+		m.MENU_ID =
+		om.MENU_ID
+		JOIN MEMBER m2 ON m2.MEMBER_ID = o.MEMBER_ID
+		JOIN MEMBER_SUBSCRIPTION ms ON ms.member_subscription_id = o.MEMBER_SUBSCRIPTION_ID
+		WHERE
+		TRUNC(o.CREATED_AT) = TRUNC(sysdate)
+		AND o.PARTNER_STORE_ID =
+		#{partnerStoreId}
+	</select>
+
+	<!-- 점주의 과거 날짜별 or 전체 주문 내역 -->
+	<resultMap type="OrdersStorePastResponseDTO"
+		id="OrderStorePastResponseMap">
+		<id property="orderId" column="ORDER_ID" />
+		<result property="orderNumber" column="ORDER_NUMBER" />
+		<result property="orderStatus" column="ORDER_STATUS" />
+		<result property="createdAt" column="CREATED_AT" />
+		<result property="subscriptionName" column="SUBSCRIPTION_NAME" />
+		<result property="name" column="NAME" />
+		<result property="tel" column="TEL" />
+		<result property="memberSubscriptionId" column="MEMBER_SUBSCRIPTION_ID" />
+		<result property="orderType" column="ORDER_TYPE" />
+		<collection property="menuList"
+			ofType="com.ucamp.coffee.domain.orders.dto.OrdersStorePastResponseDTO$MenuDTO">
+			<id property="menuId" column="MENU_ID" />
+			<result property="menuName" column="MENU_NAME" />
+			<result property="quantity" column="QUANTITY" />
+		</collection>
+	</resultMap>
+
+	<select id="selectStoreOrdersByDate"
+		parameterType="OrdersStorePastRequestDTO"
+		resultMap="OrderStorePastResponseMap">
+
+		SELECT
+		o.ORDER_ID,
+		o.ORDER_NUMBER,
+		o.ORDER_STATUS,
+		o.CREATED_AT,
+		m.MENU_ID,
+		om.QUANTITY,
+		ms.MEMBER_SUBSCRIPTION_ID ,
+		o.ORDER_TYPE ,
+		m.MENU_NAME,
+		s.SUBSCRIPTION_NAME,
+		m2.NAME,
+		m2.TEL
+		FROM ORDERS o
+		JOIN
+		MEMBER_SUBSCRIPTION ms ON
+		o.MEMBER_SUBSCRIPTION_ID =
+		ms.MEMBER_SUBSCRIPTION_ID
+		JOIN PURCHASE p ON
+		p.PURCHASE_ID =
+		ms.PURCHASE_ID
+		JOIN MEMBER m2 ON m2.MEMBER_ID =
+		o.MEMBER_ID
+		JOIN
+		SUBSCRIPTION s ON s.SUBSCRIPTION_ID = p.SUBSCRIPTION_ID
+		JOIN ORDER_MENU
+		om ON om.ORDER_ID = o.ORDER_ID
+		JOIN MENU m ON om.MENU_ID
+		= m.MENU_ID
+		WHERE
+		o.PARTNER_STORE_ID = #{partnerStoreId}
+
+		<if test="searchDate != null and searchDate != ''">
+			AND TRUNC(o.CREATED_AT) = TO_DATE(#{searchDate},
+			'YYYY-MM-DD')
+		</if>
+
+		ORDER BY o.CREATED_AT DESC
+	</select>
+
 </mapper>
