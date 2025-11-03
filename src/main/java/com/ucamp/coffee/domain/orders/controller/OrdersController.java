@@ -22,6 +22,7 @@ import com.ucamp.coffee.domain.orders.dto.OrdersStorePastResponseDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStoreResponseDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersTodayResponseDTO;
 import com.ucamp.coffee.domain.orders.service.OrdersService;
+import com.ucamp.coffee.domain.subscription.service.MemberSubscriptionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 public class OrdersController {
 
 	private final OrdersService ordersService;
+	
+	private final MemberSubscriptionService mss;
 
 	// 주문 접수 (인증 구현 후 수정)
 	@PostMapping("api/me/orders/new")
@@ -111,5 +114,11 @@ public class OrdersController {
 		return ResponseMapper.successOf(response);
 	}
 
+	@GetMapping("/test/test/test")
+	public ResponseEntity<ApiResponse<?>> asdf(){
+		
+		mss.notificationBefore7Days();
+		return ResponseMapper.successOf(null);
+	}
 
 }

@@ -1,6 +1,10 @@
 package com.ucamp.coffee.domain.purchase.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.ucamp.coffee.domain.purchase.type.RefundReasonType;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,4 +24,9 @@ public class PurchaseAllResponseDTO {
 	private String isGift;
 	private String giftMessage;
 	private Integer paymentAmount;
+	private String usageStatus;
+	private LocalDateTime refundedAt;
+
+	private List<RefundReasonType> refundReasons = new ArrayList<>();
+
 }
