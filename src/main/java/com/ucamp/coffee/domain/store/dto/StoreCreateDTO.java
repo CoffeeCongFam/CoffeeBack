@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class StoreCreateDto {
+public class StoreCreateDTO {
     private String businessNumber;
     private String storeName;
     private String roadAddress;
