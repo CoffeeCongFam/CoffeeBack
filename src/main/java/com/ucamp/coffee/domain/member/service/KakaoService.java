@@ -31,6 +31,12 @@ public class KakaoService {
     @Value("${kakao.client-id}")
     private String clientId;
 
+    @Value("${host}")
+    private String host;
+
+    @Value(("${backend.port}"))
+    private String backendPort;
+
     @Value("${kakao.redirect-uri}")
     private String redirectUri;
 
@@ -40,7 +46,10 @@ public class KakaoService {
     @Value("${kakao.user-info-url}")
     private String userInfoUrl;
 
-    public String getKakaoAccessToken(String code) {
+    @Value("${kakao.client-secret}")
+    private String clientSecret;
+
+    public String getKakaoAccessToken(String code, String role) {
         // Access Token 요청
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -52,6 +61,7 @@ public class KakaoService {
         httpBodies.add("client_id", clientId);
         httpBodies.add("redirect_uri", redirectUri);
         httpBodies.add("code", code);
+        httpBodies.add("client_secret", clientSecret);
 
         // HttpHeader + HttpBody를 하나의 오브젝트에 담기
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(httpBodies, httpHeaders);
