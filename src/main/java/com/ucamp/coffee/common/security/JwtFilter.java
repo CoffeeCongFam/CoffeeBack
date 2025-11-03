@@ -24,6 +24,12 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/auth");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = null;
 
@@ -36,7 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
         // 쿠키 확인 (HttpOnly 쿠키)
         if (token == null && request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("ACCESS_JWT".equals(cookie.getName())) {
+                if ("accessToken".equals(cookie.getName())) {
                     token = cookie.getValue();
                     break;
                 }
