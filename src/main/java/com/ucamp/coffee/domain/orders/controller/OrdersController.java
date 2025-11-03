@@ -34,12 +34,10 @@ public class OrdersController {
 
 	private final OrdersService ordersService;
 	
-	private final MemberSubscriptionService mss;
 
 	// 주문 접수 (인증 구현 후 수정)
 	@PostMapping("api/me/orders/new")
 	public ResponseEntity<ApiResponse<?>> registerOrder(@AuthenticationPrincipal MemberDetails user, @RequestBody OrdersCreateDTO request) {
-
 		
 		Long memberId = user.getMemberId();
 		
@@ -59,9 +57,9 @@ public class OrdersController {
 
 	// 소비자 오늘(특정) 날짜 주문 조회 - 인증 구현 후 수정
 	@GetMapping("api/me/orders/today")
-	public ResponseEntity<ApiResponse<?>> searchTodayOrder() {
+	public ResponseEntity<ApiResponse<?>> searchTodayOrder(@AuthenticationPrincipal MemberDetails member) {
 
-		Long memberId = 1L; //-------------------로그인 구현 후 수정 예정
+		Long memberId = member.getMemberId();
 		
 		List<OrdersTodayResponseDTO> response = ordersService.selectTodayOrders(memberId);
 		return ResponseMapper.successOf(response);
@@ -115,13 +113,6 @@ public class OrdersController {
 		List<OrdersStorePastResponseDTO> response = ordersService.selectPastOrders(request);
 
 		return ResponseMapper.successOf(response);
-	}
-
-	@GetMapping("/test/test/test")
-	public ResponseEntity<ApiResponse<?>> asdf(){
-		
-		mss.notificationBefore7Days();
-		return ResponseMapper.successOf(null);
 	}
 
 }
