@@ -2,11 +2,13 @@ package com.ucamp.coffee.domain.review.controller;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
+import com.ucamp.coffee.common.security.MemberDetails;
 import com.ucamp.coffee.domain.review.dto.ReviewCreateDTO;
 import com.ucamp.coffee.domain.review.dto.ReviewUpdateDTO;
 import com.ucamp.coffee.domain.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,8 +18,11 @@ public class ReviewController {
     private final ReviewService service;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> createReviewInfo(@RequestBody ReviewCreateDTO dto) {
-        service.createReviewInfo(dto);
+    public ResponseEntity<ApiResponse<?>> createReviewInfo(
+        @AuthenticationPrincipal MemberDetails user,
+        @RequestBody ReviewCreateDTO dto
+    ) {
+        service.createReviewInfo(dto, user.getMemberId());
         return ResponseMapper.successOf(null);
     }
 
@@ -27,8 +32,8 @@ public class ReviewController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<?>> readMyReviews() {
-        return ResponseMapper.successOf(service.readMyReviews());
+    public ResponseEntity<ApiResponse<?>> readMyReviews(@AuthenticationPrincipal MemberDetails user) {
+        return ResponseMapper.successOf(service.readMyReviews(user.getMemberId()));
     }
 
     @PatchMapping("/{reviewId}")

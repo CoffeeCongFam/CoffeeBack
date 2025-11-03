@@ -29,6 +29,6 @@ public class CustomerSubscriptionController {
     public ResponseEntity<ApiResponse<?>> readMemberSubscriptionList(
         @AuthenticationPrincipal MemberDetails user
     ) {
-        return ResponseMapper.successOf(service.readMemberSubscriptionList(1L));
+        return ResponseMapper.successOf(service.readMemberSubscriptionList(user.getMemberId()));
     }
 }

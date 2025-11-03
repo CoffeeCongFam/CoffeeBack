@@ -1,7 +1,7 @@
 package com.ucamp.coffee.domain.store.service;
 
 import com.ucamp.coffee.domain.review.repository.ReviewRepository;
-import com.ucamp.coffee.domain.store.dto.CustomerStoreNearByResponseDTO;
+import com.ucamp.coffee.domain.store.dto.CustomerStoreListResponseDTO;
 import com.ucamp.coffee.domain.store.dto.CustomerStoreResponseDTO;
 import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
 import com.ucamp.coffee.domain.store.entity.Store;
@@ -36,6 +36,22 @@ public class CustomerStoreService {
     private final ReviewRepository reviewRepository;
     private final StoreHoursRepository storeHoursRepository;
 
+    public List<CustomerStoreListResponseDTO> readStoreList() {
+        List<Store> stores = repository.findAll();
+        List<Long> storeIds = stores.stream().map(Store::getPartnerStoreId).toList();
+
+        Map<Long, Integer> subscriberCounts = getSubscriberCounts(storeIds);
+        Map<Long, Integer> subscriptionStocks = getSubscriptionStocks(storeIds);
+        Map<Long, Long> reviewCounts = getReviewCounts(storeIds);
+        Map<Long, Double> averageRatings = getAverageRatings(storeIds);
+        Map<Long, String> storeStatusMap = getStoreStatusMap(storeIds);
+
+        return stores.stream()
+            .map(store -> mapToStoreListDTO(store, subscriberCounts, subscriptionStocks,
+                reviewCounts, averageRatings, storeStatusMap, null))
+            .toList();
+    }
+
     public CustomerStoreResponseDTO readStoreInfo(Long partnerStoreId) {
         Store store = helperService.findById(partnerStoreId);
 
@@ -48,51 +64,72 @@ public class CustomerStoreService {
         return StoreMapper.toCustomerStoreDto(results, store, menus, subscriptions);
     }
 
-    public List<CustomerStoreNearByResponseDTO> readNearbyStores(Double xPoint, Double yPoint, Double radius) {
+    public List<CustomerStoreListResponseDTO> readNearbyStores(Double xPoint, Double yPoint, Double radius, Long memberId) {
         List<Store> nearbyStores = repository.findStoresWithinRadius(xPoint, yPoint, radius);
+        List<Long> storeIds = nearbyStores.stream().map(Store::getPartnerStoreId).toList();
 
-        List<Long> storeIds = nearbyStores.stream()
-            .map(Store::getPartnerStoreId)
-            .toList();
+        Map<Long, Integer> subscriberCounts = getSubscriberCounts(storeIds);
+        Map<Long, Integer> subscriptionStocks = getSubscriptionStocks(storeIds);
+        Map<Long, Long> reviewCounts = getReviewCounts(storeIds);
+        Map<Long, Double> averageRatings = getAverageRatings(storeIds);
+        Map<Long, String> storeStatusMap = getStoreStatusMap(storeIds);
 
-        List<Object[]> result = memberSubscriptionRepository.countSubscribersByStoreIds(storeIds);
-        Map<Long, Integer> subscriberCounts = result.stream()
-            .collect(Collectors.toMap(
-                row -> (Long) row[0],
-                row -> ((Long) row[1]).intValue()
-            ));
-        List<Object[]> stockResult = memberSubscriptionRepository.getRemainingStockByStoreIds(storeIds);
-        Map<Long, Integer> subscriptionStocks = stockResult.stream()
-            .collect(Collectors.toMap(
-                row -> (Long) row[0],
-                row -> ((Long) row[1]).intValue()
-            ));
-
-        List<Object[]> isSubResult = memberSubscriptionRepository.isSubscribedByMemberAndStoreIds(storeIds, 1L);
-        Map<Long, Boolean> isSubscribedMap = isSubResult.stream()
+        Map<Long, Boolean> isSubscribedMap = memberSubscriptionRepository.isSubscribedByMemberAndStoreIds(storeIds, memberId)
+            .stream()
             .collect(Collectors.toMap(
                 row -> (Long) row[0],
                 row -> (Boolean) row[1]
             ));
 
-        List<Object[]> countResult = reviewRepository.countByStoreIds(storeIds);
-        Map<Long, Long> reviewCounts = countResult.stream()
+        return nearbyStores.stream()
+            .map(store -> mapToStoreListDTO(store, subscriberCounts, subscriptionStocks,
+                reviewCounts, averageRatings, storeStatusMap, isSubscribedMap))
+            .toList();
+    }
+
+    private Map<Long, Integer> getSubscriberCounts(List<Long> storeIds) {
+        return memberSubscriptionRepository.countSubscribersByStoreIds(storeIds)
+            .stream()
+            .collect(Collectors.toMap(
+                row -> (Long) row[0],
+                row -> ((Long) row[1]).intValue()
+            ));
+    }
+
+    private Map<Long, Integer> getSubscriptionStocks(List<Long> storeIds) {
+        return memberSubscriptionRepository.getRemainingStockByStoreIds(storeIds)
+            .stream()
+            .collect(Collectors.toMap(
+                row -> (Long) row[0],
+                row -> ((Long) row[1]).intValue()
+            ));
+    }
+
+    private Map<Long, Long> getReviewCounts(List<Long> storeIds) {
+        return reviewRepository.countByStoreIds(storeIds)
+            .stream()
             .collect(Collectors.toMap(
                 row -> (Long) row[0],
                 row -> (Long) row[1]
             ));
+    }
 
-        List<Object[]> avgResult = reviewRepository.averageRatingByStoreIds(storeIds);
-        Map<Long, Double> averageRatings = avgResult.stream()
+    private Map<Long, Double> getAverageRatings(List<Long> storeIds) {
+        return reviewRepository.averageRatingByStoreIds(storeIds)
+            .stream()
             .collect(Collectors.toMap(
                 row -> (Long) row[0],
                 row -> (Double) row[1]
             ));
+    }
 
+    private Map<Long, String> getStoreStatusMap(List<Long> storeIds) {
         DayOfWeek today = LocalDate.now().getDayOfWeek();
-        List<StoreHours> todayHours = storeHoursRepository.findByStore_PartnerStoreIdInAndDayOfWeek(storeIds, DayOfWeekType.valueOf(today.name().substring(0, 3)));
+        List<StoreHours> todayHours = storeHoursRepository.findByStore_PartnerStoreIdInAndDayOfWeek(storeIds,
+            DayOfWeekType.valueOf(today.name().substring(0, 3))
+        );
 
-        Map<Long, String> storeStatusMap = todayHours.stream()
+        return todayHours.stream()
             .collect(Collectors.toMap(
                 sh -> sh.getStore().getPartnerStoreId(),
                 sh -> {
@@ -103,24 +140,31 @@ public class CustomerStoreService {
                     return (now.isAfter(open) && now.isBefore(close)) ? "OPEN" : "CLOSED";
                 }
             ));
-
-        return nearbyStores.stream()
-            .map(store -> CustomerStoreNearByResponseDTO.builder()
-                .storeId(store.getPartnerStoreId())
-                .storeName(store.getStoreName())
-                .storeStatus(storeStatusMap.getOrDefault(store.getPartnerStoreId(), "CLOSED"))
-                .storeImage(store.getStoreImg())
-                .roadAddress(store.getRoadAddress())
-                .detailAddress(store.getDetailAddress())
-                .xPoint(store.getXPoint())
-                .yPoint(store.getYPoint())
-                .subscriptionStock(subscriptionStocks.getOrDefault(store.getPartnerStoreId(), 0))
-                .subscriberCount(subscriberCounts.getOrDefault(store.getPartnerStoreId(), 0))
-                .isSubscribed(isSubscribedMap.getOrDefault(store.getPartnerStoreId(), false))
-                .reviewCount(reviewCounts.getOrDefault(store.getPartnerStoreId(), 0L).intValue())
-                .averageRating(averageRatings.getOrDefault(store.getPartnerStoreId(), 0.0))
-                .build())
-            .toList();
     }
 
+    private CustomerStoreListResponseDTO mapToStoreListDTO(
+        Store store,
+        Map<Long, Integer> subscriberCounts,
+        Map<Long, Integer> subscriptionStocks,
+        Map<Long, Long> reviewCounts,
+        Map<Long, Double> averageRatings,
+        Map<Long, String> storeStatusMap,
+        Map<Long, Boolean> isSubscribedMap
+    ) {
+        return CustomerStoreListResponseDTO.builder()
+            .storeId(store.getPartnerStoreId())
+            .storeName(store.getStoreName())
+            .storeStatus(storeStatusMap.getOrDefault(store.getPartnerStoreId(), "CLOSED"))
+            .storeImage(store.getStoreImg())
+            .roadAddress(store.getRoadAddress())
+            .detailAddress(store.getDetailAddress())
+            .xPoint(store.getXPoint())
+            .yPoint(store.getYPoint())
+            .subscriptionStock(subscriptionStocks.getOrDefault(store.getPartnerStoreId(), 0))
+            .subscriberCount(subscriberCounts.getOrDefault(store.getPartnerStoreId(), 0))
+            .reviewCount(reviewCounts.getOrDefault(store.getPartnerStoreId(), 0L).intValue())
+            .averageRating(averageRatings.getOrDefault(store.getPartnerStoreId(), 0.0))
+            .isSubscribed(isSubscribedMap == null ? null : isSubscribedMap.getOrDefault(store.getPartnerStoreId(), false))
+            .build();
+    }
 }

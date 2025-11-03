@@ -63,7 +63,7 @@ public class CustomerSubscriptionService {
     }
 
     public List<CustomerMemberSubscriptionResponseDTO> readMemberSubscriptionList(Long memberId) {
-        Member member = memberRepository.findById(2L)
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
         List<MemberSubscription> subscriptions =
