@@ -1,5 +1,6 @@
 package com.ucamp.coffee.domain.store.service;
 
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -23,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class StoreService {
-//    private final KakaoService kakaoService;
     private final StoreRepository repository;
     private final MemberRepository memberRepository;
 
