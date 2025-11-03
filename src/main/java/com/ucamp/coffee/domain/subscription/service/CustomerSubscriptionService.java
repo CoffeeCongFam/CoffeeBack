@@ -21,6 +21,7 @@ import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionUsageHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -70,10 +71,26 @@ public class CustomerSubscriptionService {
             .collect(Collectors.toList());
     }
 
+    // 매장 id 기반으로 매장 상세 정보 조회
+    public List<CustomerSubscriptionResponseDTO> readSubscriptionListByStore(Store store) {
+        return repository.findByStore(store)
+                .stream()
+                .map(subscription -> {
+                    CustomerStoreSimpleDTO storeDto = CustomerStoreSimpleDTO.builder()
+                            .partnerStoreId(subscription.getStore().getPartnerStoreId())
+                            .storeName(subscription.getStore().getStoreName())
+                            .storeImg(subscription.getStore().getStoreImg())
+                            .build();
+
+                    return SubscriptionMapper.toCustomerResponseDto(subscription, storeDto);
+                })
+                .toList();
+    }
+
     public List<CustomerMemberSubscriptionResponseDTO> readMemberSubscriptionList() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             throw new CommonException(ApiStatus.UNAUTHORIZED);
         }
 

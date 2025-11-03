@@ -41,7 +41,11 @@ public class CustomerStoreService {
 
         List<StoreHours> results = repository.findStoreDetails(partnerStoreId);
         List<MenuResponseDTO> menus = menuService.readMenuListByStore(partnerStoreId);
-        List<CustomerSubscriptionResponseDTO> subscriptions = customerSubscriptionService.readSubscriptionList();
+
+        // 회원이 보유한 구독권 기준으로 구독 리스트 조회되어 있음.
+//        List<CustomerSubscriptionResponseDTO> subscriptions = customerSubscriptionService.readSubscriptionList();
+        List<CustomerSubscriptionResponseDTO> subscriptions =
+                customerSubscriptionService.readSubscriptionListByStore(store); // 매장 기준으로 구독 리스트 조회
 
         if (results.isEmpty()) return null;
 

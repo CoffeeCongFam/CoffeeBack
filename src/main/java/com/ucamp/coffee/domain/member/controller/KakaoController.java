@@ -2,6 +2,7 @@ package com.ucamp.coffee.domain.member.controller;
 
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/auth/kakao")
 @RequiredArgsConstructor
+@Slf4j
 public class KakaoController {
     private final KakaoService kakaoService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -32,7 +34,7 @@ public class KakaoController {
     		@RequestParam(required = false) String state,
     						HttpServletRequest request,
                              HttpServletResponse response) {
-    	
+        log.info("kakao login 요청 들어옴");
     	String redirectUrl = "http://localhost:5173/";
     	
         try {

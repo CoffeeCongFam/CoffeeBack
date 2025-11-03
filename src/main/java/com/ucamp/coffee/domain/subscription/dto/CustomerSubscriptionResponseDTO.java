@@ -1,7 +1,10 @@
 package com.ucamp.coffee.domain.subscription.dto;
 
 import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDTO;
+import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,4 +27,6 @@ public class CustomerSubscriptionResponseDTO {
     private Integer maxDailyUsage;
     private Integer remainSalesQuantity;
     private String subscriptionStatus;
+    //
+    private List<MenuResponseDTO> subscriptionMenus;
 }
