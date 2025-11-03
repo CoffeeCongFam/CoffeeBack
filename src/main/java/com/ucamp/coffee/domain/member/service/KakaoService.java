@@ -2,6 +2,7 @@ package com.ucamp.coffee.domain.member.service;
 
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import com.ucamp.coffee.domain.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KakaoService {
@@ -29,14 +31,8 @@ public class KakaoService {
     @Value("${kakao.client-id}")
     private String clientId;
 
-    @Value("${host}")
-    private String host;
-
-    @Value(("${backend.port}"))
-    private String backendPort;
-
-    @Value("${kakao.redirect-endpoint}")
-    private String redirectEndpoint;
+    @Value("${kakao.redirect-uri}")
+    private String redirectUri;
 
     @Value("${kakao.token-url}")
     private String tokenUrl;
@@ -44,10 +40,7 @@ public class KakaoService {
     @Value("${kakao.user-info-url}")
     private String userInfoUrl;
 
-    @Value("${kakao.client-secret}")
-    private String clientSecret;
-
-    public String getKakaoAccessToken(String code, String role) {
+    public String getKakaoAccessToken(String code) {
         // Access Token 요청
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -57,11 +50,8 @@ public class KakaoService {
         MultiValueMap<String, String> httpBodies = new LinkedMultiValueMap<>();
         httpBodies.add("grant_type", "authorization_code");
         httpBodies.add("client_id", clientId);
-        httpBodies.add("redirect_uri", (role != null && !role.isEmpty())
-            ? host + ":" + backendPort + redirectEndpoint + "?role=" + role
-            : host + ":" + backendPort + redirectEndpoint);
+        httpBodies.add("redirect_uri", redirectUri);
         httpBodies.add("code", code);
-        httpBodies.add("client_secret", clientSecret);
 
         // HttpHeader + HttpBody를 하나의 오브젝트에 담기
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(httpBodies, httpHeaders);
@@ -118,7 +108,7 @@ public class KakaoService {
     }
 
     // 이메일로 회원 조회
-	public Optional<Member> findByEmail(String email) {
-		return memberRepository.findByEmail(email);
-	}
+    public Optional<Member> findByEmail(String email) {
+        return memberRepository.findByEmail(email);
+    }
 }

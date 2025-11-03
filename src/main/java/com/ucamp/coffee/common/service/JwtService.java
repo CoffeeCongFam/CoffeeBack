@@ -15,6 +15,6 @@ public class JwtService {
         }
 
         Long memberId = Long.parseLong(jwtTokenProvider.getClaims(refreshToken).getSubject());
-        return jwtTokenProvider.generateAccessToken(memberId);
+        return jwtTokenProvider.generateToken(memberId);
     }
 }

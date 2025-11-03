@@ -6,8 +6,8 @@ import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.subscription.dto.CustomerMemberSubscriptionResponseDTO;
 import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDTO;
-import com.ucamp.coffee.domain.subscription.dto.SubscriptionCreateDTO;
 import com.ucamp.coffee.domain.subscription.dto.OwnerSubscriptionResponseDTO;
+import com.ucamp.coffee.domain.subscription.dto.SubscriptionCreateDTO;
 import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import com.ucamp.coffee.domain.subscription.entity.SubscriptionUsageHistory;
@@ -92,7 +92,7 @@ public class SubscriptionMapper {
             .remainingCount(memberSubscription.getDailyRemainCount())
             .price(subscription.getPrice())
             .receiver(memberSubscription.getMember().getName())
-            .sender(memberSubscription.getPurchase().getMember().getName())
+            .sender(memberSubscription.getPurchase().getBuyer().getName())
             .subscriptionType(subscription.getSubscriptionType().name())
             .menu(menus.stream().map(Menu::getMenuName).toList())
             .usedAt(subscriptionUsageHistories.stream().map(SubscriptionUsageHistory::getCreatedAt).map(DateTimeUtil::toUtcDateTime).sorted().toList())

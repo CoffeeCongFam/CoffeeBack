@@ -41,7 +41,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                .requestMatchers("/signup/**", "/kakao/**", "/login/**").permitAll()
+                .requestMatchers("/signup/**", "/auth/kakao/**", "/login/**").permitAll()
                  .requestMatchers("/api/**").permitAll() // 개발용
 //                .requestMatchers("/api/**").authenticated() // 배포용
                 .anyRequest().authenticated()

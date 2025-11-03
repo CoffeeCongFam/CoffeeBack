@@ -2,8 +2,8 @@ package com.ucamp.coffee.domain.member.controller;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,8 +29,12 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class MemberController {
+    @Value("${host}")
+    private String host;
+
+    @Value(("${frontend.port}"))
+    private String frontendPort;
 
 	private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
@@ -75,7 +79,7 @@ public class MemberController {
         // 성공 시
         return ResponseMapper.successOf(Map.of(
         		"message", "성공",
-        		"redirectUrl", "http://localhost:5173/me"));
+        		"redirectUrl", host + ":" + frontendPort + "/me"));
     }
     
     // 점주 회원가입
@@ -110,7 +114,7 @@ public class MemberController {
         // 성공 시
         return ResponseMapper.successOf(Map.of(
         		"message", "성공",
-        		"redirectUrl", "http://localhost:5173/store"));
+        		"redirectUrl", host + ":" + frontendPort + "/store"));
     }
     
 }

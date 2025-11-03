@@ -1,31 +1,22 @@
 package com.ucamp.coffee.domain.member.controller;
 
-import com.ucamp.coffee.common.exception.CommonException;
-import com.ucamp.coffee.common.response.ApiStatus;
-import java.util.Optional;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.ucamp.coffee.common.security.JwtTokenProvider;
 import com.ucamp.coffee.domain.member.dto.KakaoUserDto;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.KakaoService;
 import com.ucamp.coffee.domain.member.type.MemberType;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -38,11 +29,11 @@ public class KakaoController {
     // 카카오톡 간편 로그인
     @GetMapping("/callback")
     public void kakaoLogin(@RequestParam String code,
-    		@RequestParam(required = false) String state,
-    						HttpServletRequest request,
-                             HttpServletResponse response) {
+                           @RequestParam(required = false) String state,
+                           HttpServletRequest request,
+                           HttpServletResponse response) {
 
-    	String redirectUrl = "http://localhost:5173/";
+        String redirectUrl = "http://localhost:5173/";
 
         try {
             // 카카오 토큰 발급
@@ -58,20 +49,20 @@ public class KakaoController {
 
             // 회원이 아니면, 시 JWT 발급(회원가입을 위한 임시토큰) 후 추가정보 화면으로 리다이렉트
             if(memberOptional.isEmpty()) {
-            	
-            	// TODO
-            	String tempJwt = jwtTokenProvider.generateTempToken(email);
-            	
-            	String baseUrl = "http://localhost:5173/";
-            	String page = "member".equals(state) ? "MemberSignup" : "CustomerSignUp";
 
-            	redirectUrl = baseUrl + page + "?token=" + tempJwt;
+                // TODO
+                String tempJwt = jwtTokenProvider.generateTempToken(email);
+
+                String baseUrl = "http://localhost:5173/";
+                String page = "member".equals(state) ? "MemberSignup" : "CustomerSignUp";
+
+                redirectUrl = baseUrl + page + "?token=" + tempJwt;
             }
             else {
-            	// 회원이면 로그인 성공 -> 서비스 JWT 발급
-            	Member member = memberOptional.get();
+                // 회원이면 로그인 성공 -> 서비스 JWT 발급
+                Member member = memberOptional.get();
                 String jwt = jwtTokenProvider.generateToken(member.getMemberId());
-            
+
                 // JWT를 쿠키로 전달(보안성)
                 Cookie cookie = new Cookie("accessToken", jwt);
                 cookie.setHttpOnly(true);
@@ -86,19 +77,18 @@ public class KakaoController {
 
                 // 일반회원 / 점주 홈으로 리다이렉트
                 String baseUrl = "http://localhost:5173/";
-            	String page = MemberType.GENERAL.equals(member.getMemberType()) ? "me" : "store";
+                String page = MemberType.GENERAL.equals(member.getMemberType()) ? "me" : "store";
                 redirectUrl = baseUrl + page;
             }
 
         } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new CommonException(ApiStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
         }
 
         try {
-        	response.sendRedirect(redirectUrl);
-		} catch (Exception e) {
-			System.err.println("리다이렉트 처리 중 오류 발생: " + e.getMessage());
-		}
+            response.sendRedirect(redirectUrl);
+        } catch (Exception e) {
+            System.err.println("리다이렉트 처리 중 오류 발생: " + e.getMessage());
+        }
     }
 }
