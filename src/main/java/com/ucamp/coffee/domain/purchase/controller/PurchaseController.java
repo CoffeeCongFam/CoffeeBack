@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
+import com.ucamp.coffee.common.security.MemberDetails;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseAllGiftDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseAllResponseDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseCreateDTO;
@@ -31,9 +33,10 @@ public class PurchaseController {
 
 	// 구매 생성 및 선물
 	@PostMapping("/api/me/purchase/new")
-	public ResponseEntity<ApiResponse<?>> createPurchase(@RequestBody PurchaseCreateDTO request) {
+	public ResponseEntity<ApiResponse<?>> createPurchase(@RequestBody PurchaseCreateDTO request,
+			@AuthenticationPrincipal MemberDetails member) {
 
-		Long memberId = 2L; // -----------------------------로그인 추후 수정
+		Long memberId = member.getMemberId();
 		Long purchaseId = purchaseService.insertPurchase(memberId, request);
 
 		return ResponseMapper.successOf(Map.of("purchaseId", purchaseId));
@@ -41,9 +44,10 @@ public class PurchaseController {
 
 	// 소비자 구매 내역 조회(전체, 선물, 직접구매)
 	@GetMapping("/api/me/purchase")
-	public ResponseEntity<ApiResponse<?>> searchAllPurchase(@RequestParam(required = false) String type) {
+	public ResponseEntity<ApiResponse<?>> searchAllPurchase(@RequestParam(required = false) String type,
+			@AuthenticationPrincipal MemberDetails member) {
 
-		Long memberId = 1L; // -----------------------------로그인 추후 수정
+		Long memberId = member.getMemberId();
 
 		List<PurchaseAllResponseDTO> response = purchaseService.selectAllPurchase(memberId, type);
 		return ResponseMapper.successOf(response);
@@ -60,9 +64,9 @@ public class PurchaseController {
 
 	// 선물 전체 목록 조회
 	@GetMapping("/api/me/purchase/gift")
-	public ResponseEntity<ApiResponse<?>> searchAllGift() {
+	public ResponseEntity<ApiResponse<?>> searchAllGift(@AuthenticationPrincipal MemberDetails member) {
 
-		Long memberId = 1L; // -----------------------------로그인 추후 수정
+		Long memberId = member.getMemberId();
 
 		List<PurchaseAllGiftDTO> response = purchaseService.selectAllGift(memberId);
 
@@ -71,9 +75,10 @@ public class PurchaseController {
 
 	// 보낸 선물 전체 조회
 	@GetMapping("/api/me/purchase/gift/send")
-	public ResponseEntity<ApiResponse<?>> searchSendGift(@RequestParam(required = false) String purchaseId) {
+	public ResponseEntity<ApiResponse<?>> searchSendGift(@RequestParam(required = false) String purchaseId,
+			@AuthenticationPrincipal MemberDetails member) {
 
-		Long memberId = 1L; // -----------------------------로그인 추후 수정
+		Long memberId = member.getMemberId();
 
 		Object response;
 
@@ -92,9 +97,9 @@ public class PurchaseController {
 	// 받은 선물 전체 조회
 	@GetMapping("/api/me/purchase/gift/receive")
 	public ResponseEntity<ApiResponse<?>> searchReceiveGift(
-			@RequestParam(required = false) String memberSubscriptionId) {
+			@RequestParam(required = false) String memberSubscriptionId, @AuthenticationPrincipal MemberDetails member) {
 
-		Long memberId = 1L; // -----------------------------로그인 추후 수정
+		Long memberId = member.getMemberId();
 
 		Object response;
 		if (memberSubscriptionId != null) {

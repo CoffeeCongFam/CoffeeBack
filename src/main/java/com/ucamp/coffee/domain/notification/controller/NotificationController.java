@@ -3,6 +3,7 @@ package com.ucamp.coffee.domain.notification.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
+import com.ucamp.coffee.common.security.MemberDetails;
 import com.ucamp.coffee.domain.notification.dto.NotificationResponseDTO;
 import com.ucamp.coffee.domain.notification.service.NotificationService;
 
@@ -24,9 +26,9 @@ public class NotificationController {
 
 	// 알림 모두 조회(날짜순) - 삭제 안된 알림만
 	@GetMapping("/api/common/notification")
-	public ResponseEntity<ApiResponse<?>> searchAllNotification() {
+	public ResponseEntity<ApiResponse<?>> searchAllNotification(@AuthenticationPrincipal MemberDetails member) {
 
-		Long memberId = 1L; // -----------------------추후 수정
+		Long memberId = member.getMemberId();
 		List<NotificationResponseDTO> response = notificationService.selectAllNotification(memberId);
 
 		return ResponseMapper.successOf(response);
