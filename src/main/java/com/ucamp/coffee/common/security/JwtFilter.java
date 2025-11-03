@@ -1,6 +1,5 @@
 package com.ucamp.coffee.common.security;
 
-
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,52 +16,69 @@ import java.util.Collections;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-    private final JwtTokenProvider jwtTokenProvider;
+	private final JwtTokenProvider jwtTokenProvider;
 
-    public JwtFilter(JwtTokenProvider jwtTokenProvider) {
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
+	public JwtFilter(JwtTokenProvider jwtTokenProvider) {
+		this.jwtTokenProvider = jwtTokenProvider;
+	}
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        return path.startsWith("/auth");
-    }
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+		String path = request.getRequestURI();
+		return path.startsWith("/auth");
+	}
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = null;
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+		String token = null;
 
-        // Authorization 헤더 확인
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            token = authorizationHeader.substring(7);
-        }
+		// Authorization 헤더 확인
+		String authorizationHeader = request.getHeader("Authorization");
+		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+			token = authorizationHeader.substring(7);
+		}
 
-        // 쿠키 확인 (HttpOnly 쿠키)
-        if (token == null && request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("accessToken".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
-        }
+		// 쿠키 확인 (HttpOnly 쿠키)
+		if (token == null && request.getCookies() != null) {
+			for (Cookie cookie : request.getCookies()) {
+				if ("accessToken".equals(cookie.getName())) {
+					token = cookie.getValue();
+					break;
+				}
+			}
+		}
 
-        // 토큰 검증
-        if (token != null) {
-            try {
-                Claims claims = jwtTokenProvider.getClaims(token);
-                Long memberId = Long.parseLong(claims.getSubject());
+		// 토큰 검증
+//        if (token != null) {
+//            try {
+//                Claims claims = jwtTokenProvider.getClaims(token);
+//                Long memberId = Long.parseLong(claims.getSubject());
+//
+//                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(memberId, null, Collections.emptyList());
+//                SecurityContextHolder.getContext().setAuthentication(auth);
+//            } catch (Exception e) {
+//                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//                return;
+//            }
+//        }
+		if (token != null) {
+			try {
+				Claims claims = jwtTokenProvider.getClaims(token);
+				Long memberId = Long.parseLong(claims.getSubject());
 
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(memberId, null, Collections.emptyList());
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
-        }
+				MemberDetails userDetails = new MemberDetails(memberId);
 
-        filterChain.doFilter(request, response);
-    }
+				UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null,
+						userDetails.getAuthorities());
+				SecurityContextHolder.getContext().setAuthentication(auth);
+
+			} catch (Exception e) {
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				return;
+			}
+		}
+
+		filterChain.doFilter(request, response);
+	}
 }

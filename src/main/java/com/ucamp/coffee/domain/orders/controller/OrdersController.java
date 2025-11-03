@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
+import com.ucamp.coffee.common.security.MemberDetails;
 import com.ucamp.coffee.domain.orders.dto.OrderStatusRequestDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersDetailResponseDTO;
@@ -36,9 +38,10 @@ public class OrdersController {
 
 	// 주문 접수 (인증 구현 후 수정)
 	@PostMapping("api/me/orders/new")
-	public ResponseEntity<ApiResponse<?>> registerOrder(@RequestBody OrdersCreateDTO request) {
+	public ResponseEntity<ApiResponse<?>> registerOrder(@AuthenticationPrincipal MemberDetails user, @RequestBody OrdersCreateDTO request) {
 
-		Long memberId = 1L; //-------------------로그인 구현 후 수정 예정
+		
+		Long memberId = user.getMemberId();
 		
 		Long orderId = ordersService.createOrder(memberId, request);
 
