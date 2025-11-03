@@ -41,7 +41,7 @@ public class CustomerStoreService {
 
         List<StoreHours> results = repository.findStoreDetails(partnerStoreId);
         List<MenuResponseDTO> menus = menuService.readMenuListByStore(partnerStoreId);
-        List<CustomerSubscriptionResponseDTO> subscriptions = customerSubscriptionService.readSubscriptionList();
+        List<CustomerSubscriptionResponseDTO> subscriptions = customerSubscriptionService.readSubscriptionList(store.getMember().getMemberId());
 
         if (results.isEmpty()) return null;
 

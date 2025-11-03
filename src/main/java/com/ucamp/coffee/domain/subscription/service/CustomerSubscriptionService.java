@@ -1,9 +1,10 @@
 package com.ucamp.coffee.domain.subscription.service;
 
-import com.ucamp.coffee.common.exception.CommonException;
-import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import com.ucamp.coffee.domain.purchase.entity.Purchase;
+import com.ucamp.coffee.domain.purchase.type.PaymentStatus;
+import com.ucamp.coffee.domain.purchase.type.RefundReasonType;
 import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDTO;
 import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
@@ -19,16 +20,14 @@ import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionReposit
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionMenuRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionUsageHistoryRepository;
+import com.ucamp.coffee.domain.subscription.type.UsageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -43,14 +42,7 @@ public class CustomerSubscriptionService {
     private final SubscriptionMenuRepository subscriptionMenuRepository;
     private final SubscriptionUsageHistoryRepository subscriptionUsageHistoryRepository;
 
-    public List<CustomerSubscriptionResponseDTO> readSubscriptionList() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+    public List<CustomerSubscriptionResponseDTO> readSubscriptionList(Long memberId) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
@@ -70,15 +62,8 @@ public class CustomerSubscriptionService {
             .collect(Collectors.toList());
     }
 
-    public List<CustomerMemberSubscriptionResponseDTO> readMemberSubscriptionList() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
-        Member member = memberRepository.findById(memberId)
+    public List<CustomerMemberSubscriptionResponseDTO> readMemberSubscriptionList(Long memberId) {
+        Member member = memberRepository.findById(2L)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
         List<MemberSubscription> subscriptions =
@@ -112,8 +97,39 @@ public class CustomerSubscriptionService {
                 Subscription subscription = sub.getPurchase().getSubscription();
                 List<Menu> menus = menusMap.getOrDefault(subscription.getSubscriptionId(), Collections.emptyList());
                 List<SubscriptionUsageHistory> histories = usageMap.getOrDefault(sub.getMemberSubscriptionId(), Collections.emptyList());
-                return SubscriptionMapper.toCustomerMemberResponseDto(sub, menus, histories);
+
+                CustomerMemberSubscriptionResponseDTO dto = SubscriptionMapper.toCustomerMemberResponseDto(sub, menus, histories);
+
+                dto.setRefundReasons(
+                    Optional.ofNullable(getRefundReasons(sub))
+                        .map(list ->
+                            list.stream()
+                            .map(Enum::name)
+                            .toList())
+                        .orElse(null)
+                );
+
+                return dto;
             })
             .toList();
+    }
+
+    private List<RefundReasonType> getRefundReasons(MemberSubscription memberSubscription) {
+        List<RefundReasonType> reasons = new ArrayList<>();
+        Purchase purchase = memberSubscription.getPurchase();
+
+        if (purchase.getPaymentStatus() == PaymentStatus.REFUNDED) {
+            reasons.add(RefundReasonType.ALREADY_REFUNDED);
+        }
+
+        if (purchase.getCreatedAt() != null && LocalDateTime.now().isAfter(purchase.getCreatedAt().plusDays(7))) {
+            reasons.add(RefundReasonType.OVER_PERIOD);
+        }
+
+        if (memberSubscription.getUsageStatus() != UsageStatus.NOT_ACTIVATED) {
+            reasons.add(RefundReasonType.USED_ALREADY);
+        }
+
+        return reasons.isEmpty() ? null : reasons;
     }
 }
