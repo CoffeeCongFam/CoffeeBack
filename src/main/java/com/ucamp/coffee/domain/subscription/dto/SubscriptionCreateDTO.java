@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @ToString
-public class SubscriptionCreateDto {
+public class SubscriptionCreateDTO {
     private Long partnerStoreId;
     private String subscriptionName;
     private Long price;

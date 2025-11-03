@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @ToString
-public class OwnerStoreResponseDto {
+public class OwnerStoreResponseDTO {
     private Long partnerStoreId;
     private String storeName;
     private String storeTel;
@@ -19,5 +19,5 @@ public class OwnerStoreResponseDto {
     private String detailAddress;
     private String businessNumber;
     private String detailInfo;
-    private List<StoreHoursResponseDto> storeHours;
+    private List<StoreHoursResponseDTO> storeHours;
 }

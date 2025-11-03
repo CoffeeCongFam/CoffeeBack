@@ -1,15 +1,19 @@
 package com.ucamp.coffee.domain.store.service;
 
+import com.ucamp.coffee.common.exception.CommonException;
+import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
-import com.ucamp.coffee.domain.member.repository.MemberRepository;
-import com.ucamp.coffee.domain.store.dto.OwnerStoreResponseDto;
-import com.ucamp.coffee.domain.store.dto.StoreCreateDto;
-import com.ucamp.coffee.domain.store.dto.StoreUpdateDto;
+import com.ucamp.coffee.domain.member.service.MemberHelperService;
+import com.ucamp.coffee.domain.store.dto.OwnerStoreResponseDTO;
+import com.ucamp.coffee.domain.store.dto.StoreCreateDTO;
+import com.ucamp.coffee.domain.store.dto.StoreUpdateDTO;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.entity.StoreHours;
 import com.ucamp.coffee.domain.store.mapper.StoreMapper;
 import com.ucamp.coffee.domain.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,20 +24,32 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OwnerStoreService {
     private final StoreRepository repository;
-    private final MemberRepository memberRepository;
+    private final MemberHelperService memberHelperService;
 
     @Transactional
-    public void createStoreInfo(StoreCreateDto dto) {
-        String email = "user1@example.com";
-        Member member = memberRepository.findByEmail(email)
+    public void createStoreInfo(StoreCreateDTO dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CommonException(ApiStatus.UNAUTHORIZED);
+        }
+
+        Long memberId = Long.parseLong(authentication.getName());
+        Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
         repository.save(StoreMapper.toEntity(dto, member));
     }
 
-    public OwnerStoreResponseDto readStoreInfo() {
-        String email = "user@example.com";
-        Member member = memberRepository.findByEmail(email)
+    public OwnerStoreResponseDTO readStoreInfo() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CommonException(ApiStatus.UNAUTHORIZED);
+        }
+
+        Long memberId = Long.parseLong(authentication.getName());
+        Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         Store store = repository.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("매장이 존재하지 않습니다."));
@@ -46,17 +62,22 @@ public class OwnerStoreService {
     }
 
     @Transactional
-    public void updateStoreInfo(Long partnerStoreId, StoreUpdateDto dto) {
-        String email = "user@example.com";
-        Member member = memberRepository.findByEmail(email)
+    public void updateStoreInfo(Long partnerStoreId, StoreUpdateDTO dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CommonException(ApiStatus.UNAUTHORIZED);
+        }
+
+        Long memberId = Long.parseLong(authentication.getName());
+        Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        // TODO: 점주 멤버의 전화번호 수정하기
+        member.setTel(dto.getTel());
 
         Store store = repository.findById(partnerStoreId)
             .orElseThrow(() -> new IllegalArgumentException("매장이 존재하지 않습니다."));
 
         store.update(dto);
     }
-
 }

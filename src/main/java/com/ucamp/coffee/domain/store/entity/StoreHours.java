@@ -1,7 +1,7 @@
 package com.ucamp.coffee.domain.store.entity;
 
 import com.ucamp.coffee.common.entity.BaseEntity;
-import com.ucamp.coffee.domain.store.dto.StoreHoursBatchUpsertDto;
+import com.ucamp.coffee.domain.store.dto.StoreHoursBatchUpsertDTO;
 import com.ucamp.coffee.domain.store.type.DayOfWeekType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,7 +33,7 @@ public class StoreHours extends BaseEntity {
     @JoinColumn(name = "partner_store_id", nullable = false)
     private Store store;
 
-    public void update(StoreHoursBatchUpsertDto.DayHoursDto dto) {
+    public void update(StoreHoursBatchUpsertDTO.DayHoursDto dto) {
         if (dto.getIsClosed() != null && !isClosed.isBlank()) this.isClosed = dto.getIsClosed();
         if (dto.getOpenTime() != null) this.openTime = dto.getOpenTime();
         if (dto.getCloseTime() != null) this.closeTime = dto.getCloseTime();

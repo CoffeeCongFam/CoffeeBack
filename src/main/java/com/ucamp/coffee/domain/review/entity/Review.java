@@ -2,7 +2,7 @@ package com.ucamp.coffee.domain.review.entity;
 
 import com.ucamp.coffee.common.entity.BaseEntity;
 import com.ucamp.coffee.domain.member.entity.Member;
-import com.ucamp.coffee.domain.review.dto.ReviewUpdateDto;
+import com.ucamp.coffee.domain.review.dto.ReviewUpdateDTO;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import jakarta.persistence.*;
@@ -40,7 +40,7 @@ public class Review extends BaseEntity {
     @Column(length = 200)
     private String reviewImg;
 
-    public void update(ReviewUpdateDto dto) {
+    public void update(ReviewUpdateDTO dto) {
         if (dto.getReviewContent() != null && !dto.getReviewContent().isBlank()) {
             this.reviewContent = dto.getReviewContent();
         }

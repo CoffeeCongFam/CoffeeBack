@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    List<Review> findByMember(Member member);
+    List<Review> findByMemberOrderByCreatedAtDesc(Member member);
 
     @Query("""
         SELECT r.store.partnerStoreId, COUNT(r)
@@ -37,6 +37,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         LEFT JOIN FETCH r.subscription s
         WHERE r.store.partnerStoreId = :partnerStoreId
         AND r.deletedAt IS NULL
+        ORDER BY r.createdAt DESC
     """)
     List<Review> findByStoreWithRelations(@Param("partnerStoreId") Long partnerStoreId);
 }

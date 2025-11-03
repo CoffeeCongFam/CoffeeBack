@@ -8,11 +8,15 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class MenuUpdateDto {
+public class MenuResponseDTO {
+    private Long menuId;
+    private Long partnerStoreId;
+    private String menuType;
     private String menuName;
     private Integer price;
     private String menuImg;
     private String menuDesc;
     private String menuStatus;
-    private String menuType;
+    private String createdAt;
+    private String updatedAt;
 }

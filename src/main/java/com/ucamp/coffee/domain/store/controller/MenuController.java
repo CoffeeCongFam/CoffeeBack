@@ -2,8 +2,8 @@ package com.ucamp.coffee.domain.store.controller;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
-import com.ucamp.coffee.domain.store.dto.MenuCreateDto;
-import com.ucamp.coffee.domain.store.dto.MenuUpdateDto;
+import com.ucamp.coffee.domain.store.dto.MenuCreateDTO;
+import com.ucamp.coffee.domain.store.dto.MenuUpdateDTO;
 import com.ucamp.coffee.domain.store.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ public class MenuController {
     private final MenuService service;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> createMenuInfo(@RequestBody MenuCreateDto dto) {
+    public ResponseEntity<ApiResponse<?>> createMenuInfo(@RequestBody MenuCreateDTO dto) {
         service.createMenuInfo(dto);
         return ResponseMapper.successOf(null);
     }
@@ -34,7 +34,7 @@ public class MenuController {
     @PatchMapping("/{menuId}")
     public ResponseEntity<ApiResponse<?>> updateMenuInfo(
         @PathVariable Long menuId,
-        @RequestBody MenuUpdateDto dto
+        @RequestBody MenuUpdateDTO dto
     ) {
         service.updateMenuInfo(menuId, dto);
         return ResponseMapper.successOf(null);

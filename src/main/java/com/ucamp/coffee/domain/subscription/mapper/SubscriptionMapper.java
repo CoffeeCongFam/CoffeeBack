@@ -1,13 +1,13 @@
 package com.ucamp.coffee.domain.subscription.mapper;
 
 import com.ucamp.coffee.common.util.DateTimeUtil;
-import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDto;
+import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDTO;
 import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
-import com.ucamp.coffee.domain.subscription.dto.CustomerMemberSubscriptionResponseDto;
-import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDto;
-import com.ucamp.coffee.domain.subscription.dto.SubscriptionCreateDto;
-import com.ucamp.coffee.domain.subscription.dto.OwnerSubscriptionResponseDto;
+import com.ucamp.coffee.domain.subscription.dto.CustomerMemberSubscriptionResponseDTO;
+import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDTO;
+import com.ucamp.coffee.domain.subscription.dto.SubscriptionCreateDTO;
+import com.ucamp.coffee.domain.subscription.dto.OwnerSubscriptionResponseDTO;
 import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import com.ucamp.coffee.domain.subscription.entity.SubscriptionUsageHistory;
@@ -17,7 +17,7 @@ import com.ucamp.coffee.domain.subscription.type.SubscriptionType;
 import java.util.List;
 
 public class SubscriptionMapper {
-    public static Subscription toEntity(SubscriptionCreateDto dto, Store store) {
+    public static Subscription toEntity(SubscriptionCreateDTO dto, Store store) {
         return Subscription.builder()
             .store(store)
             .subscriptionName(dto.getSubscriptionName())
@@ -34,8 +34,8 @@ public class SubscriptionMapper {
             .build();
     }
 
-    public static OwnerSubscriptionResponseDto toOwnerResponseDto(Subscription subscription) {
-        return OwnerSubscriptionResponseDto.builder()
+    public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription) {
+        return OwnerSubscriptionResponseDTO.builder()
             .subscriptionId(subscription.getSubscriptionId())
             .partnerStoreId(subscription.getStore().getPartnerStoreId())
             .subscriptionName(subscription.getSubscriptionName())
@@ -52,8 +52,8 @@ public class SubscriptionMapper {
             .build();
     }
 
-    public static CustomerSubscriptionResponseDto toCustomerResponseDto(Subscription subscription, CustomerStoreSimpleDto dto) {
-        return CustomerSubscriptionResponseDto.builder()
+    public static CustomerSubscriptionResponseDTO toCustomerResponseDto(Subscription subscription, CustomerStoreSimpleDTO dto) {
+        return CustomerSubscriptionResponseDTO.builder()
             .store(dto)
             .subscriptionId(subscription.getSubscriptionId())
             .partnerStoreId(subscription.getStore().getPartnerStoreId())
@@ -71,14 +71,14 @@ public class SubscriptionMapper {
             .build();
     }
 
-    public static CustomerMemberSubscriptionResponseDto toCustomerMemberResponseDto(MemberSubscription memberSubscription, List<Menu> menus, List<SubscriptionUsageHistory> subscriptionUsageHistories) {
+    public static CustomerMemberSubscriptionResponseDTO toCustomerMemberResponseDto(MemberSubscription memberSubscription, List<Menu> menus, List<SubscriptionUsageHistory> subscriptionUsageHistories) {
         Subscription subscription = memberSubscription.getPurchase().getSubscription();
         Store store = subscription.getStore();
 
-        return CustomerMemberSubscriptionResponseDto.builder()
+        return CustomerMemberSubscriptionResponseDTO.builder()
             .subId(subscription.getSubscriptionId())
             .store(
-                CustomerStoreSimpleDto.builder()
+                CustomerStoreSimpleDTO.builder()
                     .partnerStoreId(store.getPartnerStoreId())
                     .storeName(store.getStoreName())
                     .storeImg(store.getStoreImg())
@@ -90,6 +90,10 @@ public class SubscriptionMapper {
             .subStart(DateTimeUtil.toUtcDateTime(memberSubscription.getSubscriptionStart()))
             .subEnd(DateTimeUtil.toUtcDateTime(memberSubscription.getSubscriptionEnd()))
             .remainingCount(memberSubscription.getDailyRemainCount())
+            .price(subscription.getPrice())
+            .receiver(memberSubscription.getMember().getName())
+            .sender(memberSubscription.getPurchase().getMember().getName())
+            .subscriptionType(subscription.getSubscriptionType().name())
             .menu(menus.stream().map(Menu::getMenuName).toList())
             .usedAt(subscriptionUsageHistories.stream().map(SubscriptionUsageHistory::getCreatedAt).map(DateTimeUtil::toUtcDateTime).sorted().toList())
             .build();

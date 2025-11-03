@@ -1,5 +1,6 @@
 package com.ucamp.coffee.domain.subscription.dto;
 
+import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDTO;
 import lombok.*;
 
 @Getter
@@ -8,8 +9,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class OwnerSubscriptionResponseDto {
+public class CustomerSubscriptionResponseDTO {
     private Long subscriptionId;
+    private CustomerStoreSimpleDTO store;
     private Long partnerStoreId;
     private String subscriptionName;
     private Integer price;

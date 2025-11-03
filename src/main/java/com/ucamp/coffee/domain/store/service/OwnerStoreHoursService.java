@@ -1,6 +1,6 @@
 package com.ucamp.coffee.domain.store.service;
 
-import com.ucamp.coffee.domain.store.dto.StoreHoursBatchUpsertDto;
+import com.ucamp.coffee.domain.store.dto.StoreHoursBatchUpsertDTO;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.entity.StoreHours;
 import com.ucamp.coffee.domain.store.repository.StoreHoursRepository;
@@ -17,11 +17,11 @@ public class OwnerStoreHoursService {
     private final StoreRepository storeRepository;
 
     @Transactional
-    public void upsertStoreHours(StoreHoursBatchUpsertDto dto) {
+    public void upsertStoreHours(StoreHoursBatchUpsertDTO dto) {
         Store store = storeRepository.findById(dto.getPartnerStoreId())
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 매장입니다."));
 
-        for (StoreHoursBatchUpsertDto.DayHoursDto dayDto : dto.getDayHours()) {
+        for (StoreHoursBatchUpsertDTO.DayHoursDto dayDto : dto.getDayHours()) {
             StoreHours storeHours;
 
             if (dayDto.getStoreHoursId() != null) {

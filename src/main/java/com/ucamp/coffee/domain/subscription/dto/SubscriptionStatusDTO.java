@@ -8,6 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class SubscriptionStatusDto {
+public class SubscriptionStatusDTO {
     private String subscriptionStatus;
 }
