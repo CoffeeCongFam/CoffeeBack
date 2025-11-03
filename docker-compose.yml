@@ -7,5 +7,5 @@ services:
     ports:
       - "${SERVER_PORT_IN}:${SERVER_PORT_OUT}"
     env_file:
-      - .env
+      - ..env
     restart: always

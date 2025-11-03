@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class MenuCreateDto {
+public class MenuCreateDTO {
     private Long partnerStoreId;
     private String menuName;
     private Integer price;

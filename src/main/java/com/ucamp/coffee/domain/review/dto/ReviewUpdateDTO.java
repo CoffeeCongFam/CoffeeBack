@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReviewUpdateDto {
+public class ReviewUpdateDTO {
     private String reviewContent;
     private Integer rating;
     private String reviewImg;

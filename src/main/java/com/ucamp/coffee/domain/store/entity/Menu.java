@@ -1,7 +1,7 @@
 package com.ucamp.coffee.domain.store.entity;
 
 import com.ucamp.coffee.common.entity.BaseEntity;
-import com.ucamp.coffee.domain.store.dto.MenuUpdateDto;
+import com.ucamp.coffee.domain.store.dto.MenuUpdateDTO;
 import com.ucamp.coffee.domain.store.type.MenuType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,7 +32,7 @@ public class Menu extends BaseEntity {
 	private String menuDesc;
 	private String menuStatus;
 
-    public void update(MenuUpdateDto dto) {
+    public void update(MenuUpdateDTO dto) {
         if (dto.getMenuName() != null) this.menuName = dto.getMenuName();
         if (dto.getPrice() != null) this.price = dto.getPrice();
         if (dto.getMenuImg() != null) this.menuImg = dto.getMenuImg();

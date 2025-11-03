@@ -2,15 +2,14 @@ package com.ucamp.coffee.domain.subscription.service;
 
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
-import com.ucamp.coffee.common.util.DateTimeUtil;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
-import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDto;
+import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDTO;
 import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.service.StoreHelperService;
-import com.ucamp.coffee.domain.subscription.dto.CustomerMemberSubscriptionResponseDto;
-import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDto;
+import com.ucamp.coffee.domain.subscription.dto.CustomerMemberSubscriptionResponseDTO;
+import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDTO;
 import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import com.ucamp.coffee.domain.subscription.entity.SubscriptionMenu;
@@ -44,9 +43,15 @@ public class CustomerSubscriptionService {
     private final SubscriptionMenuRepository subscriptionMenuRepository;
     private final SubscriptionUsageHistoryRepository subscriptionUsageHistoryRepository;
 
-    public List<CustomerSubscriptionResponseDto> readSubscriptionList() {
-        String email = "user1@example.com";
-        Member member = memberRepository.findByEmail(email)
+    public List<CustomerSubscriptionResponseDTO> readSubscriptionList() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CommonException(ApiStatus.UNAUTHORIZED);
+        }
+
+        Long memberId = Long.parseLong(authentication.getName());
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
@@ -54,7 +59,7 @@ public class CustomerSubscriptionService {
         return repository.findByStore(store)
             .stream()
             .map(subscription -> {
-                CustomerStoreSimpleDto storeDto = CustomerStoreSimpleDto.builder()
+                CustomerStoreSimpleDTO storeDto = CustomerStoreSimpleDTO.builder()
                     .partnerStoreId(subscription.getStore().getPartnerStoreId())
                     .storeName(subscription.getStore().getStoreName())
                     .storeImg(subscription.getStore().getStoreImg())
@@ -65,7 +70,7 @@ public class CustomerSubscriptionService {
             .collect(Collectors.toList());
     }
 
-    public List<CustomerMemberSubscriptionResponseDto> readMemberSubscriptionList() {
+    public List<CustomerMemberSubscriptionResponseDTO> readMemberSubscriptionList() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {

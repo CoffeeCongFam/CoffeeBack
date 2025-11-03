@@ -1,16 +1,16 @@
 package com.ucamp.coffee.domain.store.service;
 
 import com.ucamp.coffee.domain.review.repository.ReviewRepository;
-import com.ucamp.coffee.domain.store.dto.CustomerStoreNearByResponseDto;
-import com.ucamp.coffee.domain.store.dto.CustomerStoreResponseDto;
-import com.ucamp.coffee.domain.store.dto.MenuResponseDto;
+import com.ucamp.coffee.domain.store.dto.CustomerStoreNearByResponseDTO;
+import com.ucamp.coffee.domain.store.dto.CustomerStoreResponseDTO;
+import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.entity.StoreHours;
 import com.ucamp.coffee.domain.store.mapper.StoreMapper;
 import com.ucamp.coffee.domain.store.repository.StoreHoursRepository;
 import com.ucamp.coffee.domain.store.repository.StoreRepository;
 import com.ucamp.coffee.domain.store.type.DayOfWeekType;
-import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDto;
+import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDTO;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.service.CustomerSubscriptionService;
 import lombok.RequiredArgsConstructor;
@@ -36,19 +36,19 @@ public class CustomerStoreService {
     private final ReviewRepository reviewRepository;
     private final StoreHoursRepository storeHoursRepository;
 
-    public CustomerStoreResponseDto readStoreInfo(Long partnerStoreId) {
+    public CustomerStoreResponseDTO readStoreInfo(Long partnerStoreId) {
         Store store = helperService.findById(partnerStoreId);
 
         List<StoreHours> results = repository.findStoreDetails(partnerStoreId);
-        List<MenuResponseDto> menus = menuService.readMenuListByStore(partnerStoreId);
-        List<CustomerSubscriptionResponseDto> subscriptions = customerSubscriptionService.readSubscriptionList();
+        List<MenuResponseDTO> menus = menuService.readMenuListByStore(partnerStoreId);
+        List<CustomerSubscriptionResponseDTO> subscriptions = customerSubscriptionService.readSubscriptionList();
 
         if (results.isEmpty()) return null;
 
         return StoreMapper.toCustomerStoreDto(results, store, menus, subscriptions);
     }
 
-    public List<CustomerStoreNearByResponseDto> readNearbyStores(Double xPoint, Double yPoint, Double radius) {
+    public List<CustomerStoreNearByResponseDTO> readNearbyStores(Double xPoint, Double yPoint, Double radius) {
         List<Store> nearbyStores = repository.findStoresWithinRadius(xPoint, yPoint, radius);
 
         List<Long> storeIds = nearbyStores.stream()
@@ -105,7 +105,7 @@ public class CustomerStoreService {
             ));
 
         return nearbyStores.stream()
-            .map(store -> CustomerStoreNearByResponseDto.builder()
+            .map(store -> CustomerStoreNearByResponseDTO.builder()
                 .storeId(store.getPartnerStoreId())
                 .storeName(store.getStoreName())
                 .storeStatus(storeStatusMap.getOrDefault(store.getPartnerStoreId(), "CLOSED"))

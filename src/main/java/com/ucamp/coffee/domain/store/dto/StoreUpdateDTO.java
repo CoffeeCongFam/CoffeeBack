@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class StoreUpdateDto {
+public class StoreUpdateDTO {
     private String storeName;
     private String roadAddress;
     private String detailAddress;

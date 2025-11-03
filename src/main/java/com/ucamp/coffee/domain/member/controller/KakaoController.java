@@ -10,6 +10,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,12 @@ import java.util.Map;
 @RequestMapping("/login/oauth2/code")
 @RequiredArgsConstructor
 public class KakaoController {
+    @Value("${host}")
+    private String host;
+
+    @Value("${frontend.port}")
+    private String frontendPort;
+
     private final KakaoService kakaoService;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -56,7 +63,7 @@ public class KakaoController {
             	
             	// 회원가입시 추가 입력을 위해 일반회원/점주 회원가입 페이지로 이동
             	String redirectUrl = String.format(
-            			"http://localhost:5173/signup?role=%s", role);
+                        host + ":" + frontendPort + "/signup?role=%s", role);
             	return ResponseEntity.ok(Map.of("redirectUrl", redirectUrl)); 
             }
             
@@ -67,13 +74,13 @@ public class KakaoController {
             // role에 따라 일반회원/점주 홈 화면으로 이동
             String redirectUrl = "";
             if("member".equalsIgnoreCase(role)) {
-            	redirectUrl = "http://localhost:5173/me";
+            	redirectUrl = host + ":" + frontendPort + "/me";
             }
             else if("customer".equalsIgnoreCase(role)) {
-            	redirectUrl = "http://localhost:5173/stores";
+            	redirectUrl = host + ":" + frontendPort + "/stores";
             }
             else {
-            	redirectUrl = "http://localhost:5173/";
+            	redirectUrl = host + ":" + frontendPort + "/";
             }
             
             // JWT를 쿠키로 전달(보안성)

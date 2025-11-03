@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StoreHoursBatchUpsertDto {
+public class StoreHoursBatchUpsertDTO {
     private Long partnerStoreId;
     private List<DayHoursDto> dayHours;
 

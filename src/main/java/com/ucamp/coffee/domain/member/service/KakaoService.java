@@ -29,8 +29,14 @@ public class KakaoService {
     @Value("${kakao.client-id}")
     private String clientId;
 
-    @Value("${kakao.redirect-uri}")
-    private String redirectUri;
+    @Value("${host}")
+    private String host;
+
+    @Value(("${backend.port}"))
+    private String backendPort;
+
+    @Value("${kakao.redirect-endpoint}")
+    private String redirectEndpoint;
 
     @Value("${kakao.token-url}")
     private String tokenUrl;
@@ -52,8 +58,8 @@ public class KakaoService {
         httpBodies.add("grant_type", "authorization_code");
         httpBodies.add("client_id", clientId);
         httpBodies.add("redirect_uri", (role != null && !role.isEmpty())
-            ? redirectUri + "?role=" + role
-            : redirectUri);
+            ? host + ":" + backendPort + redirectEndpoint + "?role=" + role
+            : host + ":" + backendPort + redirectEndpoint);
         httpBodies.add("code", code);
         httpBodies.add("client_secret", clientSecret);
 

@@ -1,13 +1,14 @@
 package com.ucamp.coffee.domain.store.mapper;
 
-import com.ucamp.coffee.domain.store.dto.MenuCreateDto;
-import com.ucamp.coffee.domain.store.dto.MenuResponseDto;
+import com.ucamp.coffee.common.util.DateTimeUtil;
+import com.ucamp.coffee.domain.store.dto.MenuCreateDTO;
+import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
 import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.type.MenuType;
 
 public class MenuMapper {
-    public static Menu toEntity(MenuCreateDto dto, Store store) {
+    public static Menu toEntity(MenuCreateDTO dto, Store store) {
         return Menu.builder()
             .store(store)
             .menuType(MenuType.valueOf(dto.getMenuType()))
@@ -19,8 +20,8 @@ public class MenuMapper {
             .build();
     }
 
-    public static MenuResponseDto toDto(Menu menu) {
-        return MenuResponseDto.builder()
+    public static MenuResponseDTO toDto(Menu menu) {
+        return MenuResponseDTO.builder()
             .menuId(menu.getMenuId())
             .partnerStoreId(menu.getStore().getPartnerStoreId())
             .menuType(menu.getMenuType().name())
@@ -29,8 +30,8 @@ public class MenuMapper {
             .menuImg(menu.getMenuImg())
             .menuDesc(menu.getMenuDesc())
             .menuStatus(menu.getMenuStatus())
-            .createdAt(menu.getCreatedAt())
-            .updatedAt(menu.getUpdatedAt())
+            .createdAt(DateTimeUtil.toUtcDateTime(menu.getCreatedAt()))
+            .updatedAt(DateTimeUtil.toUtcDateTime(menu.getUpdatedAt()))
             .build();
     }
 }

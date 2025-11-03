@@ -2,8 +2,8 @@ package com.ucamp.coffee.domain.review.controller;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
-import com.ucamp.coffee.domain.review.dto.ReviewCreateDto;
-import com.ucamp.coffee.domain.review.dto.ReviewUpdateDto;
+import com.ucamp.coffee.domain.review.dto.ReviewCreateDTO;
+import com.ucamp.coffee.domain.review.dto.ReviewUpdateDTO;
 import com.ucamp.coffee.domain.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ public class ReviewController {
     private final ReviewService service;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> createReviewInfo(@RequestBody ReviewCreateDto dto) {
+    public ResponseEntity<ApiResponse<?>> createReviewInfo(@RequestBody ReviewCreateDTO dto) {
         service.createReviewInfo(dto);
         return ResponseMapper.successOf(null);
     }
@@ -34,7 +34,7 @@ public class ReviewController {
     @PatchMapping("/{reviewId}")
     public ResponseEntity<ApiResponse<?>> updateReviewInfo(
         @PathVariable Long reviewId,
-        @RequestBody ReviewUpdateDto dto
+        @RequestBody ReviewUpdateDTO dto
     ) {
         service.updateReviewInfo(reviewId, dto);
         return ResponseMapper.successOf(null);

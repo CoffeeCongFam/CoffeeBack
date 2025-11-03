@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class CustomerStoreSimpleDto {
+public class CustomerStoreSimpleDTO {
     private Long partnerStoreId;
     private String storeName;
     private String storeImg;
