@@ -3,6 +3,8 @@ package com.ucamp.coffee.domain.subscription.entity;
 import java.time.LocalDateTime;
 
 import com.ucamp.coffee.common.entity.BaseEntity;
+import com.ucamp.coffee.common.exception.CommonException;
+import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.purchase.entity.Purchase;
 import com.ucamp.coffee.domain.subscription.type.UsageStatus;
@@ -68,9 +70,26 @@ public class MemberSubscription extends BaseEntity {
 			usageStatus = UsageStatus.NOT_ACTIVATED;
 	}
 
-	// 구독권 사용중으로 변경
+	// 보유 구독권 사용중으로 변경
 	public void activateSubscription() {
 		this.usageStatus = UsageStatus.ACTIVE;
+	}
+	
+	// 보유 구독권 사용
+	public void use(int quantity) {
+		if(this.usageStatus == UsageStatus.EXPIRED) {
+			throw new CommonException(ApiStatus.BAD_REQUEST, "만료된 구독권입니다.");
+		}
+		
+		if(this.dailyRemainCount < quantity) {
+			throw new CommonException(ApiStatus.BAD_REQUEST, "잔여 횟수가 부족합니다.");
+		}
+		
+		if(this.usageStatus == UsageStatus.NOT_ACTIVATED) {
+			activateSubscription();
+		}
+		
+		this.dailyRemainCount -= quantity;
 	}
 
 }
