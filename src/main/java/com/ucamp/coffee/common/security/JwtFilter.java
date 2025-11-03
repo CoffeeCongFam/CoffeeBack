@@ -42,7 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
         // 쿠키 확인 (HttpOnly 쿠키)
         if (token == null && request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("ACCESS_JWT".equals(cookie.getName())) {
+                if ("accessToken".equals(cookie.getName())) {
                     token = cookie.getValue();
                     break;
                 }
