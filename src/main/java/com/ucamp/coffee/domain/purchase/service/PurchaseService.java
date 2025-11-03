@@ -21,6 +21,7 @@ import com.ucamp.coffee.domain.purchase.entity.Purchase;
 import com.ucamp.coffee.domain.purchase.mapper.PurchaseMapper;
 import com.ucamp.coffee.domain.purchase.repository.PurchaseRepository;
 import com.ucamp.coffee.domain.purchase.type.PaymentStatus;
+import com.ucamp.coffee.domain.purchase.type.RefundReasonType;
 import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
@@ -116,12 +117,31 @@ public class PurchaseService {
 	 */
 	@Transactional(readOnly = true)
 	public List<PurchaseAllResponseDTO> selectAllPurchase(Long memberId, String type) {
-
 		Map<String, Object> param = new HashMap<>();
 		param.put("memberId", memberId);
 		param.put("type", type);
 
-		return purchaseMapper.selectAllPurchase(param);
+		List<PurchaseAllResponseDTO> response = purchaseMapper.selectAllPurchase(param);
+
+		for (PurchaseAllResponseDTO purchase : response) {
+
+			// 이미 환불된 상태
+			if (PaymentStatus.REFUNDED.name().equals(purchase.getPaymentStatus())) {
+				purchase.getRefundReasons().add(RefundReasonType.ALREADY_REFUNDED);
+			}
+
+			// 결제 후 7일 초과
+			if (LocalDateTime.now().isAfter(purchase.getPaidAt().plusDays(7))) {
+				purchase.getRefundReasons().add(RefundReasonType.OVER_PERIOD);
+			}
+
+			// 이미 사용 중
+			if (!UsageStatus.NOT_ACTIVATED.name().equals(purchase.getUsageStatus())) {
+				purchase.getRefundReasons().add(RefundReasonType.USED_ALREADY);
+			}
+		}
+
+		return response;
 	}
 
 	/**
@@ -183,15 +203,16 @@ public class PurchaseService {
 
 		return purchaseMapper.selectAllSendGift(memberId);
 	}
-	
+
 	/**
 	 * 소비자의 특정 보낸 선물 상세 조회
+	 * 
 	 * @param memberSubscriptionId
 	 * @return
 	 */
 	@Transactional(readOnly = true)
 	public PurchaseSendGiftDTO selectSendGiftDetail(Long purchaseId) {
-		
+
 		return purchaseMapper.selectSendGiftDetail(purchaseId);
 	}
 
@@ -213,6 +234,7 @@ public class PurchaseService {
 
 	/**
 	 * 소비자의 특정 받은 선물 상세 조회
+	 * 
 	 * @param memberSubscriptionId
 	 * @return
 	 */

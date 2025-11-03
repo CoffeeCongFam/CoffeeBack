@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.ucamp.coffee.domain.subscription.mapper.MemberSubscriptionMapper">
+
+	<!-- D-7 -->
+	<select id="selectExpiring7Days"
+		resultType="MemberSubscriptionDTO">
+		SELECT MEMBER_SUBSCRIPTION_ID, MEMBER_ID, SUBSCRIPTION_END
+		FROM MEMBER_SUBSCRIPTION
+		WHERE USAGE_STATUS = 'ACTIVE'
+		AND
+		TRUNC(SUBSCRIPTION_END) = TRUNC(SYSDATE + 7)
+	</select>
+
+	<!-- D-3 -->
+	<select id="selectExpiring3Days"
+		resultType="MemberSubscriptionDTO">
+		SELECT MEMBER_SUBSCRIPTION_ID, MEMBER_ID, SUBSCRIPTION_END
+		FROM MEMBER_SUBSCRIPTION
+		WHERE USAGE_STATUS = 'ACTIVE'
+		AND
+		TRUNC(SUBSCRIPTION_END) = TRUNC(SYSDATE + 3)
+	</select>
+
+	<!-- D-day -->
+	<select id="selectExpiringToday"
+		resultType="MemberSubscriptionDTO">
+		SELECT MEMBER_SUBSCRIPTION_ID, MEMBER_ID, SUBSCRIPTION_END
+		FROM MEMBER_SUBSCRIPTION
+		WHERE USAGE_STATUS = 'ACTIVE'
+		AND
+		TRUNC(SUBSCRIPTION_END) = TRUNC(SYSDATE)
+	</select>
+
+
+
+</mapper>
