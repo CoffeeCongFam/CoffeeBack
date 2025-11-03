@@ -29,4 +29,9 @@ public class MemberService {
 		return memberRepository.save(member);
 	}
 
+	public Member findById(Long memberId) {
+		return memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+	}
+
 }

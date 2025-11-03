@@ -65,6 +65,7 @@ public class KakaoService {
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
             return jsonNode.get("access_token").asText();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("카카오 토큰 발급 실패", e);
         }
     }
@@ -75,8 +76,8 @@ public class KakaoService {
 
         // HttpHeaders
         HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Authorization", "Bearer " + accessToken);
         httpHeaders.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-        httpHeaders.setBearerAuth(accessToken); // Authorization: Bearer 토큰
 
         // HttpEntity
         HttpEntity<Void> request = new HttpEntity<>(httpHeaders);

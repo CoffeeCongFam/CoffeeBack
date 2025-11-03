@@ -1,11 +1,14 @@
 package com.ucamp.coffee.domain.member.controller;
 
-import org.springframework.http.HttpStatus;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ucamp.coffee.common.response.ApiResponse;
@@ -14,74 +17,100 @@ import com.ucamp.coffee.common.security.JwtTokenProvider;
 import com.ucamp.coffee.domain.member.dto.MemberDto;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberService;
+import com.ucamp.coffee.domain.member.type.ActiveStatusType;
 import com.ucamp.coffee.domain.member.type.MemberType;
 
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/signup")
+@RequestMapping("/api")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class MemberController {
+
 	private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
 
-	// 일반회원/점주 회원가입 선택 화면
-    @GetMapping
-    public ResponseEntity<ApiResponse<?>> signupPage(){
-    	return ResponseMapper.successOf("회원가입 선택 페이지입니다.");
+	// 일반회원/점주 회원가입 화면
+    @GetMapping("/signup")
+    public ResponseEntity<ApiResponse<?>> signupPage(@RequestParam String role){
+    	
+    	return ResponseMapper.successOf("회원가입 페이지 - role=" + role);
     }
     
     // 카카오톡 로그인 성공 후, 일반회원/점주 회원가입 화면으로 다시 이동해서 DB에 저장
     // 일반회원 회원가입
-    @PostMapping("/member")
+    @PostMapping("/signup/member")
     public Object registerMember(
             @RequestBody MemberDto memberDto,
-            HttpServletRequest request) {
-
-    	memberDto.setMemberType(MemberType.GENERAL);
-        String tempJwt = getCookieValue(request, "TEMP_JWT");
-        
-        // JWT가 없거나 유효하지 않은 경우
-        if (tempJwt == null || !jwtTokenProvider.validateToken(tempJwt)) {
-            return ResponseMapper.failOf(HttpStatus.UNAUTHORIZED, this.getClass());
-        }
-
-        Claims claims = jwtTokenProvider.getClaims(tempJwt);
-        memberDto.setEmail(claims.getSubject());
+            HttpServletRequest request,
+            HttpServletResponse response) {
+    	
+    	// TODO: 에러 처리 필요
+    	// 회원가입 insert
+        memberDto.setMemberType(MemberType.GENERAL);
+        memberDto.setActiveStatus(ActiveStatusType.ACTIVE);
         
         Member savedMember = memberService.save(memberDto);
-        return ResponseMapper.successOf(savedMember);
+        
+        // JWT 생성
+        String accessToken = jwtTokenProvider.generateToken(savedMember.getMemberId());
+        
+        // HttpOnly 쿠키로 JWT 전달
+        Cookie cookie = new Cookie("accessToken", accessToken);
+        cookie.setHttpOnly(true);  // JS에서 접근 불가
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 *60);  // 1시간
+        response.addCookie(cookie);
+        
+        // 세션 등록
+        HttpSession session = request.getSession();
+        session.setAttribute("user", savedMember);
+        
+        // 성공 시
+        return ResponseMapper.successOf(Map.of(
+        		"message", "성공",
+        		"redirectUrl", "http://localhost:5173/me"));
     }
-
+    
     // 점주 회원가입
-    @PostMapping("/stores")
-    public Object registerOwner(
+    @PostMapping("/signup/store")
+    public Object registerStores(
             @RequestBody MemberDto memberDto,
-            HttpServletRequest request) {
-
-    	memberDto.setMemberType(MemberType.STORE);
-        String tempJwt = getCookieValue(request, "TEMP_JWT");
-        if (tempJwt == null || !jwtTokenProvider.validateToken(tempJwt)) {
-            return ResponseMapper.failOf(HttpStatus.UNAUTHORIZED, this.getClass());
-        }
-
-        Claims claims = jwtTokenProvider.getClaims(tempJwt);
-        memberDto.setEmail(claims.getSubject());
-
-        Member savedOwner = memberService.save(memberDto);
-        return ResponseMapper.successOf(savedOwner);
-    }
-
-    // 쿠키값 가져오기
-    private String getCookieValue(HttpServletRequest request, String name) {
-        if (request.getCookies() == null) return null;
-        for (Cookie cookie : request.getCookies()) {
-            if (name.equals(cookie.getName())) return cookie.getValue();
-        }
-        return null;
+            HttpServletRequest request,
+            HttpServletResponse response) {
+    	
+    	// TODO: 에러 처리 필요
+    	// 회원가입 insert
+        memberDto.setMemberType(MemberType.STORE);
+        memberDto.setActiveStatus(ActiveStatusType.ACTIVE);
+        
+        Member savedMember = memberService.save(memberDto);
+        
+        // JWT 생성
+        String accessToken = jwtTokenProvider.generateToken(savedMember.getMemberId());
+        
+        // HttpOnly 쿠키로 JWT 전달
+        Cookie cookie = new Cookie("accessToken", accessToken);
+        cookie.setHttpOnly(true);  // JS에서 접근 불가
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 *60);  // 1시간
+        response.addCookie(cookie);
+        
+        // 세션 등록
+        HttpSession session = request.getSession();
+        session.setAttribute("user", savedMember);
+        
+        // 성공 시
+        return ResponseMapper.successOf(Map.of(
+        		"message", "성공",
+        		"redirectUrl", "http://localhost:5173/store"));
     }
     
 }
