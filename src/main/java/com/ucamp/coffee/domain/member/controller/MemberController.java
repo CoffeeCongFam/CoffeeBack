@@ -158,34 +158,4 @@ public class MemberController {
         return ResponseMapper.successOf(dto);
     }
 
-    // 일반회원 홈_사용자 정보 전달
-    @GetMapping("/me")
-    public ResponseEntity<ApiResponse<?>> getMeInfo(@AuthenticationPrincipal MemberDetails user) {
-
-        Long memberId = user.getMemberId();
-
-        Member member = memberService.findById(memberId);
-        return ResponseMapper.successOf(Map.of(
-                "memberId", member.getMemberId(),
-                "name", member.getName(),
-                "email", member.getEmail(),
-                "memberType", member.getMemberType()
-        ));
-    }
-
-    // 점주 홈_사용자 정보 전달
-    @GetMapping("/store")
-    public ResponseEntity<ApiResponse<?>> getStoreInfo(@AuthenticationPrincipal MemberDetails user) {
-
-        Long memberId = user.getMemberId();
-
-        Member member = memberService.findById(memberId);
-        return ResponseMapper.successOf(Map.of(
-                "memberId", member.getMemberId(),
-                "name", member.getName(),
-                "email", member.getEmail(),
-                "memberType", member.getMemberType()
-        ));
-    }
-
 }
