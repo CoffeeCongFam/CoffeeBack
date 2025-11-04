@@ -14,12 +14,19 @@ import java.util.Optional;
 @Repository
 public interface StoreRepository extends JpaRepository<Store, Long> {
     @Query("""
+        SELECT s
+        FROM Store s
+        WHERE s.partnerStoreId = :storeId
+    """)
+    List<Store> findStoreDetails(@Param("storeId") Long storeId);
+
+    @Query("""
         SELECT sh
         FROM StoreHours sh
         JOIN FETCH sh.store s
         WHERE s.partnerStoreId = :storeId
     """)
-    List<StoreHours> findStoreDetails(@Param("storeId") Long storeId);
+    List<StoreHours> findStoreDetailsWithStoreHours(@Param("storeId") Long storeId);
 
     Optional<Store> findByMember(Member member);
 

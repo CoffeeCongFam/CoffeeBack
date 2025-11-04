@@ -38,10 +38,20 @@ public class OwnerSubscriptionController {
 
     @PatchMapping("/{subscriptionId}")
     public ResponseEntity<ApiResponse<?>> updateSubscriptionStatus(
+        @AuthenticationPrincipal MemberDetails user,
         @PathVariable Long subscriptionId,
         @RequestBody SubscriptionStatusDTO dto
     ) {
-        service.updateSubscriptionStatus(subscriptionId, dto);
+        service.updateSubscriptionStatus(subscriptionId, dto, 1L);
+        return ResponseMapper.successOf(null);
+    }
+
+    @DeleteMapping("/{subscriptionId}")
+    public ResponseEntity<ApiResponse<?>> deleteSubscriptionInfo(
+        @AuthenticationPrincipal MemberDetails user,
+        @PathVariable Long subscriptionId
+    ) {
+        service.deleteSubscriptionInfo(subscriptionId, user.getMemberId());
         return ResponseMapper.successOf(null);
     }
 }
