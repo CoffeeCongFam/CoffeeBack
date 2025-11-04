@@ -91,6 +91,7 @@ public class SubscriptionMapper {
             .toList();
 
         return CustomerMemberSubscriptionResponseDTO.builder()
+                .memberSubscriptionId(memberSubscription.getMemberSubscriptionId())
                 .subId(subscription.getSubscriptionId())
                 .receiverId(member.getMemberId())
                 .senderId(buyer.getMemberId())
