@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 @ToString
 public class CustomerMemberSubscriptionResponseDTO {
+    private Long memberSubscriptionId;
     private Long subId;
     private Long receiverId;
     private Long senderId;
