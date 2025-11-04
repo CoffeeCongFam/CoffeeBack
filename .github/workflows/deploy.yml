@@ -38,7 +38,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "deploy/*"
-          target: "/home/ubuntu/app"
+          target: "/home/ubuntu/app/CoffeeBack"
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.7
