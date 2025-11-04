@@ -2,8 +2,9 @@ package com.ucamp.coffee.domain.member.controller;
 
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
+import com.ucamp.coffee.common.security.MemberDetails;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.ucamp.coffee.common.response.ApiResponse;
@@ -135,6 +136,36 @@ public class MemberController {
         response.addCookie(sessionCookie);
 
         return ResponseMapper.successOf(Map.of("message", "로그아웃 성공"));
+    }
+
+    // 일반회원 홈_사용자 정보 전달
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<?>> getMeInfo(@AuthenticationPrincipal MemberDetails user) {
+
+        Long memberId = user.getMemberId();
+
+        Member member = memberService.findById(memberId);
+        return ResponseMapper.successOf(Map.of(
+                "memberId", member.getMemberId(),
+                "name", member.getName(),
+                "email", member.getEmail(),
+                "memberType", member.getMemberType()
+        ));
+    }
+
+    // 점주 홈_사용자 정보 전달
+    @GetMapping("/store")
+    public ResponseEntity<ApiResponse<?>> getStoreInfo(@AuthenticationPrincipal MemberDetails user) {
+
+        Long memberId = user.getMemberId();
+
+        Member member = memberService.findById(memberId);
+        return ResponseMapper.successOf(Map.of(
+                "memberId", member.getMemberId(),
+                "name", member.getName(),
+                "email", member.getEmail(),
+                "memberType", member.getMemberType()
+        ));
     }
 
 }
