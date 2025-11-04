@@ -1,16 +1,22 @@
 package com.ucamp.coffee.domain.subscription.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ucamp.coffee.domain.member.entity.Member;
+import com.ucamp.coffee.domain.purchase.entity.Purchase;
 import com.ucamp.coffee.domain.subscription.dto.MemberSubscriptionDTO;
+import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
+import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import com.ucamp.coffee.domain.subscription.event.NoticeBefore3Event;
 import com.ucamp.coffee.domain.subscription.event.NoticeBefore7Event;
 import com.ucamp.coffee.domain.subscription.event.NoticeTodayEvent;
 import com.ucamp.coffee.domain.subscription.mapper.MemberSubscriptionMapper;
+import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,8 +25,33 @@ import lombok.RequiredArgsConstructor;
 public class MemberSubscriptionService {
 
 	private final MemberSubscriptionMapper memberSubscriptionMapper;
-	
+	private final MemberSubscriptionRepository memberSubscriptionRepository;
 	private final ApplicationEventPublisher publisher;
+	
+	/**
+	 * 보유 구독권 생성
+	 * 
+	 * @param receiver
+	 * @param purchase
+	 * @param subscription
+	 * @param isGift
+	 */
+	public void createMemberSubscription(Member receiver, Purchase purchase, Subscription subscription,
+			String isGift) {
+
+		Integer dailyRemainCount = subscription.getMaxDailyUsage();
+		LocalDateTime subscriptionStart = LocalDateTime.now();
+		LocalDateTime subscriptionEnd = subscriptionStart.plusDays(subscription.getSubscriptionPeriod());
+
+		// 보유 구독권 entity 생성
+		MemberSubscription memberSubscription = MemberSubscription.builder().member(receiver).purchase(purchase)
+				.isGift(isGift).dailyRemainCount(dailyRemainCount).subscriptionStart(subscriptionStart)
+				.subscriptionEnd(subscriptionEnd).build();
+
+		memberSubscriptionRepository.save(memberSubscription);
+
+	}
+	
 	
 	/**
 	 * 만료 7일 전에 알림

@@ -41,7 +41,7 @@ public class StoreMapper {
                 .build();
     }
 
-    public static CustomerStoreResponseDTO toCustomerStoreDto(List<StoreHours> storeHours, Store store, List<MenuResponseDTO> menus, List<CustomerSubscriptionResponseDTO> subscriptions) {
+    public static CustomerStoreResponseDTO toCustomerStoreDto(List<StoreHours> storeHoursList, Store store, List<MenuResponseDTO> menus, List<CustomerSubscriptionResponseDTO> subscriptions) {
         return CustomerStoreResponseDTO.builder()
                 .partnerStoreId(store.getPartnerStoreId())
                 .storeName(store.getStoreName())
@@ -49,7 +49,7 @@ public class StoreMapper {
                 .roadAddress(store.getRoadAddress())
                 .detailAddress(store.getDetailAddress())
                 .detailInfo(store.getDetailInfo())
-                .storeHours(toStoreHoursResponseDto(storeHours))
+                .storeHours(toStoreHoursResponseDto(storeHoursList))
                 .menus(menus)
                 .subscriptions(subscriptions)
                 .build();

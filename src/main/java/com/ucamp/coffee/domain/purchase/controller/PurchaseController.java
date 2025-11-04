@@ -11,29 +11,34 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
 import com.ucamp.coffee.common.security.MemberDetails;
-import com.ucamp.coffee.domain.purchase.dto.PurchaseAllGiftDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseAllResponseDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseCreateDTO;
-import com.ucamp.coffee.domain.purchase.dto.PurchaseReceiveGiftDTO;
-import com.ucamp.coffee.domain.purchase.dto.PurchaseSendGiftDTO;
 import com.ucamp.coffee.domain.purchase.service.PurchaseService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/me/purchase")
 public class PurchaseController {
 
 	private final PurchaseService purchaseService;
 
-	// 구매 생성 및 선물
-	@PostMapping("/api/me/purchase/new")
+	
+	/**
+	 * 구매 생성 및 선물
+	 * @param request
+	 * @param member
+	 * @return
+	 */
+	@PostMapping("/new")
 	public ResponseEntity<ApiResponse<?>> createPurchase(@RequestBody PurchaseCreateDTO request,
 			@AuthenticationPrincipal MemberDetails member) {
 
@@ -43,8 +48,13 @@ public class PurchaseController {
 		return ResponseMapper.successOf(Map.of("purchaseId", purchaseId));
 	}
 
-	// 소비자 구매 내역 조회(전체, 선물, 직접구매)
-	@GetMapping("/api/me/purchase")
+	/**
+	 * 소비자 구매 내역 조회(전체, 선물, 직접구매)
+	 * @param type
+	 * @param member
+	 * @return
+	 */
+	@GetMapping()
 	public ResponseEntity<ApiResponse<?>> searchAllPurchase(@RequestParam(required = false) String type,
 			@AuthenticationPrincipal MemberDetails member) {
 
@@ -54,8 +64,12 @@ public class PurchaseController {
 		return ResponseMapper.successOf(response);
 	}
 
-	// 소비자 환불하기
-	@PatchMapping("/api/me/purchase/{purchaseId}")
+	/**
+	 * 소비자 환불하기
+	 * @param purchaseId
+	 * @return
+	 */
+	@PatchMapping("/{purchaseId}")
 	public ResponseEntity<ApiResponse<?>> modifyPurchaseRefunded(@PathVariable Long purchaseId) {
 
 		LocalDateTime refundedAt = purchaseService.updatePurchaseRefunded(purchaseId);
@@ -63,65 +77,5 @@ public class PurchaseController {
 		return ResponseMapper.successOf(Map.of("refundedAt", refundedAt));
 	}
 
-	// 선물 전체 목록 조회
-	@GetMapping("/api/me/purchase/gift")
-	public ResponseEntity<ApiResponse<?>> searchAllGift(@AuthenticationPrincipal MemberDetails member) {
-
-		Long memberId = member.getMemberId();
-
-		List<PurchaseAllGiftDTO> response = purchaseService.selectAllGift(memberId);
-
-		return ResponseMapper.successOf(response);
-	}
-
-	// 보낸 선물 전체 조회
-	@GetMapping("/api/me/purchase/gift/send")
-	public ResponseEntity<ApiResponse<?>> searchSendGift(@RequestParam(required = false) String purchaseId,
-			@AuthenticationPrincipal MemberDetails member) {
-
-		Long memberId = member.getMemberId();
-
-		Object response;
-
-		if (purchaseId != null) {
-			Long parsedId = Long.parseLong(purchaseId);
-			PurchaseSendGiftDTO giftDetail = purchaseService.selectSendGiftDetail(parsedId);
-			response = giftDetail;
-		} else {
-			List<PurchaseSendGiftDTO> giftList = purchaseService.selectAllSendGift(memberId);
-			response = giftList;
-		}
-
-		return ResponseMapper.successOf(response);
-	}
-
-	// 받은 선물 전체 조회
-	@GetMapping("/api/me/purchase/gift/receive")
-	public ResponseEntity<ApiResponse<?>> searchReceiveGift(
-			@RequestParam(required = false) String memberSubscriptionId, @AuthenticationPrincipal MemberDetails member) {
-
-		Long memberId = member.getMemberId();
-
-		Object response;
-		if (memberSubscriptionId != null) {
-			Long parsedId = Long.parseLong(memberSubscriptionId);
-			PurchaseReceiveGiftDTO giftDetail = purchaseService.selectReceivedGiftDetail(parsedId);
-			response = giftDetail;
-		} else {
-			List<PurchaseReceiveGiftDTO> giftList = purchaseService.selectAllReceivedGift(memberId);
-			response = giftList;
-		}
-
-		return ResponseMapper.successOf(response);
-
-	}
-
-	// 소비자 선물 보낸 후, 특정 선물 상세 조회
-	@GetMapping("/api/me/purchase/gift/{purchaseId}")
-	public ResponseEntity<ApiResponse<?>> searchDetailGift(@PathVariable Long purchaseId) {
-
-		PurchaseSendGiftDTO response = purchaseService.selectDetailSendGift(purchaseId);
-
-		return ResponseMapper.successOf(response);
-	}
+	
 }
