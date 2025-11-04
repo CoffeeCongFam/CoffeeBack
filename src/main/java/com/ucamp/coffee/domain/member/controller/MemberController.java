@@ -137,6 +137,26 @@ public class MemberController {
 
         return ResponseMapper.successOf(Map.of("message", "로그아웃 성공"));
     }
+    
+    // 로그인 후 현재 인증된 사용자의 기본 정보를 반환하는 API 
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<?>> getMemberInfo(@AuthenticationPrincipal MemberDetails user){
+    	
+    	Long memberId = user.getMemberId();
+        Member member = memberService.findById(memberId);
+
+        MemberDto dto = MemberDto.builder()
+        	    .memberId(member.getMemberId())
+        	    .email(member.getEmail())
+        	    .tel(member.getTel())
+        	    .gender(member.getGender())
+        	    .name(member.getName())
+        	    .memberType(member.getMemberType())
+        	    .activeStatus(member.getActiveStatus())
+        	    .build();
+        
+        return ResponseMapper.successOf(dto);
+    }
 
     // 일반회원 홈_사용자 정보 전달
     @GetMapping("/me")
