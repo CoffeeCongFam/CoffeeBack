@@ -2,6 +2,7 @@ package com.ucamp.coffee.domain.subscription.service;
 
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
+import com.ucamp.coffee.common.service.FileStorageService;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.store.entity.Menu;
@@ -20,6 +21,7 @@ import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,15 +37,19 @@ public class OwnerSubscriptionService {
     private final SubscriptionRepository repository;
     private final MemberHelperService memberHelperService;
     private final SubscriptionMenuRepository subscriptionMenuRepository;
+    private final FileStorageService fileStorageService;
 
     @Transactional
-    public void createSubscriptionInfo(SubscriptionCreateDTO dto, Long memberId) {
-        Member member = memberHelperService.findById(memberId)
+    public void createSubscriptionInfo(SubscriptionCreateDTO dto, MultipartFile file, Long memberId) {
+        Member member = memberHelperService.findById(1L)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
 
-        Subscription subscription = repository.save(SubscriptionMapper.toEntity(dto, store));
+        String imageUrl = null;
+        if (file != null && !file.isEmpty()) imageUrl = fileStorageService.save(file);
+
+        Subscription subscription = repository.save(SubscriptionMapper.toEntity(dto, store, imageUrl));
 
         if (dto.getMenuIds() != null && !dto.getMenuIds().isEmpty()) {
             List<Menu> menus = menuHelperService.findByIds(dto.getMenuIds());

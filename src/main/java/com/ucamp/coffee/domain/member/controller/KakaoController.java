@@ -77,7 +77,7 @@ public class KakaoController {
 
                 // 일반회원 / 점주 홈으로 리다이렉트
                 String baseUrl = "http://localhost:5173/";
-            	String page = MemberType.GENERAL.equals(member.getMemberType()) ? "me" : "store";
+            	String page = MemberType.GENERAL.equals(member.getMemberType()) ? "me" : "CafeSignUp";
                 redirectUrl = baseUrl + page;
             }
         

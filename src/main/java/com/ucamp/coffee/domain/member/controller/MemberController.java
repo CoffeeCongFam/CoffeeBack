@@ -108,7 +108,8 @@ public class MemberController {
         // 성공 시
         return ResponseMapper.successOf(Map.of(
                 "message", "성공",
-                "redirectUrl", "http://localhost:5173/store"));
+                "memberId", savedMember.getMemberId(),
+                "redirectUrl", "http://localhost:5173/cafeSignUp"));
     }
 
     // 카카오톡 로그아웃 & 세션/쿠키 삭제
