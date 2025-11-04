@@ -1,6 +1,7 @@
 package com.ucamp.coffee.domain.notification.controller;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -8,7 +9,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
@@ -20,12 +23,13 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/common/notification")
 public class NotificationController {
 
 	private final NotificationService notificationService;
 
 	// 알림 모두 조회(날짜순) - 삭제 안된 알림만
-	@GetMapping("/api/common/notification")
+	@GetMapping()
 	public ResponseEntity<ApiResponse<?>> searchAllNotification(@AuthenticationPrincipal MemberDetails member) {
 
 		Long memberId = member.getMemberId();
@@ -35,7 +39,7 @@ public class NotificationController {
 	}
 
 	// 알림 읽음 처리
-	@PatchMapping("/api/common/notification/{notificationId}")
+	@PatchMapping("/{notificationId}")
 	public ResponseEntity<ApiResponse<?>> readNotification(@PathVariable Long notificationId) {
 
 		notificationService.updateNotificationRead(notificationId);
@@ -44,7 +48,7 @@ public class NotificationController {
 	}
 
 	// 알림 모두 삭제
-	@DeleteMapping("/api/common/notification/{notificationId}")
+	@DeleteMapping("/{notificationId}")
 	public ResponseEntity<ApiResponse<?>> deleteNotification(@PathVariable Long notificationId) {
 
 		notificationService.deleteNotification(notificationId);
