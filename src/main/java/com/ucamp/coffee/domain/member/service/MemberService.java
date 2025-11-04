@@ -34,4 +34,9 @@ public class MemberService {
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
 	}
 
+    public Member findByTel(String tel){
+        return memberRepository.findByTel(tel)
+                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+    }
+
 }

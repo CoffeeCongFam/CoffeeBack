@@ -7,4 +7,7 @@ import com.ucamp.coffee.domain.member.entity.Member;
 public interface MemberRepository extends JpaRepository<Member, Long>{
 	// 이메일로 회원 조회
 	Optional<Member> findByEmail(String email);
+
+    // 전화번호로 회원 조회
+    Optional<Member> findByTel(String tel);
 }
