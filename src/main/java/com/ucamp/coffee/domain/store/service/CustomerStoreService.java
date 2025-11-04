@@ -14,6 +14,7 @@ import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDTO;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.service.CustomerSubscriptionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class CustomerStoreService {
     private final StoreHelperService helperService;
     private final MenuService menuService;
@@ -55,14 +57,12 @@ public class CustomerStoreService {
     public CustomerStoreResponseDTO readStoreInfo(Long partnerStoreId) {
         Store store = helperService.findById(partnerStoreId);
 
-        List<StoreHours> results = repository.findStoreDetails(partnerStoreId);
+        List<StoreHours> storeHoursList = repository.findStoreDetailsWithStoreHours(partnerStoreId);
         List<MenuResponseDTO> menus = menuService.readMenuListByStore(partnerStoreId);
         List<CustomerSubscriptionResponseDTO> subscriptions =
-                customerSubscriptionService.readSubscriptionListByStore(store); // 매장 기준으로 구독 리스트 조회
+            customerSubscriptionService.readSubscriptionListByStore(store); // 매장 기준으로 구독 리스트 조회
 
-        if (results.isEmpty()) return null;
-
-        return StoreMapper.toCustomerStoreDto(results, store, menus, subscriptions);
+        return StoreMapper.toCustomerStoreDto(storeHoursList, store, menus, subscriptions);
     }
 
     public List<CustomerStoreListResponseDTO> readNearbyStores(Double xPoint, Double yPoint, Double radius, Long memberId) {

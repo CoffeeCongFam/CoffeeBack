@@ -1,5 +1,7 @@
 package com.ucamp.coffee.domain.subscription.service;
 
+import com.ucamp.coffee.common.exception.CommonException;
+import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.store.entity.Menu;
@@ -19,7 +21,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,10 +77,34 @@ public class OwnerSubscriptionService {
     }
 
     @Transactional
-    public void updateSubscriptionStatus(Long subscriptionId, SubscriptionStatusDTO dto) {
+    public void updateSubscriptionStatus(Long subscriptionId, SubscriptionStatusDTO dto, Long memberId) {
+        Member member = memberHelperService.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
+
+        Store store = storeHelperService.findByMember(member)
+                .orElseThrow(() -> new IllegalArgumentException("해당 멤버가 존재하지 않습니다."));
+
+        if (!Objects.equals(store.getMember().getMemberId(), memberId)) throw new CommonException(ApiStatus.UNAUTHORIZED);
+
         Subscription subscription = repository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
 
         subscription.update(null, null, SubscriptionStatusType.valueOf(dto.getSubscriptionStatus()));
+    }
+
+    @Transactional
+    public void deleteSubscriptionInfo(Long subscriptionId, Long memberId) {
+        Member member = memberHelperService.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
+
+        Store store = storeHelperService.findByMember(member)
+            .orElseThrow(() -> new IllegalArgumentException("해당 멤버가 존재하지 않습니다."));
+
+        if (!Objects.equals(store.getMember().getMemberId(), memberId)) throw new CommonException(ApiStatus.UNAUTHORIZED);
+
+        Subscription subscription = repository.findById(subscriptionId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
+
+        subscription.setDeletedAt(LocalDateTime.now());
     }
 }

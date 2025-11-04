@@ -36,9 +36,7 @@ public class OwnerStoreService {
         Store store = repository.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("매장이 존재하지 않습니다."));
 
-        List<StoreHours> results = repository.findStoreDetails(store.getPartnerStoreId());
-
-        if (results.isEmpty()) return null;
+        List<StoreHours> results = repository.findStoreDetailsWithStoreHours(store.getPartnerStoreId());
 
         return StoreMapper.toOwnerStoreResponseDto(results, store, member);
     }
