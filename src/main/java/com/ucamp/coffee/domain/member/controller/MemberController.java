@@ -2,8 +2,9 @@ package com.ucamp.coffee.domain.member.controller;
 
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
+import com.ucamp.coffee.common.security.MemberDetails;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.ucamp.coffee.common.response.ApiResponse;
@@ -135,6 +136,26 @@ public class MemberController {
         response.addCookie(sessionCookie);
 
         return ResponseMapper.successOf(Map.of("message", "로그아웃 성공"));
+    }
+    
+    // 로그인 후 현재 인증된 사용자의 기본 정보를 반환하는 API 
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<?>> getMemberInfo(@AuthenticationPrincipal MemberDetails user){
+    	
+    	Long memberId = user.getMemberId();
+        Member member = memberService.findById(memberId);
+
+        MemberDto dto = MemberDto.builder()
+        	    .memberId(member.getMemberId())
+        	    .email(member.getEmail())
+        	    .tel(member.getTel())
+        	    .gender(member.getGender())
+        	    .name(member.getName())
+        	    .memberType(member.getMemberType())
+        	    .activeStatus(member.getActiveStatus())
+        	    .build();
+        
+        return ResponseMapper.successOf(dto);
     }
 
 }
