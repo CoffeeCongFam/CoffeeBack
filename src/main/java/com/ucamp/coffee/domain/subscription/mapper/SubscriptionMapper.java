@@ -4,8 +4,10 @@ import com.ucamp.coffee.common.util.DateTimeUtil;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.purchase.entity.Purchase;
 import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDTO;
+import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
 import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
+import com.ucamp.coffee.domain.store.mapper.MenuMapper;
 import com.ucamp.coffee.domain.subscription.dto.CustomerMemberSubscriptionResponseDTO;
 import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDTO;
 import com.ucamp.coffee.domain.subscription.dto.OwnerSubscriptionResponseDTO;
@@ -36,7 +38,7 @@ public class SubscriptionMapper {
                 .build();
     }
 
-    public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription) {
+    public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription, List<MenuResponseDTO> menus) {
     	Store store = subscription.getStore();
     	
         return OwnerSubscriptionResponseDTO.builder()
@@ -54,10 +56,11 @@ public class SubscriptionMapper {
                 .maxDailyUsage(subscription.getMaxDailyUsage())
                 .remainSalesQuantity(subscription.getRemainSalesQuantity())
                 .subscriptionStatus(subscription.getSubscriptionStatus() != null ? subscription.getSubscriptionStatus().name() : null)
+                .menus(menus)
                 .build();
     }
 
-    public static CustomerSubscriptionResponseDTO toCustomerResponseDto(Subscription subscription, CustomerStoreSimpleDTO dto) {
+    public static CustomerSubscriptionResponseDTO toCustomerResponseDto(Subscription subscription, CustomerStoreSimpleDTO dto, List<MenuResponseDTO> menus) {
         return CustomerSubscriptionResponseDTO.builder()
                 .store(dto)
                 .subscriptionId(subscription.getSubscriptionId())
@@ -73,6 +76,7 @@ public class SubscriptionMapper {
                 .maxDailyUsage(subscription.getMaxDailyUsage())
                 .remainSalesQuantity(subscription.getRemainSalesQuantity())
                 .subscriptionStatus(subscription.getSubscriptionStatus() != null ? subscription.getSubscriptionStatus().name() : null)
+                .menus(menus)
                 .build();
     }
 
@@ -82,6 +86,9 @@ public class SubscriptionMapper {
         Store store = subscription.getStore();
         Member member = memberSubscription.getMember();
         Member buyer = purchase.getBuyer();
+        List<MenuResponseDTO> menuDtos = menus.stream()
+            .map(MenuMapper::toDto)
+            .toList();
 
         return CustomerMemberSubscriptionResponseDTO.builder()
                 .subId(subscription.getSubscriptionId())
@@ -104,7 +111,7 @@ public class SubscriptionMapper {
                 .receiver(member.getName())
                 .sender(buyer.getName())
                 .subscriptionType(subscription.getSubscriptionType().name())
-                .menu(menus.stream().map(Menu::getMenuName).toList())
+                .menu(menuDtos)
                 .purchaseId(purchase.getPurchaseId())
                 .usedAt(subscriptionUsageHistories.stream().map(SubscriptionUsageHistory::getCreatedAt).map(DateTimeUtil::toUtcDateTime).sorted().toList())
                 .refundReasons(null)

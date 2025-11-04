@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SubscriptionMenuRepository extends JpaRepository<SubscriptionMenu, Long> {
-    Optional<SubscriptionMenu> findBySubscription(Subscription subscription);
+    List<SubscriptionMenu> findBySubscription(Subscription subscription);
 
     @Query("""
         SELECT sm

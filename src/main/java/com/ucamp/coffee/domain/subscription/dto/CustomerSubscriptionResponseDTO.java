@@ -27,5 +27,5 @@ public class CustomerSubscriptionResponseDTO {
     private Integer remainSalesQuantity;
     private String subscriptionStatus;
     private String subscriptionImg;
-    private List<MenuResponseDTO> subscriptionMenus;
+    private List<MenuResponseDTO> menus;
 }
