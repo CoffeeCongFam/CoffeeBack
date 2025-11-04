@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CustomerStoreNearByResponseDTO {
+public class CustomerStoreListResponseDTO {
     private Long storeId;
     private String storeName;
     private String storeStatus;

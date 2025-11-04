@@ -2,11 +2,13 @@ package com.ucamp.coffee.domain.store.controller;
 
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
+import com.ucamp.coffee.common.security.MemberDetails;
 import com.ucamp.coffee.domain.store.service.CustomerStoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -16,6 +18,11 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerStoreController {
     private final CustomerStoreService service;
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<?>> readStoreList() {
+        return ResponseMapper.successOf(service.readStoreList());
+    }
+
     @GetMapping("/{partnerStoreId}")
     public ResponseEntity<ApiResponse<?>> readStoreInfo(@PathVariable Long partnerStoreId) {
         return ResponseMapper.successOf(service.readStoreInfo(partnerStoreId));
@@ -23,10 +30,11 @@ public class CustomerStoreController {
 
     @GetMapping("/nearby")
     public ResponseEntity<ApiResponse<?>> readNearbyStores(
+        @AuthenticationPrincipal MemberDetails user,
         @RequestParam Double xPoint,
         @RequestParam Double yPoint,
         @RequestParam(defaultValue = "2") Double radius
     ) {
-        return ResponseMapper.successOf(service.readNearbyStores(xPoint, yPoint, radius));
+        return ResponseMapper.successOf(service.readNearbyStores(xPoint, yPoint, radius, user.getMemberId()));
     }
 }

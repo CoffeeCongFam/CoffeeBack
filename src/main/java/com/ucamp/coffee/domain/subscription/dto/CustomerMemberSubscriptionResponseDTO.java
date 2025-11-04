@@ -13,6 +13,8 @@ import java.util.List;
 @ToString
 public class CustomerMemberSubscriptionResponseDTO {
     private Long subId;
+    private Long receiverId;
+    private Long senderId;
     private CustomerStoreSimpleDTO store;
     private String subName;
     private String isGift;
@@ -25,5 +27,8 @@ public class CustomerMemberSubscriptionResponseDTO {
     private String sender;
     private String subscriptionType;
     private List<String> menu;
+    private Long purchaseId;
     private List<String> usedAt;
+    private List<String> refundReasons;
+    private String refundedAt;
 }

@@ -73,7 +73,7 @@ public class KakaoController {
                 
                 // 세션 등록
                 HttpSession session = request.getSession();
-                session.setAttribute("user", member);
+                session.setAttribute("memberId", member.getMemberId());
 
                 // 일반회원 / 점주 홈으로 리다이렉트
                 String baseUrl = "http://localhost:5173/";
