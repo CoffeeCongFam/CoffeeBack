@@ -16,6 +16,9 @@ public interface PurchaseMapper {
 	// 소비자의 전체 주문 조회
 	List<PurchaseAllResponseDTO> selectAllPurchase(Map<String, Object> param);
 
+	//소비자의 상세 주문 조회
+	PurchaseAllResponseDTO selectPurchase(Long purchaseId);
+	
 	// 소비자의 모든 선물 목록 조회
 	List<PurchaseAllGiftDTO> selectAllGift(Long memberId);
 

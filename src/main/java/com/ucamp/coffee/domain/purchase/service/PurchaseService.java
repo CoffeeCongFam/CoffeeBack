@@ -122,6 +122,16 @@ public class PurchaseService {
 
 		return response;
 	}
+	
+	/**
+	 * 소비자 주문 단건 조회
+	 * @param purchaseId
+	 * @return
+	 */
+	public PurchaseAllResponseDTO selectPurchase(Long purchaseId) {
+		
+		return purchaseMapper.selectPurchase(purchaseId);
+	}
 
 	/**
 	 * 소비자 주문 환불 처리
