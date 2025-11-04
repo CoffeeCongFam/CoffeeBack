@@ -148,9 +148,10 @@ public class PurchaseService {
 	 * 소비자 주문 환불 처리
 	 * 
 	 * @param purchaseId
+	 * @return 
 	 */
 	@Transactional
-	public void updatePurchaseRefunded(Long purchaseId) {
+	public LocalDateTime updatePurchaseRefunded(Long purchaseId) {
 
 		Purchase purchase = purchaseRepository.findById(purchaseId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구매 정보가 존재하지 않습니다."));
@@ -178,6 +179,8 @@ public class PurchaseService {
 
 		// 환불 처리
 		purchase.refundedPurchase();
+		
+		return purchase.getRefundedAt();
 	}
 
 	/**

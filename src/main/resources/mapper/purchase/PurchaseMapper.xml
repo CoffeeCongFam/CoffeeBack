@@ -17,7 +17,8 @@
 		paymentAmount,
 		p.GIFT_MESSAGE,
 		ms.USAGE_STATUS,
-		p.REFUNDED_AT
+		p.REFUNDED_AT,
+		ps.STORE_NAME 
 		FROM
 		PURCHASE p
 		JOIN MEMBER bm ON
@@ -31,6 +32,8 @@
 		JOIN MEMBER_SUBSCRIPTION ms ON
 		p.PURCHASE_ID =
 		ms.PURCHASE_ID
+		JOIN PARTNER_STORE ps ON
+		ps.PARTNER_STORE_ID = s.PARTNER_STORE_ID 
 		WHERE bm.MEMBER_ID = #{memberId}
 
 		<if test="type == 'gift'">
