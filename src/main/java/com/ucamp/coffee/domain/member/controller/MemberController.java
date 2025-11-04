@@ -158,4 +158,21 @@ public class MemberController {
         return ResponseMapper.successOf(dto);
     }
 
+    // 선물할 때, 전화번호 입력 시 memberId, 회원이름, 전화번호 전달
+    @PostMapping("/me/purchase/gift/tel")
+    public ResponseEntity<ApiResponse<?>> getTelInfo(@RequestBody MemberDto memberDto){
+
+        String tel = memberDto.getTel();
+
+        Member member = memberService.findByTel(tel);
+
+        MemberDto dto = MemberDto.builder()
+                .memberId(member.getMemberId())
+                .name(member.getName())
+                .tel(member.getTel())
+                .build();
+
+        return ResponseMapper.successOf(dto);
+    }
+
 }
