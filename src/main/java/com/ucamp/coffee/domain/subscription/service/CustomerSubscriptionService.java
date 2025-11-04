@@ -43,14 +43,7 @@ public class CustomerSubscriptionService {
     private final SubscriptionMenuRepository subscriptionMenuRepository;
     private final SubscriptionUsageHistoryRepository subscriptionUsageHistoryRepository;
 
-    public List<CustomerSubscriptionResponseDTO> readSubscriptionList() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+    public List<CustomerSubscriptionResponseDTO> readSubscriptionList(Long memberId) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
@@ -70,14 +63,23 @@ public class CustomerSubscriptionService {
             .collect(Collectors.toList());
     }
 
-    public List<CustomerMemberSubscriptionResponseDTO> readMemberSubscriptionList() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    // 매장 id 기반으로 매장 상세 정보 조회
+    public List<CustomerSubscriptionResponseDTO> readSubscriptionListByStore(Store store) {
+        return repository.findByStore(store)
+            .stream()
+            .map(subscription -> {
+                CustomerStoreSimpleDTO storeDto = CustomerStoreSimpleDTO.builder()
+                    .partnerStoreId(subscription.getStore().getPartnerStoreId())
+                    .storeName(subscription.getStore().getStoreName())
+                    .storeImg(subscription.getStore().getStoreImg())
+                    .build();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
+                return SubscriptionMapper.toCustomerResponseDto(subscription, storeDto);
+            })
+            .toList();
+    }
 
-        Long memberId = Long.parseLong(authentication.getName());
+    public List<CustomerMemberSubscriptionResponseDTO> readMemberSubscriptionList(Long memberId) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 

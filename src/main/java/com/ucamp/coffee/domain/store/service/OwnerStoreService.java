@@ -1,7 +1,5 @@
 package com.ucamp.coffee.domain.store.service;
 
-import com.ucamp.coffee.common.exception.CommonException;
-import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.store.dto.OwnerStoreResponseDTO;
@@ -12,8 +10,6 @@ import com.ucamp.coffee.domain.store.entity.StoreHours;
 import com.ucamp.coffee.domain.store.mapper.StoreMapper;
 import com.ucamp.coffee.domain.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,28 +23,14 @@ public class OwnerStoreService {
     private final MemberHelperService memberHelperService;
 
     @Transactional
-    public void createStoreInfo(StoreCreateDTO dto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+    public void createStoreInfo(StoreCreateDTO dto, Long memberId) {
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
         repository.save(StoreMapper.toEntity(dto, member));
     }
 
-    public OwnerStoreResponseDTO readStoreInfo() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+    public OwnerStoreResponseDTO readStoreInfo(Long memberId) {
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         Store store = repository.findByMember(member)
@@ -62,14 +44,7 @@ public class OwnerStoreService {
     }
 
     @Transactional
-    public void updateStoreInfo(Long partnerStoreId, StoreUpdateDTO dto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+    public void updateStoreInfo(Long partnerStoreId, StoreUpdateDTO dto, Long memberId) {
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 

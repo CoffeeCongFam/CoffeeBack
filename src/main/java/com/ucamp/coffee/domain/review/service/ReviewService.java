@@ -1,7 +1,5 @@
 package com.ucamp.coffee.domain.review.service;
 
-import com.ucamp.coffee.common.exception.CommonException;
-import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.review.dto.ReviewCreateDTO;
@@ -15,8 +13,6 @@ import com.ucamp.coffee.domain.store.service.StoreHelperService;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import com.ucamp.coffee.domain.subscription.service.SubscriptionHelperService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,14 +29,7 @@ public class ReviewService {
     private final MemberHelperService memberHelperService;
 
     @Transactional
-    public void createReviewInfo(ReviewCreateDTO dto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+    public void createReviewInfo(ReviewCreateDTO dto, Long memberId) {
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findById(dto.getPartnerStoreId());
@@ -57,14 +46,7 @@ public class ReviewService {
             .toList();
     }
 
-    public List<ReviewResponseDTO> readMyReviews() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+    public List<ReviewResponseDTO> readMyReviews(Long memberId) {
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
 

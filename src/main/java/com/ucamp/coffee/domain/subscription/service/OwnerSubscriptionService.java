@@ -1,7 +1,5 @@
 package com.ucamp.coffee.domain.subscription.service;
 
-import com.ucamp.coffee.common.exception.CommonException;
-import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.store.entity.Menu;
@@ -18,8 +16,6 @@ import com.ucamp.coffee.domain.subscription.repository.SubscriptionMenuRepositor
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,14 +33,7 @@ public class OwnerSubscriptionService {
     private final SubscriptionMenuRepository subscriptionMenuRepository;
 
     @Transactional
-    public void createSubscriptionInfo(SubscriptionCreateDTO dto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+    public void createSubscriptionInfo(SubscriptionCreateDTO dto, Long memberId) {
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
@@ -66,14 +55,7 @@ public class OwnerSubscriptionService {
         }
     }
 
-    public List<OwnerSubscriptionResponseDTO> readSubscriptionList() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
+    public List<OwnerSubscriptionResponseDTO> readSubscriptionList(Long memberId) {
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
@@ -92,21 +74,9 @@ public class OwnerSubscriptionService {
 
     @Transactional
     public void updateSubscriptionStatus(Long subscriptionId, SubscriptionStatusDTO dto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new CommonException(ApiStatus.UNAUTHORIZED);
-        }
-
-        Long memberId = Long.parseLong(authentication.getName());
-        Member member = memberHelperService.findById(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
-
         Subscription subscription = repository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
 
         subscription.update(null, null, SubscriptionStatusType.valueOf(dto.getSubscriptionStatus()));
     }
-
-    /* TODO: 구독권 삭제 시 구독권-메뉴 테이블 SOFT DELETE 처리 */
 }
