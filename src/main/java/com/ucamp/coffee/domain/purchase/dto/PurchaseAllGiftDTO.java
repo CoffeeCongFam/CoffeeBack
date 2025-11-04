@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PurchaseAllGiftDTO {
 
+	private Long senderId;
+	private Long receiverId;
 	private String isGift;
 	private String sender;
 	private String receiver;
