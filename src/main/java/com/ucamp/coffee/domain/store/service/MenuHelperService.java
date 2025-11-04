@@ -1,6 +1,9 @@
 package com.ucamp.coffee.domain.store.service;
 
+import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
 import com.ucamp.coffee.domain.store.entity.Menu;
+import com.ucamp.coffee.domain.store.entity.Store;
+import com.ucamp.coffee.domain.store.mapper.MenuMapper;
 import com.ucamp.coffee.domain.store.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,10 +16,19 @@ import java.util.List;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MenuHelperService {
-    private final MenuRepository menuRepository;
+    private final StoreHelperService storeHelperService;
+    private final MenuRepository repository;
 
     public List<Menu> findByIds(List<Long> menuIds) {
         if (menuIds == null || menuIds.isEmpty()) return Collections.emptyList();
-        return menuRepository.findAllById(menuIds);
+        return repository.findAllById(menuIds);
+    }
+
+    public List<MenuResponseDTO> readMenuListByStore(Long partnerStoreId) {
+        Store store = storeHelperService.findById(partnerStoreId);
+        return repository.findMenuListWithStore(store)
+            .stream()
+            .map(MenuMapper::toDto)
+            .toList();
     }
 }

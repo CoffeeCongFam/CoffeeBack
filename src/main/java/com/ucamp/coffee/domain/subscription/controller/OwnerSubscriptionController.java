@@ -21,14 +21,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class OwnerSubscriptionController {
     private final OwnerSubscriptionService service;
 
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<?>> createSubscriptionInfo(
-            // @AuthenticationPrincipal MemberDetails user,
+            @AuthenticationPrincipal MemberDetails user,
             @RequestPart("data") SubscriptionCreateDTO dto,
             @RequestPart(value = "file", required = false) MultipartFile file
     ) {
-        service.createSubscriptionInfo(dto, file, 1L);
+        service.createSubscriptionInfo(dto, file, user.getMemberId());
         return ResponseMapper.successOf(null);
     }
 
@@ -48,7 +47,7 @@ public class OwnerSubscriptionController {
         @PathVariable Long subscriptionId,
         @RequestBody SubscriptionStatusDTO dto
     ) {
-        service.updateSubscriptionStatus(subscriptionId, dto, 1L);
+        service.updateSubscriptionStatus(subscriptionId, dto, user.getMemberId());
         return ResponseMapper.successOf(null);
     }
 
