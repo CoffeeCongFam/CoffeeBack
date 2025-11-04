@@ -37,9 +37,12 @@ public class SubscriptionMapper {
     }
 
     public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription) {
+    	Store store = subscription.getStore();
+    	
         return OwnerSubscriptionResponseDTO.builder()
                 .subscriptionId(subscription.getSubscriptionId())
-                .partnerStoreId(subscription.getStore().getPartnerStoreId())
+                .partnerStoreId(store.getPartnerStoreId())
+                .storeName(store.getStoreName())
                 .subscriptionName(subscription.getSubscriptionName())
                 .price(subscription.getPrice())
                 .subscriptionDesc(subscription.getSubscriptionDesc())

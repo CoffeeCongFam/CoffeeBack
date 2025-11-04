@@ -11,6 +11,7 @@ import lombok.*;
 public class OwnerSubscriptionResponseDTO {
     private Long subscriptionId;
     private Long partnerStoreId;
+    private String storeName;
     private String subscriptionName;
     private Integer price;
     private String subscriptionDesc;
