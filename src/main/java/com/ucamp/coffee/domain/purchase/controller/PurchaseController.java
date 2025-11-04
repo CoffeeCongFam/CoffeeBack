@@ -63,6 +63,20 @@ public class PurchaseController {
 		List<PurchaseAllResponseDTO> response = purchaseService.selectAllPurchase(memberId, type);
 		return ResponseMapper.successOf(response);
 	}
+	
+	/**
+	 * 소비자 구매내역 단건 조회
+	 * @param purchaseId
+	 * @return
+	 */
+	@GetMapping("/{purchaseId}")
+	public ResponseEntity<ApiResponse<?>> searchPurchase(@PathVariable Long purchaseId) {
+
+
+		PurchaseAllResponseDTO response = purchaseService.selectPurchase(purchaseId);
+		
+		return ResponseMapper.successOf(response);
+	}
 
 	/**
 	 * 소비자 환불하기

@@ -5,6 +5,40 @@
 <mapper
 	namespace="com.ucamp.coffee.domain.purchase.mapper.PurchaseMapper">
 
+	<!-- 소비자의 단건 주문 조회 -->
+	<select id="selectPurchase" parameterType="long"
+		resultType="PurchaseAllResponseDTO">
+		SELECT bm.NAME AS sender, rm.NAME AS receiver,
+		s.SUBSCRIPTION_NAME,
+		s.SUBSCRIPTION_ID,
+		p.CREATED_AT as paidAt,
+		p.PURCHASE_ID,
+		ms.MEMBER_SUBSCRIPTION_ID,
+		p.PAYMENT_STATUS, p.IS_GIFT,
+		s.PRICE As
+		paymentAmount,
+		p.GIFT_MESSAGE,
+		ms.USAGE_STATUS,
+		p.REFUNDED_AT,
+		ps.STORE_NAME
+		FROM
+		PURCHASE p
+		JOIN MEMBER bm ON
+		p.MEMBER_ID = bm.MEMBER_ID
+		JOIN MEMBER rm ON
+		p.RECEIVER_MEMBER_ID =
+		rm.MEMBER_ID
+		JOIN SUBSCRIPTION s
+		ON
+		p.SUBSCRIPTION_ID =
+		s.SUBSCRIPTION_ID
+		JOIN MEMBER_SUBSCRIPTION ms ON
+		p.PURCHASE_ID =
+		ms.PURCHASE_ID
+		JOIN PARTNER_STORE ps ON
+		ps.PARTNER_STORE_ID = s.PARTNER_STORE_ID
+		WHERE p.PURCHASE_ID = #{purchaseId}
+	</select>
 	<!-- 소비자의 전체 주문 조회 -->
 	<select id="selectAllPurchase" parameterType="map"
 		resultType="PurchaseAllResponseDTO">
@@ -18,7 +52,7 @@
 		p.GIFT_MESSAGE,
 		ms.USAGE_STATUS,
 		p.REFUNDED_AT,
-		ps.STORE_NAME 
+		ps.STORE_NAME
 		FROM
 		PURCHASE p
 		JOIN MEMBER bm ON
@@ -26,15 +60,17 @@
 		JOIN MEMBER rm ON
 		p.RECEIVER_MEMBER_ID =
 		rm.MEMBER_ID
-		JOIN SUBSCRIPTION s ON
+		JOIN SUBSCRIPTION s
+		ON
 		p.SUBSCRIPTION_ID =
 		s.SUBSCRIPTION_ID
 		JOIN MEMBER_SUBSCRIPTION ms ON
 		p.PURCHASE_ID =
 		ms.PURCHASE_ID
 		JOIN PARTNER_STORE ps ON
-		ps.PARTNER_STORE_ID = s.PARTNER_STORE_ID 
-		WHERE bm.MEMBER_ID = #{memberId}
+		ps.PARTNER_STORE_ID = s.PARTNER_STORE_ID
+		WHERE bm.MEMBER_ID =
+		#{memberId}
 
 		<if test="type == 'gift'">
 			AND p.IS_GIFT = 'Y'
@@ -172,7 +208,8 @@
 		WHERE
 		p.IS_GIFT = 'Y' AND
 		p.PURCHASE_ID = #{purchaseId}
-		ORDER BY
+		ORDER
+		BY
 		p.CREATED_AT DESC
 	</select>
 
@@ -201,7 +238,7 @@
 			<result property="menuName" column="MENU_NAME" />
 		</collection>
 	</resultMap>
-	
+
 	<select id="selectAllReceivedGift" parameterType="long"
 		resultMap="PurchaseReceiveGiftMap">
 		SELECT
@@ -240,7 +277,7 @@
 		ORDER BY
 		p.CREATED_AT DESC
 	</select>
-	
+
 	<!-- 소비자의 받은 선물 상세 조회 -->
 	<select id="selectReceivedGiftDetail" parameterType="long"
 		resultMap="PurchaseReceiveGiftMap">
@@ -276,7 +313,8 @@
 		sm.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
 		JOIN MENU m ON m.MENU_ID =
 		sm.MENU_ID
-		WHERE p.IS_GIFT = 'Y' AND ms.MEMBER_SUBSCRIPTION_ID = #{memberSubscriptionId}
+		WHERE p.IS_GIFT = 'Y' AND ms.MEMBER_SUBSCRIPTION_ID =
+		#{memberSubscriptionId}
 		ORDER BY
 		p.CREATED_AT DESC
 	</select>
