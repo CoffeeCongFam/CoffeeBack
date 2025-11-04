@@ -32,10 +32,10 @@ public class Menu extends BaseEntity {
     private String menuDesc;
     private String menuStatus;
 
-    public void update(MenuUpdateDTO dto) {
+    public void update(MenuUpdateDTO dto, String image) {
         if (dto.getMenuName() != null) this.menuName = dto.getMenuName();
         if (dto.getPrice() != null) this.price = dto.getPrice();
-        if (dto.getMenuImg() != null) this.menuImg = dto.getMenuImg();
+        if (image != null) this.menuImg = image;
         if (dto.getMenuDesc() != null) this.menuDesc = dto.getMenuDesc();
         if (dto.getMenuType() != null) this.menuType = MenuType.valueOf(dto.getMenuType());
         if (dto.getMenuStatus() != null) this.menuStatus = dto.getMenuStatus();

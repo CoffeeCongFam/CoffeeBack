@@ -6,8 +6,10 @@ import com.ucamp.coffee.domain.store.dto.MenuCreateDTO;
 import com.ucamp.coffee.domain.store.dto.MenuUpdateDTO;
 import com.ucamp.coffee.domain.store.service.MenuService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/stores/menus")
@@ -15,9 +17,12 @@ import org.springframework.web.bind.annotation.*;
 public class MenuController {
     private final MenuService service;
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<?>> createMenuInfo(@RequestBody MenuCreateDTO dto) {
-        service.createMenuInfo(dto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<?>> createMenuInfo(
+        @RequestPart("data") MenuCreateDTO dto,
+        @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        service.createMenuInfo(dto, file);
         return ResponseMapper.successOf(null);
     }
 
@@ -34,9 +39,10 @@ public class MenuController {
     @PatchMapping("/{menuId}")
     public ResponseEntity<ApiResponse<?>> updateMenuInfo(
         @PathVariable Long menuId,
-        @RequestBody MenuUpdateDTO dto
+        @RequestPart("data") MenuUpdateDTO dto,
+        @RequestPart(value = "file", required = false) MultipartFile file
     ) {
-        service.updateMenuInfo(menuId, dto);
+        service.updateMenuInfo(menuId, dto, file);
         return ResponseMapper.successOf(null);
     }
 

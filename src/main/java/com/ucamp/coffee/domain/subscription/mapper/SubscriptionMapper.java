@@ -19,14 +19,14 @@ import com.ucamp.coffee.domain.subscription.type.SubscriptionType;
 import java.util.List;
 
 public class SubscriptionMapper {
-    public static Subscription toEntity(SubscriptionCreateDTO dto, Store store) {
+    public static Subscription toEntity(SubscriptionCreateDTO dto, Store store, String imageUrl) {
         return Subscription.builder()
                 .store(store)
                 .subscriptionName(dto.getSubscriptionName())
                 .price(dto.getPrice() != null ? dto.getPrice().intValue() : null)
                 .subscriptionDesc(dto.getSubscriptionDesc())
                 .totalSale(0)
-                .subscriptionImg(dto.getSubscriptionImg())
+                .subscriptionImg(imageUrl)
                 .salesLimitQuantity(dto.getSalesLimitQuantity() != null ? dto.getSalesLimitQuantity().intValue() : null)
                 .subscriptionType(dto.getSubscriptionType() != null ? SubscriptionType.valueOf(dto.getSubscriptionType()) : null)
                 .subscriptionPeriod(dto.getSubscriptionPeriod() != null ? dto.getSubscriptionPeriod().intValue() : null)
