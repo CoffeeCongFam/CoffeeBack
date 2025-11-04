@@ -1,5 +1,6 @@
 package com.ucamp.coffee.domain.purchase.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -57,9 +58,9 @@ public class PurchaseController {
 	@PatchMapping("/api/me/purchase/{purchaseId}")
 	public ResponseEntity<ApiResponse<?>> modifyPurchaseRefunded(@PathVariable Long purchaseId) {
 
-		purchaseService.updatePurchaseRefunded(purchaseId);
+		LocalDateTime refundedAt = purchaseService.updatePurchaseRefunded(purchaseId);
 
-		return ResponseMapper.successOf(null);
+		return ResponseMapper.successOf(Map.of("refundedAt", refundedAt));
 	}
 
 	// 선물 전체 목록 조회
