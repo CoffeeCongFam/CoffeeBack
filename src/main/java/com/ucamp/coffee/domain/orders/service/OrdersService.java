@@ -76,38 +76,18 @@ public class OrdersService {
 		MemberSubscription subscription = memberSubscriptionRepository.findById(request.getMemberSubscriptionId())
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구독 정보를 찾을 수 없습니다."));
 
-		// 총 주문 개수 계산
-		int quantity = 0;
-		for (MenuDTO menu : request.getMenu()) {
-			quantity += menu.getCount();
-		}
-
-		// 만료되었거나 주문 수가 당일 잔여 수보다 적으면
-		if (subscription.getUsageStatus() == UsageStatus.EXPIRED || subscription.getDailyRemainCount() < quantity) {
-			throw new CommonException(ApiStatus.BAD_REQUEST, "사용할 수 없는 구독권입니다.");
-		}
-
-		// 만약 사용한적 없는 구독권이라면 상태 변경
-		if (subscription.getUsageStatus() == UsageStatus.NOT_ACTIVATED) {
-			subscription.activateSubscription();
-		}
-
-		// 일 잔여 횟수 차감 후 저장
-		int remain = subscription.getDailyRemainCount();
-		subscription.setDailyRemainCount(remain - quantity);
+		// 보유 구독권 사용
+		int quantity = request.getMenu().stream().mapToInt(OrdersCreateDTO.MenuDTO::getCount).sum();
+		subscription.use(quantity);
 
 		// 구독권 사용 내역 생성
 		SubscriptionUsageHistory history = SubscriptionUsageHistory.builder().memberSubscription(subscription).build();
 		subscriptionUsageHistoryRepository.save(history);
 
-		// 주문 번호 생성
-		int orderNumber = (int) (Math.random() * 9000) + 1000;
-
 		// 주문 생성
 		Orders orders = Orders.builder().store(store).member(member).memberSubscription(subscription)
 				.orderType(request.getOrderType()).orderStatus(OrderStatusType.REQUEST).totalQuantity(quantity)
-				.orderNumber(orderNumber).build();
-
+				.orderNumber((int) (Math.random() * 9000) + 1000).build();
 		ordersRepository.save(orders);
 
 		// 메뉴 - 주문 생성
@@ -196,7 +176,7 @@ public class OrdersService {
 		}
 
 		// 제조 완료 알림 및 소비자에게 SMS 전송
-		if(request.getOrderStatus() == OrderStatusType.COMPLETED) {
+		if (request.getOrderStatus() == OrderStatusType.COMPLETED) {
 			publisher.publishEvent(new OrderCompletedEvent(orderId));
 		}
 		order.changeOrderStatus(request.getOrderStatus());
@@ -215,7 +195,7 @@ public class OrdersService {
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
 
 		publisher.publishEvent(new OrderRejectedEvent(orderId));
-		
+
 		order.rejectOrder(request.getRejectedReason());
 	}
 
