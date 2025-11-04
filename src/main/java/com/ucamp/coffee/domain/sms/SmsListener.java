@@ -57,13 +57,11 @@ public class SmsListener {
 
 		StringBuilder msg = new StringBuilder();
 		msg.append("[").append(store.getStoreName()).append("] ").append(member.getName())
-				.append(" 고객님! 고객님의 주문이 정상적으로 접수되었습니다.\n").append("주문번호: #").append(order.getOrderNumber()).append("\n")
-				.append("잠시 후 준비가 완료되면 알려드릴게요");
+				.append(" 고객님의 주문이 정상적으로 접수되었습니다.\n").append("주문번호: #").append(order.getOrderNumber());
 
 		StringBuilder msg2 = new StringBuilder();
 		msg2.append("[").append(store.getStoreName()).append("] ").append(member.getName())
-				.append(" 점주님! 새로운 주문이 접수되었습니다.\n").append("주문번호: #").append(order.getOrderNumber()).append("\n")
-				.append("주문 내역을 확인하고 음료를 준비해주세요.");
+				.append(" 새로운 주문이 접수되었습니다.\n").append("주문번호: #").append(order.getOrderNumber());
 
 		smsService.sendMessage(member.getTel(), String.valueOf(msg));
 		smsService.sendMessage(storeMember.getTel(), String.valueOf(msg2));
@@ -107,8 +105,8 @@ public class SmsListener {
 
 		StringBuilder msg = new StringBuilder();
 
-		msg.append("[").append(store.getStoreName()).append("] 주문(#").append(order.getOrderNumber())
-				.append(")이 정상적으로 수락되었습니다. \n").append("매장에서 제조가 시작되었으며, 준비 완료 시 안내드리겠습니다.");
+		msg.append("[").append(store.getStoreName()).append("] #").append(order.getOrderNumber())
+				.append("번 주문이 정상적으로 수락되었습니다.");
 
 		smsService.sendMessage(member.getTel(), String.valueOf(msg));
 
@@ -130,14 +128,15 @@ public class SmsListener {
 		Member member = order.getMember();
 
 		StringBuilder msg = new StringBuilder();
-		msg.append("[").append(store.getStoreName()).append("] 주문(#").append(order.getOrderNumber())
-				.append(")이 제조 완료되었습니다. \n지금 매장에서 수령해주세요\n이용해주셔서 감사합니다.");
+		msg.append("[").append(store.getStoreName()).append("] #").append(order.getOrderNumber())
+				.append("번 주문이 제조 완료되었습니다.");
 
 		smsService.sendMessage(member.getTel(), String.valueOf(msg));
 	}
 
 	/**
 	 * 매장 주문 거부 이벤트
+	 * 
 	 * @param event
 	 */
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -151,8 +150,8 @@ public class SmsListener {
 		Member member = order.getMember();
 
 		StringBuilder msg = new StringBuilder();
-		msg.append("[").append(store.getStoreName()).append("] 주문(#").append(order.getOrderNumber())
-				.append(")이 매장 사정으로 취소되었습니다.\n불편을 드려 죄송합니다.\n취소사유 : ").append(order.getRejectedReason());
+		msg.append("[").append(store.getStoreName()).append("] #").append(order.getOrderNumber())
+				.append("번 주문이 매장 사정으로 취소되었습니다.\n취소사유 : ").append(order.getRejectedReason());
 
 		smsService.sendMessage(member.getTel(), String.valueOf(msg));
 	}

@@ -25,9 +25,9 @@ public class SmsService {
 	 * @param msg
 	 */
 	public void sendMessage(String tel, String msg) {
-		
-		tel = "01091205456"; //-------------------------테스트 후 수정
-		
-		smsUtil.sendOne(tel, msg);
+
+		//전화번호 하이픈 및 공백 제거
+		String cleanedTel = tel.replaceAll("[^0-9]", "");
+		smsUtil.sendOne(cleanedTel, msg);
 	}
 }

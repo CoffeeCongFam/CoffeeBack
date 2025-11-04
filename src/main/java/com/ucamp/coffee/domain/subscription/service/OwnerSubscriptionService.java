@@ -72,7 +72,7 @@ public class OwnerSubscriptionService {
     }
 
     public OwnerSubscriptionResponseDTO readSubscriptionInfo(Long subscriptionId) {
-        return SubscriptionMapper.toOwnerResponseDto(repository.findById(subscriptionId)
+        return SubscriptionMapper.toOwnerResponseDto(repository.findByIdWithStore(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다.")));
     }
 
