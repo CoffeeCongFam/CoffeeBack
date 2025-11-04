@@ -26,6 +26,7 @@ import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
+import com.ucamp.coffee.domain.subscription.service.MemberSubscriptionService;
 import com.ucamp.coffee.domain.subscription.type.UsageStatus;
 
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,8 @@ public class PurchaseService {
 	private final PurchaseRepository purchaseRepository;
 	private final MemberSubscriptionRepository memberSubscriptionRepository;
 
+	private final MemberSubscriptionService memberSubscriptionService; 
+	
 	private final PurchaseMapper purchaseMapper;
 
 	/**
@@ -79,36 +82,12 @@ public class PurchaseService {
 		Purchase savedPurchase = purchaseRepository.save(purchase);
 
 		// 보유 구독권 생성
-		createMemberSubscription(receiver, savedPurchase, subscription, isGift);
+		memberSubscriptionService.createMemberSubscription(receiver, savedPurchase, subscription, isGift);
 
 		// PK값 return
 		return savedPurchase.getPurchaseId();
 	}
-
-	/**
-	 * 보유 구독권 생성
-	 * 
-	 * @param receiver
-	 * @param purchase
-	 * @param subscription
-	 * @param isGift
-	 */
-	private void createMemberSubscription(Member receiver, Purchase purchase, Subscription subscription,
-			String isGift) {
-
-		Integer dailyRemainCount = subscription.getMaxDailyUsage();
-		LocalDateTime subscriptionStart = LocalDateTime.now();
-		LocalDateTime subscriptionEnd = subscriptionStart.plusDays(subscription.getSubscriptionPeriod());
-
-		// 보유 구독권 entity 생성
-		MemberSubscription memberSubscription = MemberSubscription.builder().member(receiver).purchase(purchase)
-				.isGift(isGift).dailyRemainCount(dailyRemainCount).subscriptionStart(subscriptionStart)
-				.subscriptionEnd(subscriptionEnd).build();
-
-		memberSubscriptionRepository.save(memberSubscription);
-
-	}
-
+	
 	/**
 	 * 소비자 전체 주문 내역 조회(전체, 직접구매, 선물)
 	 * 
