@@ -26,8 +26,6 @@ public class SmsService {
 	 */
 	public void sendMessage(String tel, String msg) {
 		
-		tel = "01091205456"; //-------------------------테스트 후 수정
-		
 		smsUtil.sendOne(tel, msg);
 	}
 }
