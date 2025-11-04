@@ -1,10 +1,9 @@
 package com.ucamp.coffee.domain.subscription.service;
 
+import com.ucamp.coffee.common.exception.CommonException;
+import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
-import com.ucamp.coffee.domain.purchase.entity.Purchase;
-import com.ucamp.coffee.domain.purchase.type.PaymentStatus;
-import com.ucamp.coffee.domain.purchase.type.RefundReasonType;
 import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDTO;
 import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
@@ -20,14 +19,16 @@ import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionReposit
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionMenuRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionUsageHistoryRepository;
-import com.ucamp.coffee.domain.subscription.type.UsageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -60,6 +61,22 @@ public class CustomerSubscriptionService {
                 return SubscriptionMapper.toCustomerResponseDto(subscription, storeDto);
             })
             .collect(Collectors.toList());
+    }
+
+    // 매장 id 기반으로 매장 상세 정보 조회
+    public List<CustomerSubscriptionResponseDTO> readSubscriptionListByStore(Store store) {
+        return repository.findByStore(store)
+            .stream()
+            .map(subscription -> {
+                CustomerStoreSimpleDTO storeDto = CustomerStoreSimpleDTO.builder()
+                    .partnerStoreId(subscription.getStore().getPartnerStoreId())
+                    .storeName(subscription.getStore().getStoreName())
+                    .storeImg(subscription.getStore().getStoreImg())
+                    .build();
+
+                return SubscriptionMapper.toCustomerResponseDto(subscription, storeDto);
+            })
+            .toList();
     }
 
     public List<CustomerMemberSubscriptionResponseDTO> readMemberSubscriptionList(Long memberId) {
@@ -97,39 +114,8 @@ public class CustomerSubscriptionService {
                 Subscription subscription = sub.getPurchase().getSubscription();
                 List<Menu> menus = menusMap.getOrDefault(subscription.getSubscriptionId(), Collections.emptyList());
                 List<SubscriptionUsageHistory> histories = usageMap.getOrDefault(sub.getMemberSubscriptionId(), Collections.emptyList());
-
-                CustomerMemberSubscriptionResponseDTO dto = SubscriptionMapper.toCustomerMemberResponseDto(sub, menus, histories);
-
-                dto.setRefundReasons(
-                    Optional.ofNullable(getRefundReasons(sub))
-                        .map(list ->
-                            list.stream()
-                            .map(Enum::name)
-                            .toList())
-                        .orElse(null)
-                );
-
-                return dto;
+                return SubscriptionMapper.toCustomerMemberResponseDto(sub, menus, histories);
             })
             .toList();
-    }
-
-    private List<RefundReasonType> getRefundReasons(MemberSubscription memberSubscription) {
-        List<RefundReasonType> reasons = new ArrayList<>();
-        Purchase purchase = memberSubscription.getPurchase();
-
-        if (purchase.getPaymentStatus() == PaymentStatus.REFUNDED) {
-            reasons.add(RefundReasonType.ALREADY_REFUNDED);
-        }
-
-        if (purchase.getCreatedAt() != null && LocalDateTime.now().isAfter(purchase.getCreatedAt().plusDays(7))) {
-            reasons.add(RefundReasonType.OVER_PERIOD);
-        }
-
-        if (memberSubscription.getUsageStatus() != UsageStatus.NOT_ACTIVATED) {
-            reasons.add(RefundReasonType.USED_ALREADY);
-        }
-
-        return reasons.isEmpty() ? null : reasons;
     }
 }
