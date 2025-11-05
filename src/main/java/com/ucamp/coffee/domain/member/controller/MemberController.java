@@ -149,10 +149,23 @@ public class MemberController {
     // 로그인 후 현재 인증된 사용자의 기본 정보를 반환하는 API
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<?>> getMemberInfo(@AuthenticationPrincipal MemberDetails user){
-    	
+
     	Long memberId = user.getMemberId();
         Member member = memberService.findById(memberId);  // 회원 조회
-        Store store = memberService.findByStoreId(member.getMemberId());  // 제휴매장 조회
+
+        // storeId를 담을 변수
+        Long partnerStoreId = null;
+
+        // 점주 회원(STORE)인 경우에만 제휴매장 조회
+        if (MemberType.STORE.equals(member.getMemberType())) {
+            Store store = memberService.findByStoreId(member.getMemberId());  // 제휴매장 조회
+            partnerStoreId = store.getPartnerStoreId();
+        }
+
+        if(MemberType.STORE.equals(member.getMemberType())){
+            Store store = memberService.findByStoreId(member.getMemberId());  // 제휴매장 조회
+
+        }
 
         MemberDto dto = MemberDto.builder()
         	    .memberId(member.getMemberId())
@@ -162,7 +175,7 @@ public class MemberController {
         	    .name(member.getName())
         	    .memberType(member.getMemberType())
         	    .activeStatus(member.getActiveStatus())
-                .partnerStoreId(store.getPartnerStoreId())
+                .partnerStoreId(partnerStoreId)
         	    .build();
         
         return ResponseMapper.successOf(dto);
