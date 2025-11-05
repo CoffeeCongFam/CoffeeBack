@@ -8,13 +8,13 @@ import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.type.MenuType;
 
 public class MenuMapper {
-    public static Menu toEntity(MenuCreateDTO dto, Store store) {
+    public static Menu toEntity(MenuCreateDTO dto, Store store, String image) {
         return Menu.builder()
             .store(store)
             .menuType(MenuType.valueOf(dto.getMenuType()))
             .menuName(dto.getMenuName())
             .price(dto.getPrice())
-            .menuImg(dto.getMenuImg())
+            .menuImg(image)
             .menuDesc(dto.getMenuDesc())
             .menuStatus(dto.getMenuStatus())
             .build();

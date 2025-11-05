@@ -1,6 +1,7 @@
 package com.ucamp.coffee.domain.subscription.dto;
 
 import com.ucamp.coffee.domain.store.dto.CustomerStoreSimpleDTO;
+import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
 import lombok.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @Builder
 @ToString
 public class CustomerMemberSubscriptionResponseDTO {
+    private Long memberSubscriptionId;
     private Long subId;
     private Long receiverId;
     private Long senderId;
@@ -26,7 +28,7 @@ public class CustomerMemberSubscriptionResponseDTO {
     private String receiver;
     private String sender;
     private String subscriptionType;
-    private List<String> menu;
+    private List<MenuResponseDTO> menu;
     private Long purchaseId;
     private List<String> usedAt;
     private List<String> refundReasons;

@@ -7,22 +7,27 @@ import com.ucamp.coffee.domain.subscription.dto.SubscriptionCreateDTO;
 import com.ucamp.coffee.domain.subscription.dto.SubscriptionStatusDTO;
 import com.ucamp.coffee.domain.subscription.service.OwnerSubscriptionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/owners/subscriptions")
 public class OwnerSubscriptionController {
     private final OwnerSubscriptionService service;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<?>> createSubscriptionInfo(
-        @AuthenticationPrincipal MemberDetails user,
-        @RequestBody SubscriptionCreateDTO dto)
-    {
-        service.createSubscriptionInfo(dto, user.getMemberId());
+            @AuthenticationPrincipal MemberDetails user,
+            @RequestPart("data") SubscriptionCreateDTO dto,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        service.createSubscriptionInfo(dto, file, user.getMemberId());
         return ResponseMapper.successOf(null);
     }
 
@@ -42,7 +47,7 @@ public class OwnerSubscriptionController {
         @PathVariable Long subscriptionId,
         @RequestBody SubscriptionStatusDTO dto
     ) {
-        service.updateSubscriptionStatus(subscriptionId, dto, 1L);
+        service.updateSubscriptionStatus(subscriptionId, dto, user.getMemberId());
         return ResponseMapper.successOf(null);
     }
 

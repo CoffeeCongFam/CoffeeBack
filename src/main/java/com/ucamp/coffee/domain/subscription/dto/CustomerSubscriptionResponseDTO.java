@@ -20,12 +20,12 @@ public class CustomerSubscriptionResponseDTO {
     private Integer price;
     private String subscriptionDesc;
     private Integer totalSale;
-    private String subscriptionImg;
     private Integer salesLimitQuantity;
     private String subscriptionType;
     private Integer subscriptionPeriod;
     private Integer maxDailyUsage;
     private Integer remainSalesQuantity;
     private String subscriptionStatus;
-    private List<MenuResponseDTO> subscriptionMenus;
+    private String subscriptionImg;
+    private List<MenuResponseDTO> menus;
 }
