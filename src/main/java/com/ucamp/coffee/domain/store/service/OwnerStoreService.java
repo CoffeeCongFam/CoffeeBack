@@ -12,6 +12,7 @@ import com.ucamp.coffee.domain.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,7 +24,8 @@ public class OwnerStoreService {
     private final MemberHelperService memberHelperService;
 
     @Transactional
-    public void createStoreInfo(StoreCreateDTO dto, Long memberId) {
+    public void createStoreInfo(StoreCreateDTO dto, MultipartFile file, Long memberId) {
+        // 멤버 정보 조회 및 저장
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
@@ -31,11 +33,13 @@ public class OwnerStoreService {
     }
 
     public OwnerStoreResponseDTO readStoreInfo(Long memberId) {
+        // 점주 정보 조회 및 해당 점주의 매장 조회
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
         Store store = repository.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("매장이 존재하지 않습니다."));
 
+        // 패치 조인을 통해 매장 및 운영시간 목록 조회
         List<StoreHours> results = repository.findStoreDetailsWithStoreHours(store.getPartnerStoreId());
 
         return StoreMapper.toOwnerStoreResponseDto(results, store, member);

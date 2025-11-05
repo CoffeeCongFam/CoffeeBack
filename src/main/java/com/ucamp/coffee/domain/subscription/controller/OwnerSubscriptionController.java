@@ -14,6 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class OwnerSubscriptionController {
             @AuthenticationPrincipal MemberDetails user,
             @RequestPart("data") SubscriptionCreateDTO dto,
             @RequestPart(value = "file", required = false) MultipartFile file
-    ) {
+    ) throws IOException {
         service.createSubscriptionInfo(dto, file, user.getMemberId());
         return ResponseMapper.successOf(null);
     }

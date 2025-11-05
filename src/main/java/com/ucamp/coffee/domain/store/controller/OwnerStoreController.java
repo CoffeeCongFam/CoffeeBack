@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/owners/stores")
@@ -21,9 +22,10 @@ public class OwnerStoreController {
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createStore(
         @AuthenticationPrincipal MemberDetails user,
-        @RequestBody StoreCreateDTO dto
+        @RequestPart("data") StoreCreateDTO dto,
+        @RequestPart(value = "file", required = false) MultipartFile file
     ) {
-        service.createStoreInfo(dto, user.getMemberId());
+        service.createStoreInfo(dto, file, user.getMemberId());
         return ResponseMapper.successOf(null);
     }
 
