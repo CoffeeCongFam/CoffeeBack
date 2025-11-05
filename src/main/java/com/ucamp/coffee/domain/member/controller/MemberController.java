@@ -162,11 +162,6 @@ public class MemberController {
             partnerStoreId = store.getPartnerStoreId();
         }
 
-        if(MemberType.STORE.equals(member.getMemberType())){
-            Store store = memberService.findByStoreId(member.getMemberId());  // 제휴매장 조회
-
-        }
-
         MemberDto dto = MemberDto.builder()
         	    .memberId(member.getMemberId())
         	    .email(member.getEmail())
