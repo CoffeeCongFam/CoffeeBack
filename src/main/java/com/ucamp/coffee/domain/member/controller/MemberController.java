@@ -116,7 +116,7 @@ public class MemberController {
         return ResponseMapper.successOf(Map.of(
                 "message", "성공",
                 "memberId", memberId,
-                "redirectUrl", "http://localhost:5173/store"));
+                "redirectUrl", "http://localhost:5173/CafeSignUp"));
     }
 
     // 카카오톡 로그아웃 & 세션/쿠키 삭제

@@ -2,6 +2,7 @@ package com.ucamp.coffee.domain.member.controller;
 
 import java.util.Optional;
 
+import org.hibernate.jdbc.Expectation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,6 +50,12 @@ public class KakaoController {
 
             // 회원이 아니면, 시 JWT 발급(회원가입을 위한 임시토큰) 후 추가정보 화면으로 리다이렉트
             if(memberOptional.isEmpty()) {
+
+                // 비회원이 카카오톡 간편 로그인으로 바로 접근했을 때
+                if(kakaoUser.getRole() == null){
+                    response.sendRedirect(redirectUrl+"SignUp?from-purpose=kakao");
+                    return;
+                }
 
                 // TODO
                 String tempJwt = jwtTokenProvider.generateTempToken(email);
