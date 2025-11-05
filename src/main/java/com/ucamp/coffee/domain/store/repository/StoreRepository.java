@@ -43,4 +43,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Store> findStoresWithinRadius(@Param("xPoint") Double xPoint,
                                        @Param("yPoint") Double yPoint,
                                        @Param("radius") Double radius);
+
+    // 점주 회원ID로 제휴매장ID 조회
+    Optional<Store> findByMember_MemberId (@Param("memberId") Long memberId);
 }

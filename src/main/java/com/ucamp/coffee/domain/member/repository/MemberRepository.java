@@ -1,6 +1,8 @@
 package com.ucamp.coffee.domain.member.repository;
 
 import java.util.Optional;
+
+import com.ucamp.coffee.domain.store.entity.Store;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.ucamp.coffee.domain.member.entity.Member;
 
