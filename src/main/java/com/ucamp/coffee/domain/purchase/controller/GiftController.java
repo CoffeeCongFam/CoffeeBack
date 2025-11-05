@@ -32,7 +32,7 @@ public class GiftController {
 	 * @param member
 	 * @return
 	 */
-	@GetMapping("")
+	@GetMapping()
 	public ResponseEntity<ApiResponse<?>> searchAllGift(@AuthenticationPrincipal MemberDetails member) {
 
 		Long memberId = member.getMemberId();
@@ -56,6 +56,7 @@ public class GiftController {
 
 		Object response;
 
+		//주문ID 파라미터가 없으면 전체조회, 있으면 단일 조회
 		if (purchaseId != null) {
 			Long parsedId = Long.parseLong(purchaseId);
 			PurchaseSendGiftDTO giftDetail = purchaseService.selectSendGiftDetail(parsedId);
@@ -81,6 +82,8 @@ public class GiftController {
 		Long memberId = member.getMemberId();
 
 		Object response;
+		
+		//보유 구독권 ID 파라미터가 없으면 전체 조회, 있으면 단일 조회
 		if (memberSubscriptionId != null) {
 			Long parsedId = Long.parseLong(memberSubscriptionId);
 			PurchaseReceiveGiftDTO giftDetail = purchaseService.selectReceivedGiftDetail(parsedId);
