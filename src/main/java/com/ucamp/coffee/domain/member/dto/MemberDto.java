@@ -21,4 +21,7 @@ public class MemberDto {
 	private String name;
 	private MemberType memberType;
 	private ActiveStatusType activeStatus;
+
+    // 점주용 : memebrId로 제휴매장ID 가져오기
+    private Long partnerStoreId;
 }

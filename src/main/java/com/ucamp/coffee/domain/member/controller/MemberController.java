@@ -3,6 +3,7 @@ package com.ucamp.coffee.domain.member.controller;
 import java.util.Map;
 
 import com.ucamp.coffee.common.security.MemberDetails;
+import com.ucamp.coffee.domain.store.entity.Store;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,8 @@ public class MemberController {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
+
+    String message = "";
 
     // 일반회원/점주 회원가입 화면
     @GetMapping("/signup")
@@ -68,11 +71,13 @@ public class MemberController {
         HttpSession session = request.getSession();
         session.setAttribute("memberId", savedMember.getMemberId());
 
+        Long memberId = (Long) session.getAttribute("memberId");
+
         // 성공 시
         return ResponseMapper.successOf(Map.of(
                 "message", "성공",
-                "redirectUrl", "http://localhost:5173/me",
-                "memberId", savedMember.getMemberId()
+                "memberId", memberId,
+                "redirectUrl", "http://localhost:5173/me"
         ));
     }
 
@@ -105,9 +110,12 @@ public class MemberController {
         HttpSession session = request.getSession();
         session.setAttribute("memberId", savedMember.getMemberId());
 
+        Long memberId = (Long) session.getAttribute("memberId");
+
         // 성공 시
         return ResponseMapper.successOf(Map.of(
                 "message", "성공",
+                "memberId", memberId,
                 "redirectUrl", "http://localhost:5173/store"));
     }
 
@@ -138,12 +146,13 @@ public class MemberController {
         return ResponseMapper.successOf(Map.of("message", "로그아웃 성공"));
     }
     
-    // 로그인 후 현재 인증된 사용자의 기본 정보를 반환하는 API 
+    // 로그인 후 현재 인증된 사용자의 기본 정보를 반환하는 API
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<?>> getMemberInfo(@AuthenticationPrincipal MemberDetails user){
     	
     	Long memberId = user.getMemberId();
-        Member member = memberService.findById(memberId);
+        Member member = memberService.findById(memberId);  // 회원 조회
+        Store store = memberService.findByStoreId(member.getMemberId());  // 제휴매장 조회
 
         MemberDto dto = MemberDto.builder()
         	    .memberId(member.getMemberId())
@@ -153,6 +162,7 @@ public class MemberController {
         	    .name(member.getName())
         	    .memberType(member.getMemberType())
         	    .activeStatus(member.getActiveStatus())
+                .partnerStoreId(store.getPartnerStoreId())
         	    .build();
         
         return ResponseMapper.successOf(dto);
@@ -174,5 +184,4 @@ public class MemberController {
 
         return ResponseMapper.successOf(dto);
     }
-
 }
