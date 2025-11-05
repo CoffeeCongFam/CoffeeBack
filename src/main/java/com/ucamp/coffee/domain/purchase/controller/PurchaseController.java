@@ -83,7 +83,7 @@ public class PurchaseController {
 	 * @param purchaseId
 	 * @return
 	 */
-	@PatchMapping("/{purchaseId}")
+	@PatchMapping("refund/{purchaseId}")
 	public ResponseEntity<ApiResponse<?>> modifyPurchaseRefunded(@PathVariable Long purchaseId) {
 
 		LocalDateTime refundedAt = purchaseService.updatePurchaseRefunded(purchaseId);

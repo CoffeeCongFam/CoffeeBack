@@ -118,6 +118,11 @@ public class PurchaseService {
 			if (!UsageStatus.NOT_ACTIVATED.name().equals(purchase.getUsageStatus())) {
 				purchase.getRefundReasons().add(RefundReasonType.USED_ALREADY);
 			}
+			
+			// 아무것도 없으면 null 반환
+			if(purchase.getRefundReasons().isEmpty()) {
+				purchase.setRefundReasons(null);
+			}
 		}
 
 		return response;
@@ -193,7 +198,11 @@ public class PurchaseService {
 	@Transactional(readOnly = true)
 	public List<PurchaseSendGiftDTO> selectAllSendGift(Long memberId) {
 
-		return purchaseMapper.selectAllSendGift(memberId);
+		List<PurchaseSendGiftDTO> list = purchaseMapper.selectAllSendGift(memberId);
+		for (PurchaseSendGiftDTO dto : list) {
+			dto.setUsageHistoryList(purchaseMapper.selectUsageSendHistoryBySubscriptionId(dto.getMemberSubscriptionId()));
+		}
+		return list;
 	}
 
 	/**
@@ -205,7 +214,9 @@ public class PurchaseService {
 	@Transactional(readOnly = true)
 	public PurchaseSendGiftDTO selectSendGiftDetail(Long purchaseId) {
 
-		return purchaseMapper.selectSendGiftDetail(purchaseId);
+		PurchaseSendGiftDTO response = purchaseMapper.selectSendGiftDetail(purchaseId);
+		response.setUsageHistoryList(purchaseMapper.selectUsageSendHistoryBySubscriptionId(response.getMemberSubscriptionId()));
+		return response;
 	}
 
 	/**
@@ -219,7 +230,7 @@ public class PurchaseService {
 
 		List<PurchaseReceiveGiftDTO> list = purchaseMapper.selectAllReceivedGift(memberId);
 		for (PurchaseReceiveGiftDTO dto : list) {
-			dto.setUsageHistoryList(purchaseMapper.selectUsageHistoryBySubscriptionId(dto.getMemberSubscriptionId()));
+			dto.setUsageHistoryList(purchaseMapper.selectUsageReceiveHistoryBySubscriptionId(dto.getMemberSubscriptionId()));
 		}
 		return list;
 	}
@@ -234,7 +245,7 @@ public class PurchaseService {
 	public PurchaseReceiveGiftDTO selectReceivedGiftDetail(Long memberSubscriptionId) {
 
 		PurchaseReceiveGiftDTO response = purchaseMapper.selectReceivedGiftDetail(memberSubscriptionId);
-		response.setUsageHistoryList(purchaseMapper.selectUsageHistoryBySubscriptionId(memberSubscriptionId));
+		response.setUsageHistoryList(purchaseMapper.selectUsageReceiveHistoryBySubscriptionId(memberSubscriptionId));
 		return response;
 	}
 

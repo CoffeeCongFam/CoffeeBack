@@ -24,6 +24,7 @@ public class PurchaseReceiveGiftDTO {
 	private String giftMessage;
 	private String usageStatus;
 	private int dailyRemainCount;
+	private LocalDateTime refundedAt;
 	
 	private List<MenuDTO> menuList;
 	private List<UsageHistoryDTO> usageHistoryList;

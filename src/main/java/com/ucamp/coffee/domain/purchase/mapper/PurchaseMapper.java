@@ -29,7 +29,8 @@ public interface PurchaseMapper {
 	List<PurchaseReceiveGiftDTO> selectAllReceivedGift(Long memberId);
 
 	// 소비자의 구독권 사용 내역 조회(받은 선물 조회랑 매칭용)
-	List<PurchaseReceiveGiftDTO.UsageHistoryDTO> selectUsageHistoryBySubscriptionId(Long memberSubscriptionId);
+	List<PurchaseReceiveGiftDTO.UsageHistoryDTO> selectUsageReceiveHistoryBySubscriptionId(Long memberSubscriptionId);
+	List<PurchaseSendGiftDTO.UsageHistoryDTO> selectUsageSendHistoryBySubscriptionId(Long memberSubscriptionId);
 
 	//소비자의 보낸 선물 상세 조회(선물함에서 조회)
 	PurchaseSendGiftDTO selectSendGiftDetail(Long purchaseId);
