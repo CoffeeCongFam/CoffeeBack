@@ -1,5 +1,6 @@
 package com.ucamp.coffee.domain.store.service;
 
+import com.ucamp.coffee.common.service.OciObjectStorageService;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.store.dto.OwnerStoreResponseDTO;
@@ -22,6 +23,7 @@ import java.util.List;
 public class OwnerStoreService {
     private final StoreRepository repository;
     private final MemberHelperService memberHelperService;
+    private final OciObjectStorageService ociObjectStorageService;
 
     @Transactional
     public void createStoreInfo(StoreCreateDTO dto, MultipartFile file, Long memberId) {
@@ -29,7 +31,11 @@ public class OwnerStoreService {
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        repository.save(StoreMapper.toEntity(dto, member));
+        // 이미지 스토리지에 저장
+        String imageUrl = null;
+        if (file != null && !file.isEmpty()) imageUrl = ociObjectStorageService.uploadFile(file);
+
+        repository.save(StoreMapper.toEntity(dto, member, imageUrl));
     }
 
     public OwnerStoreResponseDTO readStoreInfo(Long memberId) {
@@ -46,15 +52,20 @@ public class OwnerStoreService {
     }
 
     @Transactional
-    public void updateStoreInfo(Long partnerStoreId, StoreUpdateDTO dto, Long memberId) {
+    public void updateStoreInfo(Long partnerStoreId, StoreUpdateDTO dto, Long memberId, MultipartFile file) {
+        // 점주 정보 조회
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        member.setTel(dto.getTel());
+        // 이미지 스토리지에 저장
+        String imageUrl = null;
+        if (file != null && !file.isEmpty()) imageUrl = ociObjectStorageService.uploadFile(file);
 
+        member.setTel(dto.getTel()); // 점주 전화번호 수정
+
+        // 매장 정보 조회 및 수정
         Store store = repository.findById(partnerStoreId)
             .orElseThrow(() -> new IllegalArgumentException("매장이 존재하지 않습니다."));
-
-        store.update(dto);
+        store.update(dto, imageUrl);
     }
 }

@@ -15,7 +15,6 @@ public class StoreCreateDTO {
     private String roadAddress;
     private String detailAddress;
     private String detailInfo;
-    private String storeImg;
     private String storeTel;
 
     @JsonProperty("xPoint") private Double xPoint;

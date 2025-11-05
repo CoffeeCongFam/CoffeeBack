@@ -32,7 +32,7 @@ public class MenuService {
         // 매장 아이디를 통해 매장 정보 조회
         Store store = storeHelperService.findById(dto.getPartnerStoreId());
 
-        // 이미지 스토리지(현재 로컬)에 저장
+        // 이미지 스토리지에 저장
         String imageUrl = null;
         if (file != null && !file.isEmpty()) imageUrl = ociObjectStorageService.uploadFile(file);
 

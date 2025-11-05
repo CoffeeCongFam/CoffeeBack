@@ -14,7 +14,7 @@ public class MenuMapper {
             .menuType(MenuType.valueOf(dto.getMenuType()))
             .menuName(dto.getMenuName())
             .price(dto.getPrice())
-            .menuImg("http://localhost:8080" + image)
+            .menuImg(image)
             .menuDesc(dto.getMenuDesc())
             .menuStatus(dto.getMenuStatus())
             .build();
@@ -27,7 +27,7 @@ public class MenuMapper {
             .menuType(menu.getMenuType().name())
             .menuName(menu.getMenuName())
             .price(menu.getPrice())
-            .menuImg("http://localhost:8080" + menu.getMenuImg())
+            .menuImg(menu.getMenuImg())
             .menuDesc(menu.getMenuDesc())
             .menuStatus(menu.getMenuStatus())
             .createdAt(DateTimeUtil.toUtcDateTime(menu.getCreatedAt()))

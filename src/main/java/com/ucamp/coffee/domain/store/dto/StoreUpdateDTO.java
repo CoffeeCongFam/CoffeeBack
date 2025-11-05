@@ -14,7 +14,6 @@ public class StoreUpdateDTO {
     private String roadAddress;
     private String detailAddress;
     private String detailInfo;
-    private String storeImg;
     private String storeTel;
     private String tel;
 

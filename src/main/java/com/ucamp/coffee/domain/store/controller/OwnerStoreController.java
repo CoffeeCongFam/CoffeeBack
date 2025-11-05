@@ -38,9 +38,10 @@ public class OwnerStoreController {
     public ResponseEntity<ApiResponse<?>> updateStoreInfo(
         @AuthenticationPrincipal MemberDetails user,
         @PathVariable Long partnerStoreId,
-        @RequestBody StoreUpdateDTO dto
+        @RequestPart("data") StoreUpdateDTO dto,
+        @RequestPart(value = "file", required = false) MultipartFile file
     ) {
-        service.updateStoreInfo(partnerStoreId, dto, user.getMemberId());
+        service.updateStoreInfo(partnerStoreId, dto, user.getMemberId(), file);
         return ResponseMapper.successOf(null);
     }
 

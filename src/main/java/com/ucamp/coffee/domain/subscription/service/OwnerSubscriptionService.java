@@ -46,16 +46,20 @@ public class OwnerSubscriptionService {
 
     @Transactional
     public void createSubscriptionInfo(SubscriptionCreateDTO dto, MultipartFile file, Long memberId) throws IOException {
+        // 점주 및 매장 정보 조회
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
 
+        // 이미지 파일 업로드
         String imageUrl = null;
         if (file != null && !file.isEmpty()) imageUrl = ociObjectStorageService.uploadFile(file);
 
+        // 구독권 정보 등록
         Subscription subscription = repository.save(SubscriptionMapper.toEntity(dto, store, imageUrl));
 
+        // 메뉴 아이디 목록이 존재한다면 구독권-메뉴 목록 등록
         if (dto.getMenuIds() != null && !dto.getMenuIds().isEmpty()) {
             List<Menu> menus = menuHelperService.findByIds(dto.getMenuIds());
 
@@ -71,24 +75,26 @@ public class OwnerSubscriptionService {
     }
 
     public List<OwnerSubscriptionResponseDTO> readSubscriptionList(Long memberId) {
+        // 점주 및 매장 정보 조회
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
 
+        // 매장별 구독권 목록 조회
         List<Subscription> subscriptions = repository.findByStore(store);
 
         return subscriptions.stream()
             .map(subscription -> {
-                // SubscriptionMenu 조회
+                // 구독권-메뉴 목록 조회
                 List<SubscriptionMenu> subscriptionMenus = subscriptionMenuRepository.findBySubscription(subscription);
 
+                // 메뉴 목록 추출
                 List<MenuResponseDTO> menus = subscriptionMenus.stream()
                     .map(SubscriptionMenu::getMenu)
                     .map(MenuMapper::toDto)
                     .collect(Collectors.toList());
 
-                // DTO 생성
                 return OwnerSubscriptionResponseDTO.builder()
                     .subscriptionId(subscription.getSubscriptionId())
                     .partnerStoreId(store.getPartnerStoreId())
@@ -111,49 +117,53 @@ public class OwnerSubscriptionService {
     }
 
     public OwnerSubscriptionResponseDTO readSubscriptionInfo(Long subscriptionId) {
+        // 구독권 정보 조회
         Subscription subscription = repository.findByIdWithStore(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
 
-        // SubscriptionMenu 조회
+        // 구독권-메뉴 목록 조회
         List<SubscriptionMenu> subscriptionMenus = subscriptionMenuRepository.findBySubscription(subscription);
+        
+        // 메뉴 목록 추출
         List<MenuResponseDTO> menus = subscriptionMenus.stream()
-                .map(SubscriptionMenu::getMenu)
-                .map(MenuMapper::toDto)
-                .toList();
+            .map(SubscriptionMenu::getMenu)
+            .map(MenuMapper::toDto)
+            .toList();
 
-        // 메뉴까지 포함해서 DTO 생성
         return SubscriptionMapper.toOwnerResponseDto(subscription, menus);
     }
 
     @Transactional
     public void updateSubscriptionStatus(Long subscriptionId, SubscriptionStatusDTO dto, Long memberId) {
+        // 점주 및 매장 정보 조회
         Member member = memberHelperService.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
-
         Store store = storeHelperService.findByMember(member)
-                .orElseThrow(() -> new IllegalArgumentException("해당 멤버가 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
 
+        // 해당 멤버가 매장의 점주가 아니라면 예외 처리
         if (!Objects.equals(store.getMember().getMemberId(), memberId)) throw new CommonException(ApiStatus.UNAUTHORIZED);
 
+        // 구독권 정보 조회 및 수정
         Subscription subscription = repository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
-
         subscription.update(null, null, SubscriptionStatusType.valueOf(dto.getSubscriptionStatus()));
     }
 
     @Transactional
     public void deleteSubscriptionInfo(Long subscriptionId, Long memberId) {
+        // 점주 및 매장 정보 조회
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
-
         Store store = storeHelperService.findByMember(member)
             .orElseThrow(() -> new IllegalArgumentException("해당 멤버가 존재하지 않습니다."));
 
+        // 해당 멤버가 매장의 점주가 아니라면 예외 처리
         if (!Objects.equals(store.getMember().getMemberId(), memberId)) throw new CommonException(ApiStatus.UNAUTHORIZED);
 
+        // 구독권 정보 조회 및 수정
         Subscription subscription = repository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
-
         subscription.setDeletedAt(LocalDateTime.now());
     }
 }

@@ -15,7 +15,6 @@ public class SubscriptionCreateDTO {
     private String subscriptionName;
     private Long price;
     private String subscriptionDesc;
-    private String subscriptionImg;
     private Long salesLimitQuantity;
     private String subscriptionType;
     private Long subscriptionPeriod;
