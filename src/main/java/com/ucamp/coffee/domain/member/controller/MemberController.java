@@ -2,20 +2,28 @@ package com.ucamp.coffee.domain.member.controller;
 
 import java.util.Map;
 
-import com.ucamp.coffee.common.security.MemberDetails;
-import com.ucamp.coffee.domain.store.entity.Store;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiResponse;
+import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.common.response.ResponseMapper;
 import com.ucamp.coffee.common.security.JwtTokenProvider;
+import com.ucamp.coffee.common.security.MemberDetails;
 import com.ucamp.coffee.domain.member.dto.MemberDto;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberService;
 import com.ucamp.coffee.domain.member.type.ActiveStatusType;
 import com.ucamp.coffee.domain.member.type.MemberType;
+import com.ucamp.coffee.domain.store.entity.Store;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -150,6 +158,11 @@ public class MemberController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<?>> getMemberInfo(@AuthenticationPrincipal MemberDetails user){
 
+    	// 비회원이면 바로 실패 응답
+        if (user == null) {
+        	throw new CommonException(ApiStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+    	
     	Long memberId = user.getMemberId();
         Member member = memberService.findById(memberId);  // 회원 조회
 
