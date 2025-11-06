@@ -202,7 +202,9 @@ public class MemberController {
         // 점주 회원(STORE)인 경우에만 제휴매장 조회
         if (MemberType.STORE.equals(member.getMemberType())) {
             Store store = memberService.findByStoreId(member.getMemberId());  // 제휴매장 조회
-            partnerStoreId = store.getPartnerStoreId();
+            if(store != null){
+                partnerStoreId = store.getPartnerStoreId();
+            }
         }
 
         MemberDto dto = MemberDto.builder()

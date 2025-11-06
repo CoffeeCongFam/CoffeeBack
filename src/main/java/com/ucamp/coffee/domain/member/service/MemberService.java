@@ -45,7 +45,7 @@ public class MemberService {
     
     public Store findByStoreId(Long memberId){
         return storeRepository.findByMember_MemberId(memberId)
-                .orElseThrow(() -> new RuntimeException("매장 정보를 찾을 수 없습니다."));
+                .orElse(null);
     }
 
 }
