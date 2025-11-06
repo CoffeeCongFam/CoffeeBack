@@ -2,7 +2,7 @@ package com.ucamp.coffee.domain.subscription.service;
 
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
-import com.ucamp.coffee.common.service.OciObjectStorageService;
+import com.ucamp.coffee.common.service.OciUploaderService;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
@@ -42,7 +42,7 @@ public class OwnerSubscriptionService {
     private final SubscriptionRepository repository;
     private final MemberHelperService memberHelperService;
     private final SubscriptionMenuRepository subscriptionMenuRepository;
-    private final OciObjectStorageService ociObjectStorageService;
+    private final OciUploaderService ociUploaderService;
 
     @Transactional
     public void createSubscriptionInfo(SubscriptionCreateDTO dto, MultipartFile file, Long memberId) throws IOException {
@@ -54,7 +54,11 @@ public class OwnerSubscriptionService {
 
         // 이미지 파일 업로드
         String imageUrl = null;
-        if (file != null && !file.isEmpty()) imageUrl = ociObjectStorageService.uploadFile(file);
+        try {
+            imageUrl = ociUploaderService.uploadSafely(file);
+        } catch (Exception e) {
+            imageUrl = "";
+        }
 
         // 구독권 정보 등록
         Subscription subscription = repository.save(SubscriptionMapper.toEntity(dto, store, imageUrl));
