@@ -30,6 +30,7 @@ public class ReviewService {
 
     @Transactional
     public void createReviewInfo(ReviewCreateDTO dto, Long memberId) {
+        // 요청 점주 및 매장, 해당 매장의 구독권 정보 조회
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findById(dto.getPartnerStoreId());
@@ -40,6 +41,7 @@ public class ReviewService {
     }
 
     public List<ReviewResponseDTO> readReviewListByStore(Long partnerStoreId) {
+        // 해당 매장의 리뷰 목록 조회
         return repository.findByStoreWithRelations(partnerStoreId)
             .stream()
             .map(ReviewMapper::toDto)
@@ -47,9 +49,11 @@ public class ReviewService {
     }
 
     public List<ReviewResponseDTO> readMyReviews(Long memberId) {
+        // 멤버 정보 조회
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
 
+        // 멤버별 리뷰 목록 반환
         return repository.findByMemberOrderByCreatedAtDesc(member)
             .stream()
             .filter(review -> review.getDeletedAt() == null)
@@ -59,17 +63,17 @@ public class ReviewService {
 
     @Transactional
     public void updateReviewInfo(Long reviewId, ReviewUpdateDTO dto) {
+        // 리뷰 정보 조회 및 수정
         Review review = repository.findById(reviewId)
             .orElseThrow(() -> new IllegalArgumentException("해당 리뷰가 존재하지 않습니다."));
-
         review.update(dto);
     }
 
     @Transactional
     public void deleteReviewInfo(Long reviewId) {
+        // 리뷰 정보 조회 및 수정
         Review review = repository.findById(reviewId)
             .orElseThrow(() -> new IllegalArgumentException("해당 리뷰가 존재하지 않습니다."));
-
         review.setDeletedAt(LocalDateTime.now());
     }
 }

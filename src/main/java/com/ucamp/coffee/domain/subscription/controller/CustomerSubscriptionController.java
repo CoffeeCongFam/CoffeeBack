@@ -20,7 +20,7 @@ public class CustomerSubscriptionController {
 
     @GetMapping("/stores/{partnerStoreId}")
     public ResponseEntity<ApiResponse<?>> readSubscriptionList(
-            @PathVariable Long partnerStoreId) {
+        @PathVariable Long partnerStoreId) {
         return ResponseMapper.successOf(service.readSubscriptionList(partnerStoreId));
     }
 

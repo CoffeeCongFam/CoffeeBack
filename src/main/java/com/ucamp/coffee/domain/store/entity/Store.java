@@ -49,7 +49,7 @@ public class Store extends BaseEntity {
     @Column(nullable = false)
     private Double yPoint;
 
-    public void update(StoreUpdateDTO dto) {
+    public void update(StoreUpdateDTO dto, String imageUrl) {
         if (dto.getStoreName() != null && !dto.getStoreName().isEmpty()) {
             this.storeName = dto.getStoreName();
         }
@@ -66,8 +66,8 @@ public class Store extends BaseEntity {
             this.detailInfo = dto.getDetailInfo();
         }
 
-        if (dto.getStoreImg() != null && !dto.getStoreImg().isEmpty()) {
-            this.storeImg = dto.getStoreImg();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            this.storeImg = imageUrl;
         }
 
         if (dto.getStoreTel() != null && !dto.getStoreTel().isEmpty()) {
