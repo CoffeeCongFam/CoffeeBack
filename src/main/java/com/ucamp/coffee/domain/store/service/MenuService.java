@@ -1,6 +1,6 @@
 package com.ucamp.coffee.domain.store.service;
 
-import com.ucamp.coffee.common.service.OciObjectStorageService;
+import com.ucamp.coffee.common.service.OciUploaderService;
 import com.ucamp.coffee.domain.store.dto.MenuCreateDTO;
 import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
 import com.ucamp.coffee.domain.store.dto.MenuUpdateDTO;
@@ -25,18 +25,20 @@ import java.util.List;
 public class MenuService {
     private final StoreHelperService storeHelperService;
     private final MenuRepository repository;
-    private final OciObjectStorageService ociObjectStorageService;
+    private final OciUploaderService ociUploaderService;
 
     @Transactional
     public void createMenuInfo(MenuCreateDTO dto, MultipartFile file) throws IOException {
-        // 매장 아이디를 통해 매장 정보 조회
         Store store = storeHelperService.findById(dto.getPartnerStoreId());
 
         // 이미지 스토리지에 저장
         String imageUrl = null;
-        if (file != null && !file.isEmpty()) imageUrl = ociObjectStorageService.uploadFile(file);
+        try {
+            imageUrl = ociUploaderService.uploadSafely(file);
+        } catch (Exception e) {
+            imageUrl = "";
+        }
 
-        // 메뉴 데이터 저장
         repository.save(MenuMapper.toEntity(dto, store, imageUrl));
     }
 
@@ -60,9 +62,13 @@ public class MenuService {
 
     @Transactional
     public void updateMenuInfo(Long menuId, MenuUpdateDTO dto, MultipartFile file) throws IOException {
-        // 이미지 스토리지(현재 로컬)에 저장
+        // 이미지 스토리지에 저장
         String imageUrl = null;
-        if (file != null && !file.isEmpty()) imageUrl = ociObjectStorageService.uploadFile(file);
+        try {
+            imageUrl = ociUploaderService.uploadSafely(file);
+        } catch (Exception e) {
+            imageUrl = "";
+        }
 
         // 메뉴 아이디를 통해 메뉴 조회
         Menu menu = repository.findById(menuId)

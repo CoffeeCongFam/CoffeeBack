@@ -1,6 +1,6 @@
 package com.ucamp.coffee.domain.store.service;
 
-import com.ucamp.coffee.common.service.OciObjectStorageService;
+import com.ucamp.coffee.common.service.OciUploaderService;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.store.dto.OwnerStoreResponseDTO;
@@ -11,19 +11,21 @@ import com.ucamp.coffee.domain.store.entity.StoreHours;
 import com.ucamp.coffee.domain.store.mapper.StoreMapper;
 import com.ucamp.coffee.domain.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class OwnerStoreService {
     private final StoreRepository repository;
     private final MemberHelperService memberHelperService;
-    private final OciObjectStorageService ociObjectStorageService;
+    private final OciUploaderService ociUploaderService;
 
     @Transactional
     public void createStoreInfo(StoreCreateDTO dto, MultipartFile file, Long memberId) {
@@ -33,7 +35,11 @@ public class OwnerStoreService {
 
         // 이미지 스토리지에 저장
         String imageUrl = null;
-        if (file != null && !file.isEmpty()) imageUrl = ociObjectStorageService.uploadFile(file);
+        try {
+            imageUrl = ociUploaderService.uploadSafely(file);
+        } catch (Exception e) {
+            imageUrl = "";
+        }
 
         repository.save(StoreMapper.toEntity(dto, member, imageUrl));
     }
@@ -59,7 +65,11 @@ public class OwnerStoreService {
 
         // 이미지 스토리지에 저장
         String imageUrl = null;
-        if (file != null && !file.isEmpty()) imageUrl = ociObjectStorageService.uploadFile(file);
+        try {
+            imageUrl = ociUploaderService.uploadSafely(file);
+        } catch (Exception e) {
+            imageUrl = "";
+        }
 
         member.setTel(dto.getTel()); // 점주 전화번호 수정
 
