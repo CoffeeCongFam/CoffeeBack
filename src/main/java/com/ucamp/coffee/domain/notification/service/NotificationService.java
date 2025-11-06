@@ -21,7 +21,8 @@ import lombok.RequiredArgsConstructor;
 public class NotificationService {
 
 	private final NotificationRepository notificationRepository;
-
+	private final SseService sseService;
+	
 	/**
 	 * 새로운 알림 생성
 	 * 
@@ -36,6 +37,13 @@ public class NotificationService {
 				.notificationContent(content).build();
 
 		notificationRepository.save(notification);
+		
+		//실시간 sse 전송
+		try {
+			sseService.sendNotificationToClient(member.getMemberId(), content);
+		} catch(Exception e) {
+			 System.out.println("SSE 알림 전송 실패: " + e.getMessage());
+		}
 	}
 
 	/**

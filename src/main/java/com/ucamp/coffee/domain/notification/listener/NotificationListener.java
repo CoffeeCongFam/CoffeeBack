@@ -13,6 +13,7 @@ import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
 import com.ucamp.coffee.domain.notification.service.NotificationService;
+import com.ucamp.coffee.domain.notification.service.SseService;
 import com.ucamp.coffee.domain.notification.type.NotificationType;
 import com.ucamp.coffee.domain.orders.entity.Orders;
 import com.ucamp.coffee.domain.orders.event.OrderCanceledEvent;
@@ -39,7 +40,7 @@ public class NotificationListener {
 	private final OrdersRepository ordersRepository;
 	private final MemberRepository memberRepository;
 	private final MemberSubscriptionRepository memberSubscriptionRepository;
-
+	
 	private Orders findOrder(Long orderId) {
 		return ordersRepository.findById(orderId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "존재하지 않는 주문입니다."));

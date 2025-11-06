@@ -24,5 +24,8 @@ public interface OrdersMapper {
 
 	// 점주의 과거 날짜별 or 전체 주문 내역
 	List<OrdersStorePastResponseDTO> selectStoreOrdersByDate(OrdersStorePastRequestDTO dto);
+	
+	//주문 내역 수량 계산
+	int countOrderMenuQuantity(Long orderId);
 
 }
