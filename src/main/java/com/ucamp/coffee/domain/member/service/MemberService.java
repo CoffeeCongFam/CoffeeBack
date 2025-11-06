@@ -19,6 +19,7 @@ public class MemberService {
 	private final MemberRepository memberRepository;
     private final StoreRepository storeRepository;
 
+    // 회원가입 DB 저장
 	public Member save(MemberDto memberDto) {
 		Member member = Member.builder()
 						.email(memberDto.getEmail())

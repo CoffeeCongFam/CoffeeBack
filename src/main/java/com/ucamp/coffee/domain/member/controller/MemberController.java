@@ -1,16 +1,12 @@
 package com.ucamp.coffee.domain.member.controller;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
+import com.ucamp.coffee.domain.member.repository.MemberRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiResponse;
@@ -39,6 +35,7 @@ public class MemberController {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
+    private final MemberRepository memberRepository;
 
     String message = "";
 
@@ -153,7 +150,30 @@ public class MemberController {
 
         return ResponseMapper.successOf(Map.of("message", "로그아웃 성공"));
     }
-    
+
+    // 일반회원/점주 회원탈퇴
+    // 탈퇴 시, 활동 상태(ACTIVE, INACTIVE, WITHDRAW)만 변경
+    @PatchMapping("/active/update")
+    public ResponseEntity<ApiResponse<?>> activeUpdate(@AuthenticationPrincipal MemberDetails user){
+
+        // 비회원일 경우
+        if(user == null){
+            throw new CommonException(ApiStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        Member member = memberRepository.findById(user.getMemberId())
+                .orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다."));
+
+        // 탈퇴할 시 수정할 데이터(회원 상태, 삭제 시각)
+        member.setActiveStatus((ActiveStatusType.WITHDRAW));
+        member.setDeletedAt(LocalDateTime.now());
+
+        memberRepository.save(member);  // 탈퇴로 수정
+
+        return ResponseMapper.successOf("회원 탈퇴가 완료되었습니다.");
+    }
+
+
     // 로그인 후 현재 인증된 사용자의 기본 정보를 반환하는 API
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<?>> getMemberInfo(@AuthenticationPrincipal MemberDetails user){
@@ -204,5 +224,32 @@ public class MemberController {
                 .build();
 
         return ResponseMapper.successOf(dto);
+    }
+
+    // 일반회원/점주 회원 정보 수정
+    // 이름, 전화번호 수정 가능
+    @PatchMapping("/memberInfo/update")
+    public ResponseEntity<ApiResponse<?>> memberInfoUpdate(@AuthenticationPrincipal MemberDetails user,
+                                                            @RequestBody MemberDto memberDto){
+
+        // 비회원이면 바로 실패 응답
+        if (user == null) {
+            throw new CommonException(ApiStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        Member member = memberRepository.findById(user.getMemberId())
+                .orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다."));
+        
+        member.setName(memberDto.getName());  // 이름
+        member.setTel(memberDto.getTel());    // 전화번호
+
+        // 변경사항 저장
+        Member updateMember = memberRepository.save(member);
+        MemberDto dto = new MemberDto(updateMember);
+
+        return ResponseMapper.successOf(Map.of(
+                "message", "회원 정보가 수정되었습니다.",
+                "dto", dto
+        ));
     }
 }

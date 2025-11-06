@@ -1,7 +1,13 @@
 package com.ucamp.coffee.domain.member.controller;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
+import com.ucamp.coffee.common.exception.CommonException;
+import com.ucamp.coffee.common.response.ApiStatus;
+import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import com.ucamp.coffee.domain.member.service.MemberService;
+import com.ucamp.coffee.domain.member.type.ActiveStatusType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class KakaoController {
     private final KakaoService kakaoService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberRepository memberRepository;
 
     // 카카오톡 간편 로그인
     @GetMapping("/callback")
@@ -67,6 +74,24 @@ public class KakaoController {
             else {
                 // 회원이면 로그인 성공 -> 서비스 JWT 발급
                 Member member = memberOptional.get();
+
+                // 탈퇴 회원인지 확인
+                if(member.getActiveStatus() == ActiveStatusType.WITHDRAW){
+                    LocalDateTime deleteAt = member.getDeletedAt();
+
+                    // 탈퇴 후, 90일 이내이면 ActiveStatus를 ACTIVE로 변경
+                    LocalDateTime rejoinDeadline = deleteAt.plusDays(90);
+                    if(LocalDateTime.now().isBefore(rejoinDeadline)){
+                        member.setDeletedAt(null);
+                        member.setActiveStatus(ActiveStatusType.ACTIVE);
+                        memberRepository.save(member);
+                    }else{
+                        // 90일 경과 시, 로그인 차단
+                        throw new CommonException(ApiStatus.FORBIDDEN, "탈퇴 후 90일이 지나 로그인이 불가합니다.");
+                    }
+                }
+                
+                // 로그인 성공 -> jwt 발급
                 String jwt = jwtTokenProvider.generateToken(member.getMemberId());
 
                 // JWT를 쿠키로 전달(보안성)
