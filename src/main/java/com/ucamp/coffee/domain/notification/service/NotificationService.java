@@ -22,7 +22,7 @@ public class NotificationService {
 
 	private final NotificationRepository notificationRepository;
 	private final SseService sseService;
-	
+
 	/**
 	 * 새로운 알림 생성
 	 * 
@@ -37,12 +37,13 @@ public class NotificationService {
 				.notificationContent(content).build();
 
 		notificationRepository.save(notification);
-		
-		//실시간 sse 전송
+
+		// 실시간 sse 전송
+		NotificationResponseDTO response = NotificationResponseDTO.toDTO(notification);
 		try {
-			sseService.sendNotificationToClient(member.getMemberId(), content);
-		} catch(Exception e) {
-			 System.out.println("SSE 알림 전송 실패: " + e.getMessage());
+			sseService.sendNotificationToClient(member.getMemberId(), response);
+		} catch (Exception e) {
+			System.out.println("SSE 알림 전송 실패: " + e.getMessage());
 		}
 	}
 
@@ -93,7 +94,7 @@ public class NotificationService {
 	public void deleteNotification(Long notificationId) {
 		Notification notification = notificationRepository.findById(notificationId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "존재하지 않는 알림입니다."));
-		
+
 		if (notification.getDeletedAt() != null) {
 			throw new CommonException(ApiStatus.CONFLICT, "이미 삭제된 알림입니다.");
 		}
