@@ -244,7 +244,8 @@
 	<!-- 소비자의 받은 선물 조회 -->
 	<resultMap type="PurchaseReceiveGiftDTO"
 		id="PurchaseReceiveGiftMap">
-		<id property="memberSubscriptionId" column="MEMBER_SUBSCRIPTION_ID" />
+		<id property="purchaseId" column="PURCHASE_ID" />
+		<result property="memberSubscriptionId" column="MEMBER_SUBSCRIPTION_ID" />
 		<result property="sender" column="sender" />
 		<result property="receiver" column="receiver" />
 		<result property="subscriptionName" column="SUBSCRIPTION_NAME" />
@@ -271,6 +272,7 @@
 	<select id="selectAllReceivedGift" parameterType="long"
 		resultMap="PurchaseReceiveGiftMap">
 		SELECT
+		p.PURCHASE_ID,
 		ms.MEMBER_SUBSCRIPTION_ID,
 		bm.NAME AS sender,
 		rm.NAME AS
@@ -319,6 +321,7 @@
 	<select id="selectReceivedGiftDetail" parameterType="long"
 		resultMap="PurchaseReceiveGiftMap">
 		SELECT
+		p.PURCHASE_ID,
 		ms.MEMBER_SUBSCRIPTION_ID,
 		bm.NAME AS sender,
 		rm.NAME AS
