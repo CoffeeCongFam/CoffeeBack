@@ -37,6 +37,7 @@ import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
 import com.ucamp.coffee.domain.subscription.entity.SubscriptionUsageHistory;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionUsageHistoryRepository;
+import com.ucamp.coffee.domain.subscription.service.MemberSubscriptionService;
 import com.ucamp.coffee.domain.subscription.type.UsageStatus;
 
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,8 @@ public class OrdersService {
 	private final OrderMenuRepository orderMenuRepository;
 
 	private final OrdersMapper ordersMapper;
+
+	private final MemberSubscriptionService memberSubscriptionService;
 
 	private final ApplicationEventPublisher publisher;
 
@@ -152,6 +155,11 @@ public class OrdersService {
 		Orders order = ordersRepository.findById(orderId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
 
+		// 보유 구독권 상태 복구
+		int quantity = ordersMapper.countOrderMenuQuantity(orderId);
+		Long memberSubscriptionId = order.getMemberSubscription().getMemberSubscriptionId();
+		memberSubscriptionService.updateDailyRemainCount(memberSubscriptionId, quantity);
+
 		// 주문 취소 알림 및 점주에게 SMS 전송
 		publisher.publishEvent(new OrderCanceledEvent(orderId));
 
@@ -193,6 +201,10 @@ public class OrdersService {
 
 		Orders order = ordersRepository.findById(orderId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
+
+		// 보유 구독권 상태 복구
+		int quantity = ordersMapper.countOrderMenuQuantity(orderId);
+		memberSubscriptionService.updateDailyRemainCount(orderId, quantity);
 
 		publisher.publishEvent(new OrderRejectedEvent(orderId));
 

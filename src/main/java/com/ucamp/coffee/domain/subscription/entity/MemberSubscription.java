@@ -91,5 +91,10 @@ public class MemberSubscription extends BaseEntity {
 		
 		this.dailyRemainCount -= quantity;
 	}
+	
+	//보유 구독권 사용횟수 복구
+	public void rollbackCount(int quantity) {
+		this.dailyRemainCount += quantity;
+	}
 
 }

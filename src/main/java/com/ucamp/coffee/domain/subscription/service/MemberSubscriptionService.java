@@ -7,6 +7,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ucamp.coffee.common.exception.CommonException;
+import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.purchase.entity.Purchase;
 import com.ucamp.coffee.domain.subscription.dto.MemberSubscriptionDTO;
@@ -27,7 +29,7 @@ public class MemberSubscriptionService {
 	private final MemberSubscriptionMapper memberSubscriptionMapper;
 	private final MemberSubscriptionRepository memberSubscriptionRepository;
 	private final ApplicationEventPublisher publisher;
-	
+
 	/**
 	 * 보유 구독권 생성
 	 * 
@@ -36,8 +38,8 @@ public class MemberSubscriptionService {
 	 * @param subscription
 	 * @param isGift
 	 */
-	public void createMemberSubscription(Member receiver, Purchase purchase, Subscription subscription,
-			String isGift) {
+	@Transactional
+	public void createMemberSubscription(Member receiver, Purchase purchase, Subscription subscription, String isGift) {
 
 		Integer dailyRemainCount = subscription.getMaxDailyUsage();
 		LocalDateTime subscriptionStart = LocalDateTime.now();
@@ -51,37 +53,50 @@ public class MemberSubscriptionService {
 		memberSubscriptionRepository.save(memberSubscription);
 
 	}
-	
-	
+
+	/**
+	 * 주문취소/주문거부에 따른 구독권 잔여횟수 복구
+	 * 
+	 * @param memberSubscriptionId
+	 * @param quantity
+	 */
+	public void updateDailyRemainCount(Long memberSubscriptionId, int quantity) {
+
+		MemberSubscription subscription = memberSubscriptionRepository.findById(memberSubscriptionId)
+				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "보유 구독권이 없습니다."));
+		
+		subscription.rollbackCount(quantity);
+	}
+
 	/**
 	 * 만료 7일 전에 알림
 	 */
 	@Transactional(readOnly = true)
 	public void notificationBefore7Days() {
 		List<MemberSubscriptionDTO> list = memberSubscriptionMapper.selectExpiring7Days();
-		for(MemberSubscriptionDTO dto : list) {
+		for (MemberSubscriptionDTO dto : list) {
 			publisher.publishEvent(new NoticeBefore7Event(dto.getMemberId(), dto.getMemberSubscriptionId()));
 		}
 	}
-	
+
 	/**
 	 * 만료 3일 전에 알림
 	 */
 	@Transactional(readOnly = true)
 	public void notificationBefore3Days() {
 		List<MemberSubscriptionDTO> list = memberSubscriptionMapper.selectExpiring3Days();
-		for(MemberSubscriptionDTO dto : list) {
+		for (MemberSubscriptionDTO dto : list) {
 			publisher.publishEvent(new NoticeBefore3Event(dto.getMemberId(), dto.getMemberSubscriptionId()));
 		}
 	}
-	
+
 	/**
 	 * 만료 당일 알림
 	 */
 	@Transactional(readOnly = true)
 	public void notificationToday() {
 		List<MemberSubscriptionDTO> list = memberSubscriptionMapper.selectExpiringToday();
-		for(MemberSubscriptionDTO dto : list) {
+		for (MemberSubscriptionDTO dto : list) {
 			publisher.publishEvent(new NoticeTodayEvent(dto.getMemberId(), dto.getMemberSubscriptionId()));
 		}
 	}

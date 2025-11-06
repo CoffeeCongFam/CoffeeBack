@@ -186,12 +186,15 @@
 		ORDERS o
 		JOIN
 		ORDER_MENU om ON
-		om.ORDER_ID = o.ORDER_ID
+		om.ORDER_ID =
+		o.ORDER_ID
 		JOIN MENU m ON
 		m.MENU_ID =
 		om.MENU_ID
-		JOIN MEMBER m2 ON m2.MEMBER_ID = o.MEMBER_ID
-		JOIN MEMBER_SUBSCRIPTION ms ON ms.member_subscription_id = o.MEMBER_SUBSCRIPTION_ID
+		JOIN MEMBER m2 ON
+		m2.MEMBER_ID = o.MEMBER_ID
+		JOIN MEMBER_SUBSCRIPTION ms ON
+		ms.member_subscription_id = o.MEMBER_SUBSCRIPTION_ID
 		WHERE
 		TRUNC(o.CREATED_AT) = TRUNC(sysdate)
 		AND o.PARTNER_STORE_ID =
@@ -208,7 +211,8 @@
 		<result property="subscriptionName" column="SUBSCRIPTION_NAME" />
 		<result property="name" column="NAME" />
 		<result property="tel" column="TEL" />
-		<result property="memberSubscriptionId" column="MEMBER_SUBSCRIPTION_ID" />
+		<result property="memberSubscriptionId"
+			column="MEMBER_SUBSCRIPTION_ID" />
 		<result property="orderType" column="ORDER_TYPE" />
 		<collection property="menuList"
 			ofType="com.ucamp.coffee.domain.orders.dto.OrdersStorePastResponseDTO$MenuDTO">
@@ -260,6 +264,15 @@
 		</if>
 
 		ORDER BY o.CREATED_AT DESC
+	</select>
+
+	<!-- 주문 메뉴의 수량 계산하기 -->
+	<select id="countOrderMenuQuantity" parameterType="long"
+		resultType="int">
+		SELECT sum(om.QUANTITY )
+		FROM ORDER_MENU om
+		WHERE om.ORDER_ID
+		= #{orderId}
 	</select>
 
 </mapper>
