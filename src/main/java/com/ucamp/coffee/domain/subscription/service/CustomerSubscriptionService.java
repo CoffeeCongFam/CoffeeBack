@@ -42,19 +42,24 @@ public class CustomerSubscriptionService {
     private final SubscriptionUsageHistoryRepository subscriptionUsageHistoryRepository;
 
     public List<CustomerSubscriptionResponseDTO> readSubscriptionList(Long partnerStoreId) {
+        // 매장 정보 조회
         Store store = storeHelperService.findById(partnerStoreId);
 
+        // 매장별 구독권 목록 반환
         return repository.findByStore(store)
             .stream()
             .map(subscription -> {
+                // 매장 정보 조회
                 CustomerStoreSimpleDTO storeDto = CustomerStoreSimpleDTO.builder()
                     .partnerStoreId(subscription.getStore().getPartnerStoreId())
                     .storeName(subscription.getStore().getStoreName())
                     .storeImg(subscription.getStore().getStoreImg())
                     .build();
 
-                // SubscriptionMenu 조회
+                // 구독권-메뉴 정보 조회
                 List<SubscriptionMenu> subscriptionMenus = subscriptionMenuRepository.findBySubscription(subscription);
+                
+                // 메뉴 정보 추출
                 List<MenuResponseDTO> menus = subscriptionMenus.stream()
                     .map(SubscriptionMenu::getMenu)
                     .map(MenuMapper::toDto)
@@ -65,7 +70,7 @@ public class CustomerSubscriptionService {
             .collect(Collectors.toList());
     }
 
-    // 매장 id 기반으로 매장 상세 정보 조회
+    // 매장 아이디 기반으로 매장 상세 정보 조회
     public List<CustomerSubscriptionResponseDTO> readSubscriptionListByStore(Store store) {
         return repository.findByStore(store)
             .stream()
@@ -76,8 +81,10 @@ public class CustomerSubscriptionService {
                     .storeImg(subscription.getStore().getStoreImg())
                     .build();
 
-                // SubscriptionMenu 조회
+                // 구독권-메뉴 정보 조회
                 List<SubscriptionMenu> subscriptionMenus = subscriptionMenuRepository.findBySubscription(subscription);
+
+                // 메뉴 정보 추출
                 List<MenuResponseDTO> menus = subscriptionMenus.stream()
                     .map(SubscriptionMenu::getMenu)
                     .map(MenuMapper::toDto)
@@ -89,28 +96,38 @@ public class CustomerSubscriptionService {
     }
 
     public List<CustomerMemberSubscriptionResponseDTO> readMemberSubscriptionList(Long memberId) {
+        // 사용자 정보 조회
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
+        // 보유 구독권 목록 조회
         List<MemberSubscription> subscriptions =
             memberSubscriptionRepository.findAllByMemberWithRelations(member);
 
+        // 보유 구독권이 없다면 빈 리스트 반환
         if (subscriptions.isEmpty()) return Collections.emptyList();
 
+        // 구독권 아이디 목록 추출
         List<Long> subscriptionIds = subscriptions.stream()
             .map(sub -> sub.getPurchase().getSubscription().getSubscriptionId())
             .toList();
 
+        // 구독권-메뉴 정보 조회
         List<SubscriptionMenu> subscriptionMenus = subscriptionMenuRepository.findBySubscriptionsIds(subscriptionIds);
+        
+        // 구독권 아이디별 메뉴 목록 매핑
         Map<Long, List<Menu>> menusMap = subscriptionMenus.stream()
             .collect(Collectors.groupingBy(
                 sm -> sm.getSubscription().getSubscriptionId(),
                 Collectors.mapping(SubscriptionMenu::getMenu, Collectors.toList())
             ));
 
+        // 보유 구독권 아이디 목록 추출
         List<Long> memberSubscriptionIds = subscriptions.stream()
             .map(MemberSubscription::getMemberSubscriptionId)
             .toList();
+
+        // 사용 이력 목록 조회 및 구독권별 매핑
         List<SubscriptionUsageHistory> usageHistories =
             subscriptionUsageHistoryRepository.findByMemberSubscriptionIds(memberSubscriptionIds);
         Map<Long, List<SubscriptionUsageHistory>> usageMap = usageHistories.stream()

@@ -39,42 +39,49 @@ public class CustomerStoreService {
     private final StoreHoursRepository storeHoursRepository;
 
     public List<CustomerStoreListResponseDTO> readStoreList() {
-        List<Store> stores = repository.findAll();
-        List<Long> storeIds = stores.stream().map(Store::getPartnerStoreId).toList();
+        List<Store> stores = repository.findAll(); // 매장 목록 조회
+        List<Long> storeIds = stores.stream().map(Store::getPartnerStoreId).toList(); // 매장 아이디 목록 추출
 
-        Map<Long, Integer> subscriberCounts = getSubscriberCounts(storeIds);
-        Map<Long, Integer> subscriptionStocks = getSubscriptionStocks(storeIds);
-        Map<Long, Long> reviewCounts = getReviewCounts(storeIds);
-        Map<Long, Double> averageRatings = getAverageRatings(storeIds);
-        Map<Long, String> storeStatusMap = getStoreStatusMap(storeIds);
+        Map<Long, Integer> subscriberCounts = getSubscriberCounts(storeIds);        // 각 스토어 ID별 구독자 수를 조회하여 Map으로 저장
+        Map<Long, Integer> subscriptionStocks = getSubscriptionStocks(storeIds);    // 각 스토어 ID별 구독 상품 재고 수를 조회하여 Map으로 저장
+        Map<Long, Long> reviewCounts = getReviewCounts(storeIds);                   // 각 스토어 ID별 리뷰 개수를 조회하여 Map으로 저장
+        Map<Long, Double> averageRatings = getAverageRatings(storeIds);             // 각 스토어 ID별 평균 평점을 조회하여 Map으로 저장
+        Map<Long, String> storeStatusMap = getStoreStatusMap(storeIds);             // 각 스토어 ID별 상태를 조회하여 Map으로 저장
 
+        // stores 리스트를 스트림으로 변환
         return stores.stream()
+            // 각 스토어를 DTO로 매핑
+            // 구독자 수, 재고, 리뷰 개수, 평균 평점, 상태를 함께 전달
             .map(store -> mapToStoreListDTO(store, subscriberCounts, subscriptionStocks,
                 reviewCounts, averageRatings, storeStatusMap, null))
             .toList();
     }
 
     public CustomerStoreResponseDTO readStoreInfo(Long partnerStoreId) {
+        // 클라이언트에서 보낸 ID 기반으로 매장 정보 조회
         Store store = helperService.findById(partnerStoreId);
 
-        List<StoreHours> storeHoursList = repository.findStoreDetailsWithStoreHours(partnerStoreId);
-        List<MenuResponseDTO> menus = menuService.readMenuListByStore(partnerStoreId);
+        List<StoreHours> storeHoursList = repository.findStoreDetailsWithStoreHours(partnerStoreId);    // 특정 매장의 영업시간 정보를 조회
+        List<MenuResponseDTO> menus = menuService.readMenuListByStore(partnerStoreId);                  // 특정 매장의 메뉴 리스트를 조회
         List<CustomerSubscriptionResponseDTO> subscriptions =
-            customerSubscriptionService.readSubscriptionListByStore(store); // 매장 기준으로 구독 리스트 조회
+            customerSubscriptionService.readSubscriptionListByStore(store);                             // 특정 매장을 기준으로 고객 구독 리스트를 조회
 
+        // 매장 정보와 함께 영업시간 정보, 메뉴 리스트, 고객 구독 리스트를 하나의 DTO로 변환하여 반환
         return StoreMapper.toCustomerStoreDto(storeHoursList, store, menus, subscriptions);
     }
 
     public List<CustomerStoreListResponseDTO> readNearbyStores(Double xPoint, Double yPoint, Double radius, Long memberId) {
+        // 클라이언트에서 보낸 좌표와 반경 범위(기본값 2km)를 기준으로 근처 매장 정보 목록 조회
         List<Store> nearbyStores = repository.findStoresWithinRadius(xPoint, yPoint, radius);
-        List<Long> storeIds = nearbyStores.stream().map(Store::getPartnerStoreId).toList();
+        List<Long> storeIds = nearbyStores.stream().map(Store::getPartnerStoreId).toList(); // 매장 아이디 목록 추출
 
-        Map<Long, Integer> subscriberCounts = getSubscriberCounts(storeIds);
-        Map<Long, Integer> subscriptionStocks = getSubscriptionStocks(storeIds);
-        Map<Long, Long> reviewCounts = getReviewCounts(storeIds);
-        Map<Long, Double> averageRatings = getAverageRatings(storeIds);
-        Map<Long, String> storeStatusMap = getStoreStatusMap(storeIds);
+        Map<Long, Integer> subscriberCounts = getSubscriberCounts(storeIds);        // 각 스토어 ID별 구독자 수를 조회하여 Map으로 저장
+        Map<Long, Integer> subscriptionStocks = getSubscriptionStocks(storeIds);    // 각 스토어 ID별 구독 상품 재고 수를 조회하여 Map으로 저장
+        Map<Long, Long> reviewCounts = getReviewCounts(storeIds);                   // 각 스토어 ID별 리뷰 개수를 조회하여 Map으로 저장
+        Map<Long, Double> averageRatings = getAverageRatings(storeIds);             // 각 스토어 ID별 평균 평점을 조회하여 Map으로 저장
+        Map<Long, String> storeStatusMap = getStoreStatusMap(storeIds);             // 각 스토어 ID별 상태를 조회하여 Map으로 저장
 
+        // 특정 회원이 각 스토어에 구독 중인지 여부를 조회하고 Map으로 변환
         Map<Long, Boolean> isSubscribedMap = memberSubscriptionRepository.isSubscribedByMemberAndStoreIds(storeIds, memberId)
             .stream()
             .collect(Collectors.toMap(
@@ -82,6 +89,7 @@ public class CustomerStoreService {
                 row -> (Boolean) row[1]
             ));
 
+        // 구독자 수, 재고, 리뷰, 평균 평점, 상태, 회원 구독 여부 정보를 함께 전달
         return nearbyStores.stream()
             .map(store -> mapToStoreListDTO(store, subscriberCounts, subscriptionStocks,
                 reviewCounts, averageRatings, storeStatusMap, isSubscribedMap))
@@ -89,6 +97,7 @@ public class CustomerStoreService {
     }
 
     private Map<Long, Integer> getSubscriberCounts(List<Long> storeIds) {
+        // 각 스토어 ID별 구독자 수를 조회하여 Map으로 반환
         return memberSubscriptionRepository.countSubscribersByStoreIds(storeIds)
             .stream()
             .collect(Collectors.toMap(
@@ -98,6 +107,7 @@ public class CustomerStoreService {
     }
 
     private Map<Long, Integer> getSubscriptionStocks(List<Long> storeIds) {
+        // 각 스토어 ID별 구독 상품 재고 수를 조회하여 Map으로 반환
         return memberSubscriptionRepository.getRemainingStockByStoreIds(storeIds)
             .stream()
             .collect(Collectors.toMap(
@@ -107,6 +117,7 @@ public class CustomerStoreService {
     }
 
     private Map<Long, Long> getReviewCounts(List<Long> storeIds) {
+        // 각 스토어 ID별 리뷰 개수를 조회하여 Map으로 반환
         return reviewRepository.countByStoreIds(storeIds)
             .stream()
             .collect(Collectors.toMap(
@@ -116,6 +127,7 @@ public class CustomerStoreService {
     }
 
     private Map<Long, Double> getAverageRatings(List<Long> storeIds) {
+        // 각 스토어 ID별 평균 평점을 조회하여 Map으로 반환
         return reviewRepository.averageRatingByStoreIds(storeIds)
             .stream()
             .collect(Collectors.toMap(
@@ -125,11 +137,13 @@ public class CustomerStoreService {
     }
 
     private Map<Long, String> getStoreStatusMap(List<Long> storeIds) {
+        // 각 스토어 ID별 상태를 조회
         DayOfWeek today = LocalDate.now().getDayOfWeek();
         List<StoreHours> todayHours = storeHoursRepository.findByStore_PartnerStoreIdInAndDayOfWeek(storeIds,
             DayOfWeekType.valueOf(today.name().substring(0, 3))
         );
 
+        // 오늘 영업시간을 기반으로 스토어 상태를 Map으로 반환
         return todayHours.stream()
             .collect(Collectors.toMap(
                 sh -> sh.getStore().getPartnerStoreId(),
@@ -152,6 +166,7 @@ public class CustomerStoreService {
         Map<Long, String> storeStatusMap,
         Map<Long, Boolean> isSubscribedMap
     ) {
+        // 매장 정보 및 통계 정보들을 DTO로 매핑
         return CustomerStoreListResponseDTO.builder()
             .storeId(store.getPartnerStoreId())
             .storeName(store.getStoreName())

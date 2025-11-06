@@ -12,7 +12,7 @@ import com.ucamp.coffee.domain.subscription.dto.CustomerSubscriptionResponseDTO;
 import java.util.List;
 
 public class StoreMapper {
-    public static Store toEntity(StoreCreateDTO dto, Member member) {
+    public static Store toEntity(StoreCreateDTO dto, Member member, String imageUrl) {
         return Store.builder()
                 .member(member)
                 .businessNumber(dto.getBusinessNumber())
@@ -20,7 +20,7 @@ public class StoreMapper {
                 .roadAddress(dto.getRoadAddress())
                 .detailAddress(dto.getDetailAddress())
                 .detailInfo(dto.getDetailInfo())
-                .storeImg(dto.getStoreImg())
+                .storeImg(imageUrl)
                 .storeTel(dto.getStoreTel())
                 .xPoint(dto.getXPoint())
                 .yPoint(dto.getYPoint())

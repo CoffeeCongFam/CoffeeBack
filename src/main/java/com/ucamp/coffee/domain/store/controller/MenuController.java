@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/stores/menus")
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class MenuController {
     public ResponseEntity<ApiResponse<?>> createMenuInfo(
         @RequestPart("data") MenuCreateDTO dto,
         @RequestPart(value = "file", required = false) MultipartFile file
-    ) {
+    ) throws IOException {
         service.createMenuInfo(dto, file);
         return ResponseMapper.successOf(null);
     }
@@ -41,7 +43,7 @@ public class MenuController {
         @PathVariable Long menuId,
         @RequestPart("data") MenuUpdateDTO dto,
         @RequestPart(value = "file", required = false) MultipartFile file
-    ) {
+    ) throws IOException {
         service.updateMenuInfo(menuId, dto, file);
         return ResponseMapper.successOf(null);
     }

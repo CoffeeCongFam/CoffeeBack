@@ -11,7 +11,6 @@ import lombok.*;
 public class MenuUpdateDTO {
     private String menuName;
     private Integer price;
-    private String menuImg;
     private String menuDesc;
     private String menuStatus;
     private String menuType;
