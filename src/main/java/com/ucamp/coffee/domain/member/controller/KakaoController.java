@@ -8,6 +8,7 @@ import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
 import com.ucamp.coffee.domain.member.service.MemberService;
 import com.ucamp.coffee.domain.member.type.ActiveStatusType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +30,16 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/auth/kakao")
 @RequiredArgsConstructor
 public class KakaoController {
+
+    @Value("${server.host}")
+    private String host;
+
+    @Value("${server.backend-port}")
+    private int backPort;
+
+    @Value("${server.frontend-port}")
+    private int frontPort;
+
     private final KakaoService kakaoService;
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
@@ -40,7 +51,7 @@ public class KakaoController {
                            HttpServletRequest request,
                            HttpServletResponse response) {
 
-        String redirectUrl = "http://localhost:5173/";
+        String redirectUrl = host + ":" + frontPort+ "/";
 
         try {
             // 카카오 토큰 발급
@@ -66,7 +77,7 @@ public class KakaoController {
                 // TODO
                 String tempJwt = jwtTokenProvider.generateTempToken(email);
 
-                String baseUrl = "http://localhost:5173/";
+                String baseUrl = host + ":" + frontPort + "/";
                 String page = "member".equals(state) ? "MemberSignup" : "CustomerSignUp";
 
                 redirectUrl = baseUrl + page + "?token=" + tempJwt;
@@ -107,9 +118,9 @@ public class KakaoController {
                 session.setAttribute("memberId", member.getMemberId());
 
                 // 일반회원 / 점주 홈으로 리다이렉트
-                String baseUrl = "http://localhost:5173/";
+                String baseUrl = host + ":" + frontPort;
                 String page = MemberType.GENERAL.equals(member.getMemberType()) ? "me" : "store";
-                redirectUrl = baseUrl + page;
+                redirectUrl = baseUrl + "/" + page;
             }
 
         } catch (Exception e) {

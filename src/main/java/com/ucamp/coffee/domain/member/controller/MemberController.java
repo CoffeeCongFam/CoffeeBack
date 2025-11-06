@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,17 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins = "host + \":\" + frontPort", allowCredentials = "true")
 public class MemberController {
+
+    @Value("${server.host}")
+    private String host;
+
+    @Value("${server.backend-port}")
+    private int backPort;
+
+    @Value("${server.frontend-port}")
+    private int frontPort;
 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
@@ -82,7 +92,7 @@ public class MemberController {
         return ResponseMapper.successOf(Map.of(
                 "message", "성공",
                 "memberId", memberId,
-                "redirectUrl", "http://localhost:5173/me"
+                "redirectUrl", host + ":" + frontPort + "/me"
         ));
     }
 
@@ -121,7 +131,7 @@ public class MemberController {
         return ResponseMapper.successOf(Map.of(
                 "message", "성공",
                 "memberId", memberId,
-                "redirectUrl", "http://localhost:5173/CafeSignUp"));
+                "redirectUrl", host + ":" + frontPort + "/CafeSignUp"));
     }
 
     // 카카오톡 로그아웃 & 세션/쿠키 삭제
