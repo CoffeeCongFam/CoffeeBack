@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PurchaseReceiveGiftDTO {
 
+	private Long purchaseId;
 	private Long memberSubscriptionId;
 	private String sender;
 	private String receiver;
