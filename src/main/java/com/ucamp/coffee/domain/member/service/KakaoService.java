@@ -26,11 +26,20 @@ public class KakaoService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MemberRepository memberRepository;
 
+    @Value("${server.host}")
+    private String host;
+
+    @Value("${server.backend-port}")
+    private int backPort;
+
+    @Value("${server.frontend-port}")
+    private int frontPort;
+
     @Value("${kakao.client-id}")
     private String clientId;
 
-    @Value("${kakao.redirect-uri}")
-    private String redirectUri;
+    @Value("${kakao.redirect-endpoint}")
+    private String redirectEndPoint;
 
     @Value("${kakao.token-url}")
     private String tokenUrl;
@@ -48,7 +57,7 @@ public class KakaoService {
         MultiValueMap<String, String> httpBodies = new LinkedMultiValueMap<>();
         httpBodies.add("grant_type", "authorization_code");
         httpBodies.add("client_id", clientId);
-        httpBodies.add("redirect_uri", redirectUri);
+        httpBodies.add("redirect_uri", host + ":" + backPort + redirectEndPoint);
         httpBodies.add("code", code);
 
         // HttpHeader + HttpBody를 하나의 오브젝트에 담기

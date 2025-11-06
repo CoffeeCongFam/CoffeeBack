@@ -19,4 +19,5 @@ public class MenuResponseDTO {
     private String menuStatus;
     private String createdAt;
     private String updatedAt;
+    private String deletedAt;
 }
