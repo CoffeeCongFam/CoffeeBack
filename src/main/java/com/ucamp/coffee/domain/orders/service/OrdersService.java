@@ -184,7 +184,7 @@ public class OrdersService {
 		}
 
 		// 제조 완료 알림 및 소비자에게 SMS 전송
-		if (request.getOrderStatus() == OrderStatusType.RECEIVED) {
+		if (request.getOrderStatus() == OrderStatusType.COMPLETED) {
 			publisher.publishEvent(new OrderCompletedEvent(orderId));
 		}
 		order.changeOrderStatus(request.getOrderStatus());

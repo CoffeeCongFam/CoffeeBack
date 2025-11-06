@@ -70,7 +70,7 @@ public class Orders extends BaseEntity {
 	    }
 
 	    // 완료된 주문은 상태 변경 불가
-	    if (this.orderStatus == OrderStatusType.COMPLETED) {
+	    if (this.orderStatus == OrderStatusType.RECEIVED) {
 	        throw new CommonException(ApiStatus.CONFLICT, "이미 완료된 주문은 수정할 수 없습니다.");
 	    }
 
