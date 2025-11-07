@@ -50,7 +50,12 @@ public class KakaoService {
     private String userInfoUrl;
 
     public String getKakaoAccessToken(String code) {
-        String redirectUrl = host + ":" + backPort + redirectEndPoint;
+        String redirectUrl;
+        if ("443".equals(String.valueOf(backPort).trim())) {
+            redirectUrl = host + redirectEndPoint;
+        } else {
+            redirectUrl = host + ":" + backPort + redirectEndPoint;
+        }
         log.info("==================================");
         log.info("KS 1: {}", redirectUrl);
         log.info("==================================");
