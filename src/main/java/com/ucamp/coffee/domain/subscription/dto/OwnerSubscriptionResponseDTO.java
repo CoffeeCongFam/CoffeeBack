@@ -27,4 +27,5 @@ public class OwnerSubscriptionResponseDTO {
     private Integer remainSalesQuantity;
     private String subscriptionStatus;
     private List<MenuResponseDTO> menus;
+    private String deletedAt;
 }

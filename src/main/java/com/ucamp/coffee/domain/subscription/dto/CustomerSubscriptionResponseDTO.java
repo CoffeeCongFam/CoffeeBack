@@ -28,4 +28,5 @@ public class CustomerSubscriptionResponseDTO {
     private String subscriptionStatus;
     private String subscriptionImg;
     private List<MenuResponseDTO> menus;
+    private String deletedAt;
 }

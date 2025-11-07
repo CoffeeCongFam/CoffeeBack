@@ -3,6 +3,7 @@ package com.ucamp.coffee.domain.subscription.service;
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.common.service.OciUploaderService;
+import com.ucamp.coffee.common.util.DateTimeUtil;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.store.dto.MenuResponseDTO;
@@ -27,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -115,6 +115,7 @@ public class OwnerSubscriptionService {
                     .remainSalesQuantity(subscription.getRemainSalesQuantity())
                     .subscriptionStatus(subscription.getSubscriptionStatus() != null ? subscription.getSubscriptionStatus().name() : null)
                     .menus(menus)
+                    .deletedAt(DateTimeUtil.toUtcDateTime(subscription.getDeletedAt()))
                     .build();
             })
             .collect(Collectors.toList());
@@ -152,22 +153,5 @@ public class OwnerSubscriptionService {
         Subscription subscription = repository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
         subscription.update(null, null, SubscriptionStatusType.valueOf(dto.getSubscriptionStatus()));
-    }
-
-    @Transactional
-    public void deleteSubscriptionInfo(Long subscriptionId, Long memberId) {
-        // 점주 및 매장 정보 조회
-        Member member = memberHelperService.findById(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
-        Store store = storeHelperService.findByMember(member)
-            .orElseThrow(() -> new IllegalArgumentException("해당 멤버가 존재하지 않습니다."));
-
-        // 해당 멤버가 매장의 점주가 아니라면 예외 처리
-        if (!Objects.equals(store.getMember().getMemberId(), memberId)) throw new CommonException(ApiStatus.UNAUTHORIZED);
-
-        // 구독권 정보 조회 및 수정
-        Subscription subscription = repository.findById(subscriptionId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
-        subscription.setDeletedAt(LocalDateTime.now());
     }
 }
