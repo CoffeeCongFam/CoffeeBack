@@ -1,6 +1,8 @@
 package com.ucamp.coffee.domain.purchase.entity;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import com.ucamp.coffee.common.entity.BaseEntity;
 import com.ucamp.coffee.domain.member.entity.Member;
@@ -40,8 +42,8 @@ public class Purchase extends BaseEntity {
 	private Member buyer;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_member_id")
-    private Member receiver;
+	@JoinColumn(name = "receiver_member_id")
+	private Member receiver;
 
 	@ManyToOne
 	@JoinColumn(name = "subscription_id")
@@ -55,11 +57,29 @@ public class Purchase extends BaseEntity {
 	private String isGift;
 	private String giftMessage;
 	private String purchaseType;
-	
-	//환불 처리
+
+	private Integer paymentAmount;
+	private String merchantUid;
+	private String impUid;
+	private LocalDateTime paidAt;
+
+	// 환불 처리
 	public void refundedPurchase() {
 		this.paymentStatus = PaymentStatus.REFUNDED;
 		this.refundedAt = LocalDateTime.now();
+	}
+
+	// 구매 상태 변경
+	public void changePaymentStatus(PaymentStatus status) {
+		this.paymentStatus = status;
+	}
+
+	// 결제 검증 성공
+	public void handlePaymentSuccess(Long paidAt, String impUid, String purchaseType) {
+		this.paymentStatus = PaymentStatus.PAID;
+		this.paidAt = LocalDateTime.ofInstant(Instant.ofEpochSecond(paidAt), ZoneId.systemDefault());
+		this.impUid = impUid;
+		this.purchaseType = purchaseType;
 	}
 
 }

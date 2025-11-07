@@ -19,6 +19,7 @@ import com.ucamp.coffee.domain.subscription.event.NoticeBefore7Event;
 import com.ucamp.coffee.domain.subscription.event.NoticeTodayEvent;
 import com.ucamp.coffee.domain.subscription.mapper.MemberSubscriptionMapper;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
+import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,8 @@ public class MemberSubscriptionService {
 
 	private final MemberSubscriptionMapper memberSubscriptionMapper;
 	private final MemberSubscriptionRepository memberSubscriptionRepository;
+	private final SubscriptionRepository subscriptionRepository;
+
 	private final ApplicationEventPublisher publisher;
 
 	/**
@@ -38,16 +41,18 @@ public class MemberSubscriptionService {
 	 * @param subscription
 	 * @param isGift
 	 */
-	@Transactional
-	public void createMemberSubscription(Member receiver, Purchase purchase, Subscription subscription, String isGift) {
+//	@Transactional => 트랜잭션 ㅔㅈ거
+	public void createMemberSubscription(Purchase purchase) {
 
+		Subscription subscription = purchase.getSubscription();
+		Member receiver = purchase.getReceiver();
 		Integer dailyRemainCount = subscription.getMaxDailyUsage();
 		LocalDateTime subscriptionStart = LocalDateTime.now();
 		LocalDateTime subscriptionEnd = subscriptionStart.plusDays(subscription.getSubscriptionPeriod());
 
 		// 보유 구독권 entity 생성
 		MemberSubscription memberSubscription = MemberSubscription.builder().member(receiver).purchase(purchase)
-				.isGift(isGift).dailyRemainCount(dailyRemainCount).subscriptionStart(subscriptionStart)
+				.isGift(purchase.getIsGift()).dailyRemainCount(dailyRemainCount).subscriptionStart(subscriptionStart)
 				.subscriptionEnd(subscriptionEnd).build();
 
 		memberSubscriptionRepository.save(memberSubscription);
@@ -64,7 +69,7 @@ public class MemberSubscriptionService {
 
 		MemberSubscription subscription = memberSubscriptionRepository.findById(memberSubscriptionId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "보유 구독권이 없습니다."));
-		
+
 		subscription.rollbackCount(quantity);
 	}
 
