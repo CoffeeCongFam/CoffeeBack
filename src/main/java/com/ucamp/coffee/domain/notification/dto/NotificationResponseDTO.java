@@ -18,6 +18,8 @@ public class NotificationResponseDTO {
 	private Long notificationId;
 	private String notificationType;
 	private String notificationContent;
+	//해당 타입에 대한 타겟 ID, order타입이면 orderId, subscription이면 memberSubscriptionId, gift는 purchaseId;
+	private Long targetId; 
 	private LocalDateTime readAt;
 	private LocalDateTime createdAT;
 
@@ -26,6 +28,6 @@ public class NotificationResponseDTO {
 		return NotificationResponseDTO.builder().notificationId(entity.getNotificationId())
 				.notificationType(entity.getNotificationType().name())
 				.notificationContent(entity.getNotificationContent()).readAt(entity.getReadAt())
-				.createdAT(entity.getCreatedAt()).build();
+				.createdAT(entity.getCreatedAt()).targetId(entity.getTargetId()).build();
 	}
 }

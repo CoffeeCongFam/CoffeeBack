@@ -20,6 +20,8 @@ import com.ucamp.coffee.domain.subscription.event.NoticeTodayEvent;
 import com.ucamp.coffee.domain.subscription.mapper.MemberSubscriptionMapper;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
+import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
+import com.ucamp.coffee.domain.subscription.type.SubscriptionType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,20 +44,24 @@ public class MemberSubscriptionService {
 	 * @param isGift
 	 */
 //	@Transactional => 트랜잭션 ㅔㅈ거
-	public void createMemberSubscription(Purchase purchase) {
+	public Long createMemberSubscription(Purchase purchase) {
 
 		Subscription subscription = purchase.getSubscription();
 		Member receiver = purchase.getReceiver();
 		Integer dailyRemainCount = subscription.getMaxDailyUsage();
 		LocalDateTime subscriptionStart = LocalDateTime.now();
-		LocalDateTime subscriptionEnd = subscriptionStart.plusDays(subscription.getSubscriptionPeriod());
+		LocalDateTime subscriptionEnd = subscriptionStart.plusDays(subscription.getSubscriptionPeriod() - 1);
 
 		// 보유 구독권 entity 생성
 		MemberSubscription memberSubscription = MemberSubscription.builder().member(receiver).purchase(purchase)
 				.isGift(purchase.getIsGift()).dailyRemainCount(dailyRemainCount).subscriptionStart(subscriptionStart)
 				.subscriptionEnd(subscriptionEnd).build();
 
-		memberSubscriptionRepository.save(memberSubscription);
+		MemberSubscription newSubscription = memberSubscriptionRepository.save(memberSubscription);
+
+		updateSubscriptionSales(subscription.getSubscriptionId());
+		
+		return newSubscription.getMemberSubscriptionId();
 
 	}
 
@@ -71,6 +77,27 @@ public class MemberSubscriptionService {
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "보유 구독권이 없습니다."));
 
 		subscription.rollbackCount(quantity);
+	}
+
+	// 부득이하게 memberSubscription service에 작성, 추후에 옮기기
+	/**
+	 * 주문 성공에 따른 구독권 판매량 및 잔여 판매개수 갱신
+	 * 
+	 * @param subscriptionId
+	 */
+	@Transactional
+	public void updateSubscriptionSales(Long subscriptionId) {
+
+		Subscription subscription = subscriptionRepository.findById(subscriptionId)
+				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구독권 정보가 존재하지 않습니다"));
+		
+		Integer totalSale = subscription.getTotalSale() + 1;
+		Integer remainSalesQuantity = subscription.getRemainSalesQuantity() - 1;
+		if(remainSalesQuantity == 0) {
+			subscription.update(totalSale, remainSalesQuantity, SubscriptionStatusType.SOLDOUT);
+		} else {
+			subscription.update(totalSale, remainSalesQuantity, null);
+		}
 	}
 
 	/**
