@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,12 +29,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "host + \":\" + frontPort", allowCredentials = "true")
 public class MemberController {
-
     @Value("${server.host}")
     private String host;
 
@@ -64,6 +64,11 @@ public class MemberController {
             HttpServletRequest request,
             HttpServletResponse response) {
 
+        String redirectUrl = buildUrl() + "/me";
+        log.info("==================================");
+        log.info("MC 1: " + redirectUrl);
+        log.info("==================================");
+
         // TODO: 에러 처리 필요
         // 회원가입 insert
         memberDto.setMemberType(MemberType.GENERAL);
@@ -92,7 +97,7 @@ public class MemberController {
         return ResponseMapper.successOf(Map.of(
                 "message", "성공",
                 "memberId", memberId,
-                "redirectUrl", host + ":" + frontPort + "/me"
+                "redirectUrl", redirectUrl
         ));
     }
 
@@ -102,6 +107,10 @@ public class MemberController {
             @RequestBody MemberDto memberDto,
             HttpServletRequest request,
             HttpServletResponse response) {
+        String redirectUrl = buildUrl() + "/CafeSignUp";
+        log.info("==================================");
+        log.info("MC 2: " + redirectUrl);
+        log.info("==================================");
 
         // TODO: 에러 처리 필요
         // 회원가입 insert
@@ -131,7 +140,7 @@ public class MemberController {
         return ResponseMapper.successOf(Map.of(
                 "message", "성공",
                 "memberId", memberId,
-                "redirectUrl", host + ":" + frontPort + "/CafeSignUp"));
+                "redirectUrl", redirectUrl));
     }
 
     // 카카오톡 로그아웃 & 세션/쿠키 삭제
@@ -263,5 +272,10 @@ public class MemberController {
                 "message", "회원 정보가 수정되었습니다.",
                 "dto", dto
         ));
+    }
+
+    private String buildUrl() {
+        String portPart = (frontPort == 443) ? "" : ":" + frontPort;
+        return host + portPart;
     }
 }
