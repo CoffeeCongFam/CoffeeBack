@@ -57,6 +57,7 @@ public class SubscriptionMapper {
                 .remainSalesQuantity(subscription.getRemainSalesQuantity())
                 .subscriptionStatus(subscription.getSubscriptionStatus() != null ? subscription.getSubscriptionStatus().name() : null)
                 .menus(menus)
+                .deletedAt(DateTimeUtil.toUtcDateTime(subscription.getDeletedAt()))
                 .build();
     }
 
@@ -77,6 +78,7 @@ public class SubscriptionMapper {
                 .remainSalesQuantity(subscription.getRemainSalesQuantity())
                 .subscriptionStatus(subscription.getSubscriptionStatus() != null ? subscription.getSubscriptionStatus().name() : null)
                 .menus(menus)
+                .deletedAt(DateTimeUtil.toUtcDateTime(subscription.getDeletedAt()))
                 .build();
     }
 
