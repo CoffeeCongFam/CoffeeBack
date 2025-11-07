@@ -368,7 +368,7 @@
 	</select>
 
 	<!-- 소비자의 구독권 사용 내역 조회(받은 선물 조회랑 매칭용) -->
-	<select id="selectReceiveUsageHistoryBySubscriptionId"
+	<select id="selectUsageReceiveHistoryBySubscriptionId"
 		parameterType="long"
 		resultType="com.ucamp.coffee.domain.purchase.dto.PurchaseReceiveGiftDTO$UsageHistoryDTO">
 		SELECT
@@ -380,7 +380,7 @@
 		ORDER BY usedAt desc
 	</select>
 	<!-- 소비자의 구독권 사용 내역 조회(보낸 선물 조회랑 매칭용) -->
-	<select id="selectSendUsageHistoryBySubscriptionId"
+	<select id="selectUsageSendHistoryBySubscriptionId"
 		parameterType="long"
 		resultType="com.ucamp.coffee.domain.purchase.dto.PurchaseSendGiftDTO$UsageHistoryDTO">
 		SELECT
