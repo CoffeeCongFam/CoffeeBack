@@ -32,6 +32,7 @@ public class MenuMapper {
             .menuStatus(menu.getMenuStatus())
             .createdAt(DateTimeUtil.toUtcDateTime(menu.getCreatedAt()))
             .updatedAt(DateTimeUtil.toUtcDateTime(menu.getUpdatedAt()))
+            .deletedAt(DateTimeUtil.toUtcDateTime(menu.getDeletedAt()))
             .build();
     }
 }

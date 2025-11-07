@@ -52,13 +52,4 @@ public class OwnerSubscriptionController {
         service.updateSubscriptionStatus(subscriptionId, dto, user.getMemberId());
         return ResponseMapper.successOf(null);
     }
-
-    @DeleteMapping("/{subscriptionId}")
-    public ResponseEntity<ApiResponse<?>> deleteSubscriptionInfo(
-        @AuthenticationPrincipal MemberDetails user,
-        @PathVariable Long subscriptionId
-    ) {
-        service.deleteSubscriptionInfo(subscriptionId, user.getMemberId());
-        return ResponseMapper.successOf(null);
-    }
 }

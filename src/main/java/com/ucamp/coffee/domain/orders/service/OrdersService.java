@@ -203,8 +203,9 @@ public class OrdersService {
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "주문 정보를 찾을 수 없습니다"));
 
 		// 보유 구독권 상태 복구
-		int quantity = ordersMapper.countOrderMenuQuantity(orderId);
-		memberSubscriptionService.updateDailyRemainCount(orderId, quantity);
+		int quantity = ordersMapper.countOrderMenuQuantity(orderId); // 주문 내역 수량 조회
+        Long memberSubscriptionId = order.getMemberSubscription().getMemberSubscriptionId();
+		memberSubscriptionService.updateDailyRemainCount(memberSubscriptionId, quantity); // + 주문 내역 수량 조회
 
 		publisher.publishEvent(new OrderRejectedEvent(orderId));
 
