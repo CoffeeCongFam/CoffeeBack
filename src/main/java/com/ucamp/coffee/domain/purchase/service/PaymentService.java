@@ -49,7 +49,7 @@ public class PaymentService {
 	private String getAccessToken() {
 
 		// 포트원 토큰 발급 API URL
-		String url = "https://api.iamport.kr/users/getToken";
+		String url = "http://api.iamport.kr/users/getToken";
 
 		Map<String, String> body = Map.of("imp_key", apiKey, "imp_secret", apiSecret);
 
@@ -85,7 +85,7 @@ public class PaymentService {
 
 		String token = getAccessToken();
 
-		String PORTONE_PAYMENT_LOOKUP_URL = "https://api.iamport.kr/payments/";
+		String PORTONE_PAYMENT_LOOKUP_URL = "http://api.iamport.kr/payments/";
 		String url = PORTONE_PAYMENT_LOOKUP_URL + request.getImpUid();
 
 		HttpHeaders headers = new HttpHeaders();

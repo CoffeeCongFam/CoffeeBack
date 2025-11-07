@@ -87,9 +87,6 @@ public class PurchaseService {
 		// DB 저장
 		Purchase savedPurchase = purchaseRepository.save(purchase);
 
-		// 보유 구독권 생성
-//		memberSubscriptionService.createMemberSubscription(receiver, savedPurchase, subscription, isGift);
-
 		// PK값 return
 		return PortOneTempResponseDTO.builder().purchaseId(savedPurchase.getPurchaseId()).merchantUid(merchantUid)
 				.build();
