@@ -2,6 +2,7 @@ package com.ucamp.coffee.domain.member.service;
 
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import com.ucamp.coffee.domain.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KakaoService {
@@ -48,6 +50,11 @@ public class KakaoService {
     private String userInfoUrl;
 
     public String getKakaoAccessToken(String code) {
+        String redirectUrl = host + ":" + backPort + redirectEndPoint;
+        log.info("==================================");
+        log.info("KS 1: {}", redirectUrl);
+        log.info("==================================");
+
         // Access Token 요청
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -57,7 +64,7 @@ public class KakaoService {
         MultiValueMap<String, String> httpBodies = new LinkedMultiValueMap<>();
         httpBodies.add("grant_type", "authorization_code");
         httpBodies.add("client_id", clientId);
-        httpBodies.add("redirect_uri", host + ":" + backPort + redirectEndPoint);
+        httpBodies.add("redirect_uri", redirectUrl);
         httpBodies.add("code", code);
 
         // HttpHeader + HttpBody를 하나의 오브젝트에 담기
@@ -118,4 +125,9 @@ public class KakaoService {
 	public Optional<Member> findByEmail(String email) {
 		return memberRepository.findByEmail(email);
 	}
+
+    private String buildUrl() {
+        String portPart = (frontPort == 443) ? "" : ":" + frontPort;
+        return host + portPart;
+    }
 }
