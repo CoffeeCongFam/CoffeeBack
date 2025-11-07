@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.ucamp.coffee.domain.subscription.entity.MemberSubscription;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,4 +66,14 @@ public interface MemberSubscriptionRepository extends JpaRepository<MemberSubscr
 			    WHERE ms.memberSubscriptionId = :id
 			""")
 	Optional<MemberSubscription> findSubscriptionById(@Param("id") Long id);
+
+	@Query("""
+		SELECT COUNT(ms)
+		FROM MemberSubscription ms
+		JOIN ms.purchase p
+		WHERE p.subscription.subscriptionId = :subscriptionId
+        AND ms.subscriptionEnd > :now
+	""")
+	long countActiveSubscriptions(@Param("subscriptionId") Long subscriptionId,
+								  @Param("now") LocalDateTime now);
 }
