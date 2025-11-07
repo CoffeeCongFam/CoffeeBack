@@ -31,10 +31,10 @@ public class NotificationService {
 	 * @param content
 	 */
 	@Transactional
-	public void createNotification(Member member, NotificationType type, String content) {
+	public void createNotification(Member member, NotificationType type, String content, Long targetId) {
 
 		Notification notification = Notification.builder().member(member).notificationType(type)
-				.notificationContent(content).build();
+				.notificationContent(content).targetId(targetId).build();
 
 		notificationRepository.save(notification);
 

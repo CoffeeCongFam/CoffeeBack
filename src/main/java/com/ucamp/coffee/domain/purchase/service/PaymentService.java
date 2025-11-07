@@ -3,6 +3,7 @@ package com.ucamp.coffee.domain.purchase.service;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,6 +20,7 @@ import com.ucamp.coffee.domain.purchase.dto.PortOnePaymentResponseDTO;
 import com.ucamp.coffee.domain.purchase.dto.PortOneRequestDTO;
 import com.ucamp.coffee.domain.purchase.dto.PortOneTokenResponseDTO;
 import com.ucamp.coffee.domain.purchase.entity.Purchase;
+import com.ucamp.coffee.domain.purchase.event.GiftReceiveEvent;
 import com.ucamp.coffee.domain.purchase.repository.PurchaseRepository;
 import com.ucamp.coffee.domain.purchase.type.PaymentStatus;
 import com.ucamp.coffee.domain.subscription.service.MemberSubscriptionService;
@@ -40,7 +42,8 @@ public class PaymentService {
 
 	private final PurchaseRepository purchaseRepository;
 	private final MemberSubscriptionService memberSubscriptionService;
-
+	private final ApplicationEventPublisher publisher;
+	
 	/**
 	 * 포트원 api 토큰 발급
 	 * 
@@ -80,6 +83,10 @@ public class PaymentService {
 		return response.getBody().getResponse().getAccess_token();
 	}
 
+	/**
+	 * 결제 검증
+	 * @param request
+	 */
 	@Transactional
 	public void verifyPaymentDetail(PortOneRequestDTO request) {
 
@@ -115,7 +122,12 @@ public class PaymentService {
 			purchaseRepository.save(purchase);
 
 			// 결제 확정 후 구독권 생성
-			memberSubscriptionService.createMemberSubscription(purchase);
+			Long memberSubscriptionId = memberSubscriptionService.createMemberSubscription(purchase);
+			
+			//선물이면 수신자한테 알림 전송
+			if( "Y".equals(purchase.getIsGift())){
+				publisher.publishEvent(new GiftReceiveEvent(purchase.getPurchaseId(), memberSubscriptionId));
+			}
 		} else {
 			purchase.changePaymentStatus(PaymentStatus.DENIED);
 			throw new CommonException(ApiStatus.BAD_REQUEST, "결제가 승인되지 않았습니다.");

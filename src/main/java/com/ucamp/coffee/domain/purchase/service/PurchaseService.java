@@ -1,12 +1,11 @@
 package com.ucamp.coffee.domain.purchase.service;
 
-import java.math.BigDecimal;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +20,7 @@ import com.ucamp.coffee.domain.purchase.dto.PurchaseCreateDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseReceiveGiftDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseSendGiftDTO;
 import com.ucamp.coffee.domain.purchase.entity.Purchase;
+import com.ucamp.coffee.domain.purchase.event.GiftReceiveEvent;
 import com.ucamp.coffee.domain.purchase.mapper.PurchaseMapper;
 import com.ucamp.coffee.domain.purchase.repository.PurchaseRepository;
 import com.ucamp.coffee.domain.purchase.type.PaymentStatus;
@@ -46,7 +46,7 @@ public class PurchaseService {
 	private final MemberSubscriptionService memberSubscriptionService;
 
 	private final PurchaseMapper purchaseMapper;
-
+	
 	/**
 	 * 주문 생성 및 선물
 	 * 
@@ -86,7 +86,7 @@ public class PurchaseService {
 
 		// DB 저장
 		Purchase savedPurchase = purchaseRepository.save(purchase);
-
+		
 		// PK값 return
 		return PortOneTempResponseDTO.builder().purchaseId(savedPurchase.getPurchaseId()).merchantUid(merchantUid)
 				.build();
