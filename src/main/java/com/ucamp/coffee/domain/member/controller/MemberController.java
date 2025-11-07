@@ -84,7 +84,7 @@ public class MemberController {
         cookie.setHttpOnly(true);  // JS에서 접근 불가
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge(60 *60);  // 1시간
+        cookie.setMaxAge(-1);  // 브라우저 창을 닫으면 삭제
         response.addCookie(cookie);
 
         // 세션 등록
@@ -127,7 +127,7 @@ public class MemberController {
         cookie.setHttpOnly(true);  // JS에서 접근 불가
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge(60 *60);  // 1시간
+        cookie.setMaxAge(-1);  // 브라우저 창을 닫으면 삭제
         response.addCookie(cookie);
 
         // 세션 등록
