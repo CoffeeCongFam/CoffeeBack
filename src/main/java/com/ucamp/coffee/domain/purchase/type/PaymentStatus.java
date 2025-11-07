@@ -9,6 +9,7 @@ public enum PaymentStatus {
 
 	PAID("결제됨"),
 	DENIED("거부됨"),
+	PENDING("보류중"),
 	REFUNDED("환불됨");
 	
 	private final String description;

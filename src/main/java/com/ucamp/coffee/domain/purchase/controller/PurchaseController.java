@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ucamp.coffee.common.response.ApiResponse;
 import com.ucamp.coffee.common.response.ResponseMapper;
 import com.ucamp.coffee.common.security.MemberDetails;
+import com.ucamp.coffee.domain.purchase.dto.PortOneTempResponseDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseAllResponseDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseCreateDTO;
 import com.ucamp.coffee.domain.purchase.service.PurchaseService;
@@ -43,9 +44,9 @@ public class PurchaseController {
 			@AuthenticationPrincipal MemberDetails member) {
 
 		Long memberId = member.getMemberId();
-		Long purchaseId = purchaseService.insertPurchase(memberId, request);
+		PortOneTempResponseDTO response = purchaseService.insertPurchase(memberId, request);
 
-		return ResponseMapper.successOf(Map.of("purchaseId", purchaseId));
+		return ResponseMapper.successOf(response);
 	}
 
 	/**

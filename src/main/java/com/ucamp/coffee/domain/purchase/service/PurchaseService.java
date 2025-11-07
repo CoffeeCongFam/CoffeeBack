@@ -1,5 +1,7 @@
 package com.ucamp.coffee.domain.purchase.service;
 
+import java.math.BigDecimal;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +14,7 @@ import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import com.ucamp.coffee.domain.purchase.dto.PortOneTempResponseDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseAllGiftDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseAllResponseDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseCreateDTO;
@@ -40,8 +43,8 @@ public class PurchaseService {
 	private final PurchaseRepository purchaseRepository;
 	private final MemberSubscriptionRepository memberSubscriptionRepository;
 
-	private final MemberSubscriptionService memberSubscriptionService; 
-	
+	private final MemberSubscriptionService memberSubscriptionService;
+
 	private final PurchaseMapper purchaseMapper;
 
 	/**
@@ -52,13 +55,13 @@ public class PurchaseService {
 	 * @return
 	 */
 	@Transactional
-	public Long insertPurchase(Long memberId, PurchaseCreateDTO request) {
+	public PortOneTempResponseDTO insertPurchase(Long memberId, PurchaseCreateDTO request) {
 
-		// 구매자 정보
+		// 구매자 조회
 		Member buyer = memberRepository.findById(memberId)
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "회원 정보가 존재하지 않습니다."));
 
-		// 수신자 정보
+		// 수신자 설정 (선물 여부 판별)
 		Member receiver = buyer;
 		String isGift = "N";
 		if (request.getReceiverMemberId() != null) {
@@ -69,25 +72,29 @@ public class PurchaseService {
 			isGift = "Y";
 		}
 
-		// 구독권 정보
+		// 구독권 정보 조회
 		Subscription subscription = subscriptionRepository.findById(request.getSubscriptionId())
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구독권 정보가 존재하지 않습니다."));
 
+		// 주문 고유번호 생성(Portone merchant_uid에 매핑)
+		String merchantUid = "Purchase_" + System.currentTimeMillis();
+
 		// Purchase Entity 생성
 		Purchase purchase = Purchase.builder().buyer(buyer).receiver(receiver).subscription(subscription).isGift(isGift)
-				.giftMessage(request.getGiftMessage()).purchaseType(request.getPurchaseType())
-				.paymentStatus(PaymentStatus.PAID).build();
+				.giftMessage(request.getGiftMessage()).paymentStatus(PaymentStatus.PENDING).merchantUid(merchantUid)
+				.paymentAmount(subscription.getPrice()).build();
 
 		// DB 저장
 		Purchase savedPurchase = purchaseRepository.save(purchase);
 
 		// 보유 구독권 생성
-		memberSubscriptionService.createMemberSubscription(receiver, savedPurchase, subscription, isGift);
+//		memberSubscriptionService.createMemberSubscription(receiver, savedPurchase, subscription, isGift);
 
 		// PK값 return
-		return savedPurchase.getPurchaseId();
+		return PortOneTempResponseDTO.builder().purchaseId(savedPurchase.getPurchaseId()).merchantUid(merchantUid)
+				.build();
 	}
-	
+
 	/**
 	 * 소비자 전체 주문 내역 조회(전체, 직접구매, 선물)
 	 * 
@@ -118,23 +125,24 @@ public class PurchaseService {
 			if (!UsageStatus.NOT_ACTIVATED.name().equals(purchase.getUsageStatus())) {
 				purchase.getRefundReasons().add(RefundReasonType.USED_ALREADY);
 			}
-			
+
 			// 아무것도 없으면 null 반환
-			if(purchase.getRefundReasons().isEmpty()) {
+			if (purchase.getRefundReasons().isEmpty()) {
 				purchase.setRefundReasons(null);
 			}
 		}
 
 		return response;
 	}
-	
+
 	/**
 	 * 소비자 주문 단건 조회
+	 * 
 	 * @param purchaseId
 	 * @return
 	 */
 	public PurchaseAllResponseDTO selectPurchase(Long purchaseId) {
-		
+
 		return purchaseMapper.selectPurchase(purchaseId);
 	}
 
@@ -142,7 +150,7 @@ public class PurchaseService {
 	 * 소비자 주문 환불 처리
 	 * 
 	 * @param purchaseId
-	 * @return 
+	 * @return
 	 */
 	@Transactional
 	public LocalDateTime updatePurchaseRefunded(Long purchaseId) {
@@ -173,7 +181,7 @@ public class PurchaseService {
 
 		// 환불 처리
 		purchase.refundedPurchase();
-		
+
 		return purchase.getRefundedAt();
 	}
 
@@ -200,7 +208,8 @@ public class PurchaseService {
 
 		List<PurchaseSendGiftDTO> list = purchaseMapper.selectAllSendGift(memberId);
 		for (PurchaseSendGiftDTO dto : list) {
-			dto.setUsageHistoryList(purchaseMapper.selectUsageSendHistoryBySubscriptionId(dto.getMemberSubscriptionId()));
+			dto.setUsageHistoryList(
+					purchaseMapper.selectUsageSendHistoryBySubscriptionId(dto.getMemberSubscriptionId()));
 		}
 		return list;
 	}
@@ -215,7 +224,8 @@ public class PurchaseService {
 	public PurchaseSendGiftDTO selectSendGiftDetail(Long purchaseId) {
 
 		PurchaseSendGiftDTO response = purchaseMapper.selectSendGiftDetail(purchaseId);
-		response.setUsageHistoryList(purchaseMapper.selectUsageSendHistoryBySubscriptionId(response.getMemberSubscriptionId()));
+		response.setUsageHistoryList(
+				purchaseMapper.selectUsageSendHistoryBySubscriptionId(response.getMemberSubscriptionId()));
 		return response;
 	}
 
@@ -230,7 +240,8 @@ public class PurchaseService {
 
 		List<PurchaseReceiveGiftDTO> list = purchaseMapper.selectAllReceivedGift(memberId);
 		for (PurchaseReceiveGiftDTO dto : list) {
-			dto.setUsageHistoryList(purchaseMapper.selectUsageReceiveHistoryBySubscriptionId(dto.getMemberSubscriptionId()));
+			dto.setUsageHistoryList(
+					purchaseMapper.selectUsageReceiveHistoryBySubscriptionId(dto.getMemberSubscriptionId()));
 		}
 		return list;
 	}
