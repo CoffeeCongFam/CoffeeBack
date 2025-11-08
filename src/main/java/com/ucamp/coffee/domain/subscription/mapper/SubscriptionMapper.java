@@ -38,7 +38,7 @@ public class SubscriptionMapper {
                 .build();
     }
 
-    public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription, List<MenuResponseDTO> menus) {
+    public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription, List<MenuResponseDTO> menus, boolean updatable) {
     	Store store = subscription.getStore();
     	
         return OwnerSubscriptionResponseDTO.builder()
@@ -58,6 +58,7 @@ public class SubscriptionMapper {
                 .subscriptionStatus(subscription.getSubscriptionStatus() != null ? subscription.getSubscriptionStatus().name() : null)
                 .menus(menus)
                 .deletedAt(DateTimeUtil.toUtcDateTime(subscription.getDeletedAt()))
+                .updatable(updatable)
                 .build();
     }
 
