@@ -274,5 +274,18 @@
 		WHERE om.ORDER_ID
 		= #{orderId}
 	</select>
+	
+	<!-- 과거 주문내역 날짜별 필터링/페이징 해서 조회 -->
+	<select id="selectAllOrdersHistory" parameterType="OrderListItemDTO">
+		SELECT *
+		FROM ORDERS o
+		WHERE o.MEMBER_ID = #{memberId}
+		AND o.CREATED_AT BETWEEN #{startDate} AND #{endDate}
+		<if test="lastCreatedAt != null">
+			AND o.CREATED_AT &lt; #{lastCreatedAt}
+		</if>
+		ORDER BY o.CREATED_AT DESC
+		FETCH FIRST 10 ROWS ONLY
+	</select>
 
 </mapper>

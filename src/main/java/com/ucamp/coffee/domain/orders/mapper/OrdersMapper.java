@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.ucamp.coffee.domain.orders.dto.OrderListItemDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersDetailResponseDTO;
+import com.ucamp.coffee.domain.orders.dto.OrdersListSearchDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStorePastRequestDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStorePastResponseDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStoreResponseDTO;
@@ -27,5 +29,8 @@ public interface OrdersMapper {
 	
 	//주문 내역 수량 계산
 	int countOrderMenuQuantity(Long orderId);
+	
+	//사용자의 과거 주문 내역
+	List<OrderListItemDTO> selectAllOrdersHistory(OrdersListSearchDTO search);
 
 }

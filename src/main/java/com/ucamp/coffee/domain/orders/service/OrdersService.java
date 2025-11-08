@@ -1,5 +1,7 @@
 package com.ucamp.coffee.domain.orders.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -10,10 +12,13 @@ import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
+import com.ucamp.coffee.domain.orders.dto.OrderListItemDTO;
 import com.ucamp.coffee.domain.orders.dto.OrderStatusRequestDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO.MenuDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersDetailResponseDTO;
+import com.ucamp.coffee.domain.orders.dto.OrdersListResponseDTO;
+import com.ucamp.coffee.domain.orders.dto.OrdersListSearchDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStorePastRequestDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStorePastResponseDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersStoreResponseDTO;
@@ -38,7 +43,6 @@ import com.ucamp.coffee.domain.subscription.entity.SubscriptionUsageHistory;
 import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionUsageHistoryRepository;
 import com.ucamp.coffee.domain.subscription.service.MemberSubscriptionService;
-import com.ucamp.coffee.domain.subscription.type.UsageStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -204,7 +208,7 @@ public class OrdersService {
 
 		// 보유 구독권 상태 복구
 		int quantity = ordersMapper.countOrderMenuQuantity(orderId); // 주문 내역 수량 조회
-        Long memberSubscriptionId = order.getMemberSubscription().getMemberSubscriptionId();
+		Long memberSubscriptionId = order.getMemberSubscription().getMemberSubscriptionId();
 		memberSubscriptionService.updateDailyRemainCount(memberSubscriptionId, quantity); // + 주문 내역 수량 조회
 
 		publisher.publishEvent(new OrderRejectedEvent(orderId));
@@ -237,6 +241,53 @@ public class OrdersService {
 
 		List<OrdersStorePastResponseDTO> response = ordersMapper.selectStoreOrdersByDate(request);
 
+		return response;
+	}
+
+	/**
+	 * 사용자 과거 주문 내역 
+	 * @param memberId
+	 * @param period
+	 * @param startDate
+	 * @param endDate
+	 * @param lastCreatedAt
+	 * @return
+	 */
+	@Transactional(readOnly = true)
+	public OrdersListResponseDTO selectAllOrdersHistory(Long memberId, String period, LocalDate startDate, LocalDate endDate,
+			LocalDateTime lastCreatedAt) {
+
+		LocalDateTime start;
+		LocalDateTime end = LocalDateTime.now();
+
+		if ("1M".equals(period)) {
+			start = end.minusMonths(1);
+		} else if ("1Y".equals(period)) {
+			start = end.minusYears(1);
+		} else if ("CUSTOM".equals(period)) {
+			if (startDate == null || endDate == null)
+				throw new IllegalArgumentException("CUSTOM 기간은 startDate, endDate가 필요합니다.");
+
+			start = startDate.atStartOfDay();
+			end = endDate.plusDays(1).atStartOfDay().minusSeconds(1);
+		} else {
+			start = end.minusMonths(1);
+		}
+
+		OrdersListSearchDTO search = OrdersListSearchDTO.builder().memberId(memberId).startDate(start).endDate(end)
+				.lastCreatedAt(lastCreatedAt).period(period).build();
+
+		List<OrderListItemDTO> ordersList = ordersMapper.selectAllOrdersHistory(search);
+
+		String nextCursor = null;
+		if (ordersList.size() > 0) {
+			nextCursor = ordersList.get(ordersList.size() - 1).getCreatedAt().toString();
+		}
+
+		boolean hasNext = ordersList.size() == 10;
+		OrdersListResponseDTO response = OrdersListResponseDTO.builder().ordersList(ordersList).nextCursor(nextCursor)
+				.hasNext(hasNext).build();
+		
 		return response;
 	}
 
