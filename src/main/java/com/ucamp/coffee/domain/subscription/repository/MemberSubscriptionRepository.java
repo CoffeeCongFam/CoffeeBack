@@ -76,4 +76,15 @@ public interface MemberSubscriptionRepository extends JpaRepository<MemberSubscr
 	""")
 	long countActiveSubscriptions(@Param("subscriptionId") Long subscriptionId,
 								  @Param("now") LocalDateTime now);
+
+    @Query("""
+        SELECT MAX(ms.subscriptionEnd)
+        FROM MemberSubscription ms
+        JOIN ms.purchase p
+        WHERE p.subscription.subscriptionId = :subscriptionId
+    """)
+    LocalDateTime findLatestSubscriptionEnd(
+        @Param("subscriptionId") Long subscriptionId,
+        @Param("now") LocalDateTime now
+    );
 }
