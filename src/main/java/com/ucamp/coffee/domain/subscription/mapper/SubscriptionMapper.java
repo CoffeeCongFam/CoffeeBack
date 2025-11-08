@@ -18,6 +18,7 @@ import com.ucamp.coffee.domain.subscription.entity.SubscriptionUsageHistory;
 import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
 import com.ucamp.coffee.domain.subscription.type.SubscriptionType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class SubscriptionMapper {
@@ -38,7 +39,7 @@ public class SubscriptionMapper {
                 .build();
     }
 
-    public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription, List<MenuResponseDTO> menus, boolean updatable) {
+    public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription, List<MenuResponseDTO> menus, boolean updatable, LocalDateTime expiredAt) {
     	Store store = subscription.getStore();
     	
         return OwnerSubscriptionResponseDTO.builder()
@@ -59,6 +60,7 @@ public class SubscriptionMapper {
                 .menus(menus)
                 .deletedAt(DateTimeUtil.toUtcDateTime(subscription.getDeletedAt()))
                 .updatable(updatable)
+                .expiredAt(DateTimeUtil.toUtcDateTime(expiredAt))
                 .build();
     }
 

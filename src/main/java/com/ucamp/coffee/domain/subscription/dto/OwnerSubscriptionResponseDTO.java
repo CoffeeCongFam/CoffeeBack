@@ -29,4 +29,5 @@ public class OwnerSubscriptionResponseDTO {
     private List<MenuResponseDTO> menus;
     private String deletedAt;
     private boolean updatable;
+    private String expiredAt;
 }

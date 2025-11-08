@@ -145,7 +145,10 @@ public class OwnerSubscriptionService {
             .toList();
 
         long count = memberSubscriptionRepository.countActiveSubscriptions(subscriptionId, LocalDateTime.now());
-        return SubscriptionMapper.toOwnerResponseDto(subscription, menus, count <= 0);
+
+        LocalDateTime expiredAt = memberSubscriptionRepository.findLatestSubscriptionEnd(subscriptionId, LocalDateTime.now());
+
+        return SubscriptionMapper.toOwnerResponseDto(subscription, menus, count <= 0, expiredAt);
     }
 
     @Transactional
