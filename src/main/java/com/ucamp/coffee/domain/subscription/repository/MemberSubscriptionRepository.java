@@ -82,7 +82,6 @@ public interface MemberSubscriptionRepository extends JpaRepository<MemberSubscr
         FROM MemberSubscription ms
         JOIN ms.purchase p
         WHERE p.subscription.subscriptionId = :subscriptionId
-        AND ms.subscriptionEnd > :now
     """)
     LocalDateTime findLatestSubscriptionEnd(
         @Param("subscriptionId") Long subscriptionId,
