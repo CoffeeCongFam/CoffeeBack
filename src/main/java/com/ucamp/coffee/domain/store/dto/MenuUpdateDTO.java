@@ -13,5 +13,6 @@ public class MenuUpdateDTO {
     private Integer price;
     private String menuDesc;
     private String menuStatus;
+    private String imageUrl;
     private String menuType;
 }

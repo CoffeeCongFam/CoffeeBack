@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface SubscriptionMenuRepository extends JpaRepository<SubscriptionMenu, Long> {
     List<SubscriptionMenu> findBySubscription(Subscription subscription);
@@ -19,4 +18,6 @@ public interface SubscriptionMenuRepository extends JpaRepository<SubscriptionMe
         WHERE sm.subscription.subscriptionId IN :subscriptionIds
     """)
     List<SubscriptionMenu> findBySubscriptionsIds(@Param("subscriptionIds") List<Long> subscriptionIds);;
+
+    boolean existsByMenu_MenuId(Long menuId);
 }
