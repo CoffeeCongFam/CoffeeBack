@@ -9,3 +9,11 @@ services:
     env_file:
       - .env
     restart: always
+    networks:
+      - coffee-network
+    volumes:
+      - /home/ubuntu/app/.oci:/home/ubuntu/app/.oci:ro
+
+networks:
+  coffee-network:
+    external: true

@@ -1,31 +1,30 @@
 package com.ucamp.coffee.domain.member.controller;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
+import com.ucamp.coffee.common.security.JwtTokenProvider;
+import com.ucamp.coffee.domain.member.dto.KakaoUserDto;
+import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
-import com.ucamp.coffee.domain.member.service.MemberService;
+import com.ucamp.coffee.domain.member.service.KakaoService;
 import com.ucamp.coffee.domain.member.type.ActiveStatusType;
+import com.ucamp.coffee.domain.member.type.MemberType;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ucamp.coffee.common.security.JwtTokenProvider;
-import com.ucamp.coffee.domain.member.dto.KakaoUserDto;
-import com.ucamp.coffee.domain.member.entity.Member;
-import com.ucamp.coffee.domain.member.service.KakaoService;
-import com.ucamp.coffee.domain.member.type.MemberType;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
-
+@Slf4j
 @RestController
 @RequestMapping("/auth/kakao")
 @RequiredArgsConstructor
@@ -51,7 +50,10 @@ public class KakaoController {
                            HttpServletRequest request,
                            HttpServletResponse response) {
 
-        String redirectUrl = host + ":" + frontPort+ "/";
+        String redirectUrl = buildUrl() + "/";
+        log.info("==================================");
+        log.info("KC 1: {}", redirectUrl);
+        log.info("==================================");
 
         try {
             // 카카오 토큰 발급
@@ -70,6 +72,11 @@ public class KakaoController {
 
                 // 비회원이 카카오톡 간편 로그인으로 바로 접근했을 때
                 if(kakaoUser.getRole() == null){
+                    String temp = redirectUrl+"SignUp?from-purpose=kakao";
+                    log.info("=======================================");
+                    log.info(temp);
+                    log.info("=======================================");
+
                     response.sendRedirect(redirectUrl+"SignUp?from-purpose=kakao");
                     return;
                 }
@@ -77,10 +84,13 @@ public class KakaoController {
                 // TODO
                 String tempJwt = jwtTokenProvider.generateTempToken(email);
 
-                String baseUrl = host + ":" + frontPort + "/";
+                String baseUrl = buildUrl() + "/";
                 String page = "member".equals(state) ? "MemberSignup" : "CustomerSignUp";
 
                 redirectUrl = baseUrl + page + "?token=" + tempJwt;
+                log.info("==================================");
+                log.info("KC 2: {}", redirectUrl);
+                log.info("==================================");
             }
             else {
                 // 회원이면 로그인 성공 -> 서비스 JWT 발급
@@ -118,9 +128,12 @@ public class KakaoController {
                 session.setAttribute("memberId", member.getMemberId());
 
                 // 일반회원 / 점주 홈으로 리다이렉트
-                String baseUrl = host + ":" + frontPort;
+                String baseUrl = buildUrl();
                 String page = MemberType.GENERAL.equals(member.getMemberType()) ? "me" : "store";
                 redirectUrl = baseUrl + "/" + page;
+                log.info("==================================");
+                log.info("KC 3: {}", redirectUrl);
+                log.info("==================================");
             }
 
         } catch (Exception e) {
@@ -132,5 +145,10 @@ public class KakaoController {
         } catch (Exception e) {
             System.err.println("리다이렉트 처리 중 오류 발생: " + e.getMessage());
         }
+    }
+
+    private String buildUrl() {
+        String portPart = (frontPort == 443) ? "" : ":" + frontPort;
+        return host + portPart;
     }
 }
