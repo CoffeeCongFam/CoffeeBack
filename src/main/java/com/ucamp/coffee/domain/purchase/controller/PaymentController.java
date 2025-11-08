@@ -18,6 +18,11 @@ public class PaymentController {
 
 	private final PaymentService paymentService;
 	
+	/**
+	 * 결제 유효 검증
+	 * @param request
+	 * @return
+	 */
 	@PostMapping("/api/payments/validation")
 	public ResponseEntity<ApiResponse<?>> validatePayment(@RequestBody PortOneRequestDTO request){
 		
@@ -26,4 +31,5 @@ public class PaymentController {
 		return ResponseMapper.successOf(null);
 	
 	}
+	
 }
