@@ -19,5 +19,6 @@ public class OwnerStoreResponseDTO {
     private String detailAddress;
     private String businessNumber;
     private String detailInfo;
+    private String storeImg;
     private List<StoreHoursResponseDTO> storeHours;
 }
