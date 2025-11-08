@@ -44,7 +44,8 @@ public class PurchaseService {
 	private final MemberSubscriptionRepository memberSubscriptionRepository;
 
 	private final MemberSubscriptionService memberSubscriptionService;
-
+	private final PaymentService paymentService;
+	
 	private final PurchaseMapper purchaseMapper;
 	
 	/**
@@ -161,11 +162,11 @@ public class PurchaseService {
 		}
 
 		// 구독권 사용한적 있으면 반려
-		MemberSubscription subscription = memberSubscriptionRepository
+		MemberSubscription memberSubscription = memberSubscriptionRepository
 				.findByPurchase_PurchaseId(purchase.getPurchaseId())
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구독권 정보가 존재하지 않습니다."));
 
-		if (subscription.getUsageStatus() != UsageStatus.NOT_ACTIVATED)
+		if (memberSubscription.getUsageStatus() != UsageStatus.NOT_ACTIVATED)
 			throw new CommonException(ApiStatus.CONFLICT, "이미 사용한 구독권입니다.");
 
 		// 사용한적 없어도 7일 지났으면 반려
@@ -176,8 +177,15 @@ public class PurchaseService {
 			throw new CommonException(ApiStatus.CONFLICT, "구매 후 7일이 지난 구독권은 환불할 수 없습니다.");
 		}
 
-		// 환불 처리
+		//실제 포트원 환불 처리
+		paymentService.cancelPayment(purchase);
+		
+		// 비즈니스 환불 처리
 		purchase.refundedPurchase();
+		
+		//구독권 판매량 되돌리기
+		Subscription subscription = purchase.getSubscription();
+		subscription.update(subscription.getTotalSale()-1, subscription.getRemainSalesQuantity()+1, null);
 
 		return purchase.getRefundedAt();
 	}

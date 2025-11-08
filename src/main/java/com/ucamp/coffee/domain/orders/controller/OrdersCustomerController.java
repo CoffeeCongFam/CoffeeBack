@@ -23,7 +23,7 @@ import com.ucamp.coffee.common.security.MemberDetails;
 import com.ucamp.coffee.domain.orders.dto.OrdersCreateDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersDetailResponseDTO;
 import com.ucamp.coffee.domain.orders.dto.OrdersListResponseDTO;
-import com.ucamp.coffee.domain.orders.dto.OrdersTodayResponseDTO;
+import com.ucamp.coffee.domain.orders.dto.OrdersHistoryResponseDTO;
 import com.ucamp.coffee.domain.orders.service.OrdersService;
 
 import lombok.RequiredArgsConstructor;
@@ -81,7 +81,7 @@ public class OrdersCustomerController {
 
 		Long memberId = member.getMemberId();
 
-		List<OrdersTodayResponseDTO> response = ordersService.selectTodayOrders(memberId);
+		List<OrdersHistoryResponseDTO> response = ordersService.selectTodayOrders(memberId);
 		return ResponseMapper.successOf(response);
 	}
 
@@ -100,6 +100,15 @@ public class OrdersCustomerController {
 		return ResponseMapper.successOf(null);
 	}
 
+	/**
+	 * 소비자 과거 주문내역 불러오기
+	 * @param member
+	 * @param period
+	 * @param startDate
+	 * @param endDate
+	 * @param nextCursor
+	 * @return
+	 */
 	@GetMapping()
 	// GET /api/customer/orders?period=1M&lastCreatedAt=2025-11-01T15:00:00
 	public ResponseEntity<ApiResponse<?>> selectAllOrders(@AuthenticationPrincipal MemberDetails member,
@@ -108,7 +117,6 @@ public class OrdersCustomerController {
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime nextCursor) {
 
-//		Long memberId = member.getMemberId();
 		Long memberId = 32L;
 
 		OrdersListResponseDTO response = ordersService.selectAllOrdersHistory(memberId, period, startDate, endDate,

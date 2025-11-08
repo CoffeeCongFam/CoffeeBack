@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class OrdersTodayResponseDTO {
+public class OrdersHistoryResponseDTO {
 
 	private Long orderId;
 	private LocalDateTime createdAt;
