@@ -89,7 +89,10 @@ public class SubscriptionMapper {
         Member member = memberSubscription.getMember();
         Member buyer = purchase.getBuyer();
         List<MenuResponseDTO> menuDtos = menus.stream()
-            .map(MenuMapper::toDto)
+            .map(menu -> {
+                boolean isUpdatable = SubscriptionStatusType.ONSALE.equals(subscription.getSubscriptionStatus());
+                return MenuMapper.toDto(menu, isUpdatable);
+            })
             .toList();
 
         return CustomerMemberSubscriptionResponseDTO.builder()

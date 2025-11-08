@@ -1,6 +1,5 @@
 package com.ucamp.coffee.domain.store.service;
 
-import ch.qos.logback.core.util.StringUtil;
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
 import com.ucamp.coffee.common.service.OciUploaderService;
@@ -12,6 +11,7 @@ import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.mapper.MenuMapper;
 import com.ucamp.coffee.domain.store.repository.MenuRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionMenuRepository;
+import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +54,10 @@ public class MenuService {
         // 해당 매장의 메뉴 목록을 조회하여 DTO 목록으로 반환
         return repository.findMenuListWithStore(store)
             .stream()
-            .map(MenuMapper::toDto)
+            .map(menu -> {
+                boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                return MenuMapper.toDto(menu, isUpdatable);
+            })
             .toList();
     }
 
@@ -63,7 +65,7 @@ public class MenuService {
         // 메뉴 아이디를 통해 메뉴 정보 조회 및 DTO 반환
         Menu menu = repository.findById(menuId)
             .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
-        return MenuMapper.toDto(menu);
+        return MenuMapper.toDto(menu, !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE));
     }
 
     @Transactional
@@ -76,7 +78,7 @@ public class MenuService {
             })
             .orElse(dto.getImageUrl());
 
-        boolean hasSubscription = subscriptionMenuRepository.existsByMenu_MenuId(menuId);
+        boolean hasSubscription = subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menuId, SubscriptionStatusType.ONSALE);
         if (hasSubscription) {
             if (dto.getMenuName() != null || dto.getMenuType() != null || dto.getMenuStatus() != null) {
                 throw new CommonException(ApiStatus.MENU_LINKED_TO_SUBSCRIPTION);

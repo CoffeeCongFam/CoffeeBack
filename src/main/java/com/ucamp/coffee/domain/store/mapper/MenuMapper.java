@@ -20,7 +20,7 @@ public class MenuMapper {
             .build();
     }
 
-    public static MenuResponseDTO toDto(Menu menu) {
+    public static MenuResponseDTO toDto(Menu menu, boolean isUpdatable) {
         return MenuResponseDTO.builder()
             .menuId(menu.getMenuId())
             .partnerStoreId(menu.getStore().getPartnerStoreId())
@@ -33,6 +33,7 @@ public class MenuMapper {
             .createdAt(DateTimeUtil.toUtcDateTime(menu.getCreatedAt()))
             .updatedAt(DateTimeUtil.toUtcDateTime(menu.getUpdatedAt()))
             .deletedAt(DateTimeUtil.toUtcDateTime(menu.getDeletedAt()))
+            .isUpdatable(isUpdatable)
             .build();
     }
 }

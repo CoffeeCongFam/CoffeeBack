@@ -99,7 +99,10 @@ public class OwnerSubscriptionService {
                 // 메뉴 목록 추출
                 List<MenuResponseDTO> menus = subscriptionMenus.stream()
                     .map(SubscriptionMenu::getMenu)
-                    .map(MenuMapper::toDto)
+                    .map(menu -> {
+                        boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                        return MenuMapper.toDto(menu, isUpdatable);
+                    })
                     .collect(Collectors.toList());
 
                 return OwnerSubscriptionResponseDTO.builder()
@@ -135,7 +138,10 @@ public class OwnerSubscriptionService {
         // 메뉴 목록 추출
         List<MenuResponseDTO> menus = subscriptionMenus.stream()
             .map(SubscriptionMenu::getMenu)
-            .map(MenuMapper::toDto)
+            .map(menu -> {
+                boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                return MenuMapper.toDto(menu, isUpdatable);
+            })
             .toList();
 
         return SubscriptionMapper.toOwnerResponseDto(subscription, menus);
