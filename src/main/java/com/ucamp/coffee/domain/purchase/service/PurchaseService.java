@@ -1,12 +1,11 @@
 package com.ucamp.coffee.domain.purchase.service;
 
-import java.math.BigDecimal;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +20,7 @@ import com.ucamp.coffee.domain.purchase.dto.PurchaseCreateDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseReceiveGiftDTO;
 import com.ucamp.coffee.domain.purchase.dto.PurchaseSendGiftDTO;
 import com.ucamp.coffee.domain.purchase.entity.Purchase;
+import com.ucamp.coffee.domain.purchase.event.GiftReceiveEvent;
 import com.ucamp.coffee.domain.purchase.mapper.PurchaseMapper;
 import com.ucamp.coffee.domain.purchase.repository.PurchaseRepository;
 import com.ucamp.coffee.domain.purchase.type.PaymentStatus;
@@ -44,9 +44,10 @@ public class PurchaseService {
 	private final MemberSubscriptionRepository memberSubscriptionRepository;
 
 	private final MemberSubscriptionService memberSubscriptionService;
-
+	private final PaymentService paymentService;
+	
 	private final PurchaseMapper purchaseMapper;
-
+	
 	/**
 	 * 주문 생성 및 선물
 	 * 
@@ -86,7 +87,7 @@ public class PurchaseService {
 
 		// DB 저장
 		Purchase savedPurchase = purchaseRepository.save(purchase);
-
+		
 		// PK값 return
 		return PortOneTempResponseDTO.builder().purchaseId(savedPurchase.getPurchaseId()).merchantUid(merchantUid)
 				.build();
@@ -161,11 +162,11 @@ public class PurchaseService {
 		}
 
 		// 구독권 사용한적 있으면 반려
-		MemberSubscription subscription = memberSubscriptionRepository
+		MemberSubscription memberSubscription = memberSubscriptionRepository
 				.findByPurchase_PurchaseId(purchase.getPurchaseId())
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구독권 정보가 존재하지 않습니다."));
 
-		if (subscription.getUsageStatus() != UsageStatus.NOT_ACTIVATED)
+		if (memberSubscription.getUsageStatus() != UsageStatus.NOT_ACTIVATED)
 			throw new CommonException(ApiStatus.CONFLICT, "이미 사용한 구독권입니다.");
 
 		// 사용한적 없어도 7일 지났으면 반려
@@ -176,8 +177,15 @@ public class PurchaseService {
 			throw new CommonException(ApiStatus.CONFLICT, "구매 후 7일이 지난 구독권은 환불할 수 없습니다.");
 		}
 
-		// 환불 처리
+		//실제 포트원 환불 처리
+		paymentService.cancelPayment(purchase);
+		
+		// 비즈니스 환불 처리
 		purchase.refundedPurchase();
+		
+		//구독권 판매량 되돌리기
+		Subscription subscription = purchase.getSubscription();
+		subscription.update(subscription.getTotalSale()-1, subscription.getRemainSalesQuantity()+1, null);
 
 		return purchase.getRefundedAt();
 	}

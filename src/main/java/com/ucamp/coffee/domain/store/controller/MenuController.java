@@ -47,10 +47,4 @@ public class MenuController {
         service.updateMenuInfo(menuId, dto, file);
         return ResponseMapper.successOf(null);
     }
-
-    @DeleteMapping("/{menuId}")
-    public ResponseEntity<ApiResponse<?>> deleteMenuInfo(@PathVariable Long menuId) {
-        service.deleteMenuInfo(menuId);
-        return ResponseMapper.successOf(null);
-    }
 }

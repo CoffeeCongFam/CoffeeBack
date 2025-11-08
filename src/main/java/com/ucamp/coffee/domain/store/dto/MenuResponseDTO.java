@@ -20,4 +20,5 @@ public class MenuResponseDTO {
     private String createdAt;
     private String updatedAt;
     private String deletedAt;
+    private boolean isUpdatable;
 }

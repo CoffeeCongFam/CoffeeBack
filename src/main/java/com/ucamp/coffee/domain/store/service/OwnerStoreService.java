@@ -71,8 +71,6 @@ public class OwnerStoreService {
             imageUrl = "";
         }
 
-        member.setTel(dto.getTel()); // 점주 전화번호 수정
-
         // 매장 정보 조회 및 수정
         Store store = repository.findById(partnerStoreId)
             .orElseThrow(() -> new IllegalArgumentException("매장이 존재하지 않습니다."));

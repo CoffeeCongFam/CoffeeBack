@@ -72,6 +72,11 @@ public class KakaoController {
 
                 // 비회원이 카카오톡 간편 로그인으로 바로 접근했을 때
                 if(kakaoUser.getRole() == null){
+                    String temp = redirectUrl+"SignUp?from-purpose=kakao";
+                    log.info("=======================================");
+                    log.info(temp);
+                    log.info("=======================================");
+
                     response.sendRedirect(redirectUrl+"SignUp?from-purpose=kakao");
                     return;
                 }

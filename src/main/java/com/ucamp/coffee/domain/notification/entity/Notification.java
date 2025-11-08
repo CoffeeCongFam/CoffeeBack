@@ -31,6 +31,7 @@ public class Notification extends BaseEntity {
 	
 	private LocalDateTime readAt;
 	private String notificationContent;
+	private Long targetId;
 	
 	//알림 읽음처리
 	public void readNotification() {

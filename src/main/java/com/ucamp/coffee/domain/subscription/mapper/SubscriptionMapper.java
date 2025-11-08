@@ -18,6 +18,7 @@ import com.ucamp.coffee.domain.subscription.entity.SubscriptionUsageHistory;
 import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
 import com.ucamp.coffee.domain.subscription.type.SubscriptionType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class SubscriptionMapper {
@@ -38,7 +39,7 @@ public class SubscriptionMapper {
                 .build();
     }
 
-    public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription, List<MenuResponseDTO> menus) {
+    public static OwnerSubscriptionResponseDTO toOwnerResponseDto(Subscription subscription, List<MenuResponseDTO> menus, boolean updatable, LocalDateTime expiredAt) {
     	Store store = subscription.getStore();
     	
         return OwnerSubscriptionResponseDTO.builder()
@@ -58,6 +59,8 @@ public class SubscriptionMapper {
                 .subscriptionStatus(subscription.getSubscriptionStatus() != null ? subscription.getSubscriptionStatus().name() : null)
                 .menus(menus)
                 .deletedAt(DateTimeUtil.toUtcDateTime(subscription.getDeletedAt()))
+                .updatable(updatable)
+                .expiredAt(DateTimeUtil.toUtcDateTime(expiredAt))
                 .build();
     }
 
@@ -89,7 +92,10 @@ public class SubscriptionMapper {
         Member member = memberSubscription.getMember();
         Member buyer = purchase.getBuyer();
         List<MenuResponseDTO> menuDtos = menus.stream()
-            .map(MenuMapper::toDto)
+            .map(menu -> {
+                boolean isUpdatable = SubscriptionStatusType.ONSALE.equals(subscription.getSubscriptionStatus());
+                return MenuMapper.toDto(menu, isUpdatable);
+            })
             .toList();
 
         return CustomerMemberSubscriptionResponseDTO.builder()

@@ -5,6 +5,8 @@ import com.ucamp.coffee.domain.store.entity.Menu;
 import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.mapper.MenuMapper;
 import com.ucamp.coffee.domain.store.repository.MenuRepository;
+import com.ucamp.coffee.domain.subscription.repository.SubscriptionMenuRepository;
+import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import java.util.List;
 public class MenuHelperService {
     private final StoreHelperService storeHelperService;
     private final MenuRepository repository;
+    private final SubscriptionMenuRepository subscriptionMenuRepository;
 
     public List<Menu> findByIds(List<Long> menuIds) {
         // 받은 메뉴 아이디 목록이 없다면 빈 배열 반환
@@ -34,7 +37,10 @@ public class MenuHelperService {
         // 해당 매장의 메뉴 목록 조회 및 DTO 목록 반환
         return repository.findMenuListWithStore(store)
             .stream()
-            .map(MenuMapper::toDto)
+            .map(menu -> {
+                boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                return MenuMapper.toDto(menu, isUpdatable);
+            })
             .toList();
     }
 }

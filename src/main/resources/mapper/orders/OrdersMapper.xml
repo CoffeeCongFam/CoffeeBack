@@ -74,16 +74,18 @@
 		p.SUBSCRIPTION_ID =
 		sub.SUBSCRIPTION_ID
 		JOIN ORDER_MENU om ON
-		o.ORDER_ID = om.ORDER_ID
+		o.ORDER_ID
+		= om.ORDER_ID
 		JOIN
 		MENU m ON om.MENU_ID = m.MENU_ID
 		WHERE
-		o.ORDER_ID = #{orderId}
+		o.ORDER_ID =
+		#{orderId}
 	</select>
 
 	<!-- 유저의 오늘 날짜 주문 내역 조회 -->
-	<resultMap type="OrdersTodayResponseDTO"
-		id="OrdersTodayResultMap">
+	<resultMap type="OrdersHistoryResponseDTO"
+		id="OrdersHistoryResultMap">
 		<id property="orderId" column="ORDER_ID" />
 		<result property="createdAt" column="CREATED_AT" />
 		<result property="orderStatus" column="ORDER_STATUS" />
@@ -92,7 +94,7 @@
 		<result property="storeName" column="STORE_NAME" />
 		<result property="storeImg" column="STORE_IMG" />
 		<collection property="menuList"
-			ofType="com.ucamp.coffee.domain.orders.dto.OrdersTodayResponseDTO$MenuDTO">
+			ofType="com.ucamp.coffee.domain.orders.dto.OrdersHistoryResponseDTO$MenuDTO">
 			<id column="MENU_ID" />
 			<result property="menuName" column="MENU_NAME" />
 			<result property="quantity" column="QUANTITY" />
@@ -100,7 +102,7 @@
 	</resultMap>
 
 	<select id="selectTodayOrdersByMember" parameterType="long"
-		resultMap="OrdersTodayResultMap">
+		resultMap="OrdersHistoryResultMap">
 		SELECT
 		o.ORDER_ID,
 		o.CREATED_AT,
@@ -274,5 +276,86 @@
 		WHERE om.ORDER_ID
 		= #{orderId}
 	</select>
+
+	<!-- 주문 리스트만 조회 -->
+	<select id="selectOrdersHistoryList"
+		parameterType="OrdersListSearchDTO"
+		resultType="OrderListItemDTO">
+		SELECT
+		o.ORDER_ID,
+		o.CREATED_AT,
+		o.ORDER_STATUS,
+		s.SUBSCRIPTION_NAME,
+		ps.STORE_NAME
+		FROM
+		ORDERS o
+		JOIN
+		MEMBER_SUBSCRIPTION ms ON ms.MEMBER_SUBSCRIPTION_ID =
+		o.MEMBER_SUBSCRIPTION_ID
+		JOIN PURCHASE p ON p.PURCHASE_ID =
+		ms.PURCHASE_ID
+		JOIN SUBSCRIPTION s ON s.SUBSCRIPTION_ID =
+		p.SUBSCRIPTION_ID
+		JOIN PARTNER_STORE ps ON ps.PARTNER_STORE_ID =
+		o.PARTNER_STORE_ID
+		WHERE
+		o.MEMBER_ID = #{memberId}
+		AND o.CREATED_AT
+		BETWEEN #{startDate} AND #{endDate}
+		<if test="lastCreatedAt != null">
+			AND o.CREATED_AT &lt; #{lastCreatedAt}
+		</if>
+		ORDER BY o.CREATED_AT DESC
+		FETCH FIRST 10 ROWS ONLY
+	</select>
+
+
+	<!-- 각 주문의 메뉴 리스트 조회 -->
+	<select id="selectMenusByOrderId" parameterType="long"
+		resultType="OrdersMenuResponseDTO">
+		SELECT
+		om.MENU_ID,
+		m.MENU_NAME,
+		om.QUANTITY
+		FROM
+		ORDER_MENU om
+		JOIN MENU m ON m.MENU_ID = om.MENU_ID
+		WHERE
+		om.ORDER_ID = #{orderId}
+	</select>
+
+	<!-- 과거 주문내역 날짜별 필터링/페이징 해서 조회 
+	<select id="selectAllOrdersHistory"
+		parameterType="OrdersListSearchDTO" resultMap="OrdersHistoryResultMap">
+		SELECT
+		o.ORDER_ID , o.CREATED_AT , s.SUBSCRIPTION_NAME,
+		s.SUBSCRIPTION_TYPE,ps.STORE_NAME,
+		o.ORDER_STATUS , om.QUANTITY ,
+		m.MENU_NAME , m.MENU_ID, ps.STORE_IMG
+		FROM
+		ORDERS o
+		JOIN
+		MEMBER_SUBSCRIPTION ms ON ms.MEMBER_SUBSCRIPTION_ID =
+		o.MEMBER_SUBSCRIPTION_ID
+		JOIN purchase p ON p.PURCHASE_ID =
+		ms.PURCHASE_ID
+		JOIN SUBSCRIPTION s ON s.SUBSCRIPTION_ID =
+		p.SUBSCRIPTION_ID
+		JOIN ORDER_MENU om ON om.ORDER_ID = o.ORDER_ID
+		JOIN
+		MENU m ON m.MENU_ID = om.MENU_ID
+		JOIN PARTNER_STORE ps ON
+		ps.PARTNER_STORE_ID = m.PARTNER_STORE_ID
+		WHERE o.MEMBER_ID =
+		#{memberId}
+		AND o.CREATED_AT BETWEEN #{startDate} AND
+		#{endDate}
+		<if test="lastCreatedAt != null">
+			AND o.CREATED_AT &lt; #{lastCreatedAt}
+		</if>
+		ORDER BY o.CREATED_AT DESC
+		FETCH FIRST 10 ROWS ONLY
+	</select>
+	-->
 
 </mapper>

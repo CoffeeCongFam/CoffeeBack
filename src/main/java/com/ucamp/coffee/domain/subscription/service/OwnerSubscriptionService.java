@@ -18,6 +18,7 @@ import com.ucamp.coffee.domain.subscription.dto.SubscriptionStatusDTO;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 import com.ucamp.coffee.domain.subscription.entity.SubscriptionMenu;
 import com.ucamp.coffee.domain.subscription.mapper.SubscriptionMapper;
+import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionMenuRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -43,6 +45,7 @@ public class OwnerSubscriptionService {
     private final MemberHelperService memberHelperService;
     private final SubscriptionMenuRepository subscriptionMenuRepository;
     private final OciUploaderService ociUploaderService;
+    private final MemberSubscriptionRepository memberSubscriptionRepository;
 
     @Transactional
     public void createSubscriptionInfo(SubscriptionCreateDTO dto, MultipartFile file, Long memberId) throws IOException {
@@ -96,7 +99,10 @@ public class OwnerSubscriptionService {
                 // 메뉴 목록 추출
                 List<MenuResponseDTO> menus = subscriptionMenus.stream()
                     .map(SubscriptionMenu::getMenu)
-                    .map(MenuMapper::toDto)
+                    .map(menu -> {
+                        boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                        return MenuMapper.toDto(menu, isUpdatable);
+                    })
                     .collect(Collectors.toList());
 
                 return OwnerSubscriptionResponseDTO.builder()
@@ -132,22 +138,31 @@ public class OwnerSubscriptionService {
         // 메뉴 목록 추출
         List<MenuResponseDTO> menus = subscriptionMenus.stream()
             .map(SubscriptionMenu::getMenu)
-            .map(MenuMapper::toDto)
+            .map(menu -> {
+                boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                return MenuMapper.toDto(menu, isUpdatable);
+            })
             .toList();
 
-        return SubscriptionMapper.toOwnerResponseDto(subscription, menus);
+        long count = memberSubscriptionRepository.countActiveSubscriptions(subscriptionId, LocalDateTime.now());
+        LocalDateTime expiredAt = memberSubscriptionRepository.findLatestSubscriptionEnd(subscriptionId, LocalDateTime.now());
+        return SubscriptionMapper.toOwnerResponseDto(subscription, menus, count <= 0, expiredAt);
     }
 
     @Transactional
     public void updateSubscriptionStatus(Long subscriptionId, SubscriptionStatusDTO dto, Long memberId) {
         // 점주 및 매장 정보 조회
         Member member = memberHelperService.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
-                .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
 
         // 해당 멤버가 매장의 점주가 아니라면 예외 처리
         if (!Objects.equals(store.getMember().getMemberId(), memberId)) throw new CommonException(ApiStatus.UNAUTHORIZED);
+
+        // 유효한 구독권 쓰고 있는 사람 존재한다면 예외 처리
+        long count = memberSubscriptionRepository.countActiveSubscriptions(subscriptionId, LocalDateTime.now());
+        if (count > 0) throw new CommonException(ApiStatus.CONFLICT);
 
         // 구독권 정보 조회 및 수정
         Subscription subscription = repository.findById(subscriptionId)
