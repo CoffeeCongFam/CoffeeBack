@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 public class StoreHoursResponseDTO {
+    private Long storeHoursId;
     private String dayOfWeek;
     private String openTime;
     private String closeTime;

@@ -58,6 +58,7 @@ public class StoreMapper {
     private static List<StoreHoursResponseDTO> toStoreHoursResponseDto(List<StoreHours> storeHours) {
         return storeHours.stream()
                 .map(sh -> new StoreHoursResponseDTO(
+                        sh.getStoreHoursId(),
                         sh.getDayOfWeek().name(),
                         sh.getOpenTime(),
                         sh.getCloseTime(),
