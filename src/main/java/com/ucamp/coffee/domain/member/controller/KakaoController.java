@@ -115,7 +115,7 @@ public class KakaoController {
                 cookie.setHttpOnly(true);
                 cookie.setSecure(true);
                 cookie.setPath("/");
-                cookie.setMaxAge(60 * 60); // 1시간
+                cookie.setMaxAge(-1);
                 response.addCookie(cookie);
 
                 // 세션 등록
