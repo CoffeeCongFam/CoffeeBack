@@ -33,4 +33,5 @@ public class CustomerMemberSubscriptionResponseDTO {
     private List<String> usedAt;
     private List<String> refundReasons;
     private String refundedAt;
+    private String giftMessage;
 }
