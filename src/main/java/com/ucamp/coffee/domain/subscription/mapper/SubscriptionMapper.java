@@ -125,6 +125,7 @@ public class SubscriptionMapper {
                 .usedAt(subscriptionUsageHistories.stream().map(SubscriptionUsageHistory::getCreatedAt).map(DateTimeUtil::toUtcDateTime).sorted().toList())
                 .refundReasons(null)
                 .refundedAt(DateTimeUtil.toUtcDateTime(purchase.getRefundedAt()))
+                .giftMessage(purchase.getGiftMessage())
                 .build();
     }
 }
