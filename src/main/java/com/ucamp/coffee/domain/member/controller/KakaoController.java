@@ -112,7 +112,7 @@ public class KakaoController {
                 cookie.setHttpOnly(true);
                 cookie.setSecure(true);
                 cookie.setPath("/");
-                cookie.setMaxAge(60 * 60); // 1시간
+                cookie.setMaxAge(-1);
                 response.addCookie(cookie);
                 log.info("KC 3: 서비스 JWT 발급 및 쿠키 추가 완료");
 
