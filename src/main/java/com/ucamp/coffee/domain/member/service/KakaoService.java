@@ -54,7 +54,7 @@ public class KakaoService {
         if ("443".equals(String.valueOf(backPort).trim())) {
             redirectUrl = host + redirectEndPoint;
         } else {
-            redirectUrl = host + ":" + backPort + redirectEndPoint;
+            redirectUrl = host + ":" + frontPort + redirectEndPoint;
         }
         log.info("==================================");
         log.info("KS 1: {}", redirectUrl);
