@@ -78,13 +78,6 @@ public class MenuService {
             })
             .orElse(dto.getImageUrl());
 
-        boolean hasSubscription = subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menuId, SubscriptionStatusType.ONSALE);
-        if (hasSubscription) {
-            if (dto.getMenuName() != null || dto.getMenuType() != null || dto.getMenuStatus() != null) {
-                throw new CommonException(ApiStatus.MENU_LINKED_TO_SUBSCRIPTION);
-            }
-        }
-
         // 메뉴 아이디를 통해 메뉴 조회
         Menu menu = repository.findById(menuId)
             .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));

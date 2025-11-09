@@ -122,6 +122,7 @@ public class OwnerSubscriptionService {
                     .subscriptionStatus(subscription.getSubscriptionStatus() != null ? subscription.getSubscriptionStatus().name() : null)
                     .menus(menus)
                     .deletedAt(DateTimeUtil.toUtcDateTime(subscription.getDeletedAt()))
+                    .expiredAt(DateTimeUtil.toUtcDateTime(memberSubscriptionRepository.findLatestSubscriptionEnd(subscription.getSubscriptionId())))
                     .build();
             })
             .collect(Collectors.toList());
@@ -145,7 +146,7 @@ public class OwnerSubscriptionService {
             .toList();
 
         long count = memberSubscriptionRepository.countActiveSubscriptions(subscriptionId, LocalDateTime.now());
-        LocalDateTime expiredAt = memberSubscriptionRepository.findLatestSubscriptionEnd(subscriptionId, LocalDateTime.now());
+        LocalDateTime expiredAt = memberSubscriptionRepository.findLatestSubscriptionEnd(subscriptionId);
         return SubscriptionMapper.toOwnerResponseDto(subscription, menus, count <= 0, expiredAt);
     }
 
