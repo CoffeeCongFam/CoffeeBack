@@ -149,9 +149,15 @@ public class CustomerStoreService {
                 sh -> sh.getStore().getPartnerStoreId(),
                 sh -> {
                     if ("Y".equals(sh.getIsClosed())) return "HOLIDAY";
+
+                    String openTimeStr = sh.getOpenTime();
+                    String closeTimeStr = sh.getCloseTime();
+                    if (openTimeStr == null || closeTimeStr == null) return "UNKNOWN";
+
                     LocalTime now = LocalTime.now();
-                    LocalTime open = LocalTime.parse(sh.getOpenTime());
-                    LocalTime close = LocalTime.parse(sh.getCloseTime());
+                    LocalTime open = LocalTime.parse(openTimeStr);
+                    LocalTime close = LocalTime.parse(closeTimeStr);
+
                     return (now.isAfter(open) && now.isBefore(close)) ? "OPEN" : "CLOSED";
                 }
             ));
