@@ -1,14 +1,18 @@
 package com.ucamp.coffee.domain.member.controller;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
-import com.ucamp.coffee.domain.member.repository.MemberRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiResponse;
@@ -18,6 +22,7 @@ import com.ucamp.coffee.common.security.JwtTokenProvider;
 import com.ucamp.coffee.common.security.MemberDetails;
 import com.ucamp.coffee.domain.member.dto.MemberDto;
 import com.ucamp.coffee.domain.member.entity.Member;
+import com.ucamp.coffee.domain.member.repository.MemberRepository;
 import com.ucamp.coffee.domain.member.service.MemberService;
 import com.ucamp.coffee.domain.member.type.ActiveStatusType;
 import com.ucamp.coffee.domain.member.type.MemberType;
@@ -28,6 +33,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -145,12 +151,10 @@ public class MemberController {
 
     // 카카오톡 로그아웃 & 세션/쿠키 삭제
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<?>> logout(HttpSession session,
+    public ResponseEntity<ApiResponse<?>> logout(HttpServletRequest request,
                                                  HttpServletResponse response){
-        // 세션 삭제
-        if(session != null){
-            session.invalidate();
-        }
+    	// 세션 삭제
+        request.getSession().invalidate();
 
         // JWT 쿠키 삭제
         Cookie jwtCookie = new Cookie("accessToken", null);
@@ -173,23 +177,55 @@ public class MemberController {
     // 일반회원/점주 회원탈퇴
     // 탈퇴 시, 활동 상태(ACTIVE, INACTIVE, WITHDRAW)만 변경
     @PatchMapping("/active/update")
-    public ResponseEntity<ApiResponse<?>> activeUpdate(@AuthenticationPrincipal MemberDetails user){
+    public ResponseEntity<ApiResponse<?>> withdrawMember(
+    					@AuthenticationPrincipal MemberDetails user,
+    					HttpServletRequest request,
+    					HttpServletResponse response){
 
-        // 비회원일 경우
-        if(user == null){
-            throw new CommonException(ApiStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+    	// 쿠키에서 JWT 가져오기
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("accessToken".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
         }
 
-        Member member = memberRepository.findById(user.getMemberId())
-                .orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다."));
+        if (token == null) {
+            throw new CommonException(ApiStatus.NOT_FOUND, "로그인 정보가 없습니다.");
+        }
 
-        // 탈퇴할 시 수정할 데이터(회원 상태, 삭제 시각)
-        member.setActiveStatus((ActiveStatusType.WITHDRAW));
-        member.setDeletedAt(LocalDateTime.now());
+        // JWT 검증
+        Long memberId;
+        try {
+        	memberId = Long.parseLong(jwtTokenProvider.getClaims(token).getSubject());
+        } catch (Exception e) {
+        	throw new CommonException(ApiStatus.UNAUTHORIZED, "토큰 검증 실패");
+        }
 
-        memberRepository.save(member);  // 탈퇴로 수정
+        // 회원 탈퇴 처리 로직
+        memberService.withdraw(memberId);
+        
+        // 세션 삭제
+        request.getSession().invalidate();
+        
+        // JWT 쿠키 삭제
+        Cookie jwtCookie = new Cookie("accessToken", null);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setSecure(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(0);
+        response.addCookie(jwtCookie);
 
-        return ResponseMapper.successOf("회원 탈퇴가 완료되었습니다.");
+        // 쿠키 삭제(세션 쿠키)
+        Cookie sessionCookie = new Cookie("JSESSIONID", null);
+        sessionCookie.setHttpOnly(true);
+        sessionCookie.setPath("/");
+        sessionCookie.setMaxAge(0);
+        response.addCookie(sessionCookie);
+        return ResponseMapper.successOf("회원 탈퇴 완료");
     }
 
 
