@@ -112,8 +112,12 @@ public class NotificationOrderListener {
 		StringBuilder msg = new StringBuilder();
 		msg.append("[").append(store.getStoreName()).append("]").append(" 고객님의 주문(#").append(order.getOrderNumber())
 				.append(")이 수락되었습니다.");
+		
+		StringBuilder msg2 = new StringBuilder();
+		msg2.append("[").append(order.getOrderNumber()).append("]").append(" 주문을 정상적으로 접수하였습니다.");
 
 		notificationService.createNotification(member, NotificationType.ORDER, String.valueOf(msg), order.getOrderId());
+		notificationService.createNotification(store.getMember(), NotificationType.ORDER, String.valueOf(msg2), order.getOrderId());
 
 	}
 
@@ -158,8 +162,13 @@ public class NotificationOrderListener {
 		StringBuilder msg = new StringBuilder();
 		msg.append("[").append(store.getStoreName()).append("]").append(" 고객님의 주문(#").append(order.getOrderNumber())
 				.append(")이 매장 사정으로 취소되었습니다.");
+		
+		StringBuilder msg2 = new StringBuilder();
+		msg2.append("[").append(order.getOrderNumber()).append("]").append(" 주문을 정상적으로 취소하였습니다.");
+		
 
 		notificationService.createNotification(member, NotificationType.ORDER, String.valueOf(msg), order.getOrderId());
+		notificationService.createNotification(store.getMember(), NotificationType.ORDER, String.valueOf(msg2), order.getOrderId());
 	}
 
 
