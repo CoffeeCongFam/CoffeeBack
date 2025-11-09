@@ -99,7 +99,10 @@ public class OwnerSubscriptionService {
                 // 메뉴 목록 추출
                 List<MenuResponseDTO> menus = subscriptionMenus.stream()
                     .map(SubscriptionMenu::getMenu)
-                    .map(MenuMapper::toDto)
+                    .map(menu -> {
+                        boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                        return MenuMapper.toDto(menu, isUpdatable);
+                    })
                     .collect(Collectors.toList());
 
                 return OwnerSubscriptionResponseDTO.builder()
@@ -135,19 +138,24 @@ public class OwnerSubscriptionService {
         // 메뉴 목록 추출
         List<MenuResponseDTO> menus = subscriptionMenus.stream()
             .map(SubscriptionMenu::getMenu)
-            .map(MenuMapper::toDto)
+            .map(menu -> {
+                boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                return MenuMapper.toDto(menu, isUpdatable);
+            })
             .toList();
 
-        return SubscriptionMapper.toOwnerResponseDto(subscription, menus);
+        long count = memberSubscriptionRepository.countActiveSubscriptions(subscriptionId, LocalDateTime.now());
+        LocalDateTime expiredAt = memberSubscriptionRepository.findLatestSubscriptionEnd(subscriptionId, LocalDateTime.now());
+        return SubscriptionMapper.toOwnerResponseDto(subscription, menus, count <= 0, expiredAt);
     }
 
     @Transactional
     public void updateSubscriptionStatus(Long subscriptionId, SubscriptionStatusDTO dto, Long memberId) {
         // 점주 및 매장 정보 조회
         Member member = memberHelperService.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
         Store store = storeHelperService.findByMember(member)
-                .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("해당 매장이 존재하지 않습니다."));
 
         // 해당 멤버가 매장의 점주가 아니라면 예외 처리
         if (!Objects.equals(store.getMember().getMemberId(), memberId)) throw new CommonException(ApiStatus.UNAUTHORIZED);

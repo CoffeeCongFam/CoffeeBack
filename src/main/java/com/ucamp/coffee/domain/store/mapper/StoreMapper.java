@@ -38,6 +38,7 @@ public class StoreMapper {
                 .businessNumber(store.getBusinessNumber())
                 .detailInfo(store.getDetailInfo())
                 .storeHours(toStoreHoursResponseDto(storeHours))
+                .storeImg(store.getStoreImg())
                 .build();
     }
 

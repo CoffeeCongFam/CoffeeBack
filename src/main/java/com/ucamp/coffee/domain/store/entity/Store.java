@@ -66,9 +66,7 @@ public class Store extends BaseEntity {
             this.detailInfo = dto.getDetailInfo();
         }
 
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            this.storeImg = imageUrl;
-        }
+        this.storeImg = imageUrl;
 
         if (dto.getStoreTel() != null && !dto.getStoreTel().isEmpty()) {
             this.storeTel = dto.getStoreTel();

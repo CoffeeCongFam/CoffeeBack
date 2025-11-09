@@ -19,6 +19,7 @@ import com.ucamp.coffee.domain.subscription.repository.MemberSubscriptionReposit
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionMenuRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionRepository;
 import com.ucamp.coffee.domain.subscription.repository.SubscriptionUsageHistoryRepository;
+import com.ucamp.coffee.domain.subscription.type.SubscriptionStatusType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,10 @@ public class CustomerSubscriptionService {
                 // 메뉴 정보 추출
                 List<MenuResponseDTO> menus = subscriptionMenus.stream()
                     .map(SubscriptionMenu::getMenu)
-                    .map(MenuMapper::toDto)
+                    .map(menu -> {
+                        boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                        return MenuMapper.toDto(menu, isUpdatable);
+                    })
                     .toList();
 
                 return SubscriptionMapper.toCustomerResponseDto(subscription, storeDto, menus);
@@ -87,7 +91,10 @@ public class CustomerSubscriptionService {
                 // 메뉴 정보 추출
                 List<MenuResponseDTO> menus = subscriptionMenus.stream()
                     .map(SubscriptionMenu::getMenu)
-                    .map(MenuMapper::toDto)
+                    .map(menu -> {
+                        boolean isUpdatable = !subscriptionMenuRepository.existsByMenu_MenuIdAndSubscription_SubscriptionStatus(menu.getMenuId(), SubscriptionStatusType.ONSALE);
+                        return MenuMapper.toDto(menu, isUpdatable);
+                    })
                     .toList();
 
                 return SubscriptionMapper.toCustomerResponseDto(subscription, storeDto, menus);

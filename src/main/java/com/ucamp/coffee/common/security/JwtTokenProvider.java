@@ -20,7 +20,7 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private final long accessTokenValidTime = 1000L * 60 * 60; // 1시간
+    private final long accessTokenValidTime = 1000L * 60 * 60 * 24;
     private final long tempTokenValidTime = 1000L * 60 * 10;   // 10분 (임시 토큰)
 
     private Key getSigningKey() {
