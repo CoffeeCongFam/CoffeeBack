@@ -1,8 +1,12 @@
 package com.ucamp.coffee.domain.member.controller;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
+import com.ucamp.coffee.domain.member.service.KakaoService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +38,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @RestController
@@ -51,6 +56,7 @@ public class MemberController {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
+    private final KakaoService kakaoService;
     private final MemberRepository memberRepository;
 
     String message = "";
@@ -207,10 +213,10 @@ public class MemberController {
 
         // 회원 탈퇴 처리 로직
         memberService.withdraw(memberId);
-        
+
         // 세션 삭제
         request.getSession().invalidate();
-        
+
         // JWT 쿠키 삭제
         Cookie jwtCookie = new Cookie("accessToken", null);
         jwtCookie.setHttpOnly(true);
@@ -225,9 +231,38 @@ public class MemberController {
         sessionCookie.setPath("/");
         sessionCookie.setMaxAge(0);
         response.addCookie(sessionCookie);
+
         return ResponseMapper.successOf("회원 탈퇴 완료");
     }
 
+    @PatchMapping("/member/active")
+    public ResponseEntity<ApiResponse<?>> changeActive(@RequestBody Map<String, Long> request){
+        Long memberId = request.get("memberId");
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "회원이 존재하지 않습니다."));
+
+        if(member.getActiveStatus() == ActiveStatusType.ACTIVE){
+            return ResponseMapper.successOf("이미 활성화된 계정입니다.");
+        }
+
+        if(member.getActiveStatus() != ActiveStatusType.WITHDRAW){
+            throw new CommonException(ApiStatus.FORBIDDEN, "활성화할 수 없는 계정입니다.");
+        }
+
+        // 90일 이내 탈퇴 회원인지 확인
+        LocalDateTime deleteAt = member.getDeletedAt();
+        LocalDateTime rejoinDeadline = deleteAt.plusDays(90);
+        if(LocalDateTime.now().isAfter(rejoinDeadline)){
+            throw new CommonException(ApiStatus.FORBIDDEN, "탈퇴 후 90일이 지나 계정을 활성화할 수 없습니다.");
+        }
+
+        // 활성화 처리
+        member.setActiveStatus(ActiveStatusType.ACTIVE);
+        member.setDeletedAt(null);
+        memberRepository.save(member);
+
+        return ResponseMapper.successOf("계정 활성화 완료");
+    }
 
     // 로그인 후 현재 인증된 사용자의 기본 정보를 반환하는 API
     @PostMapping("/login")

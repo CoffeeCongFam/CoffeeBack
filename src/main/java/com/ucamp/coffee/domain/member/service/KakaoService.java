@@ -135,4 +135,22 @@ public class KakaoService {
         String portPart = (frontPort == 443) ? "" : ":" + frontPort;
         return host + portPart;
     }
+
+
+    // 카카오톡 연결 해제
+    public void unlinkKakao(String kakaoToken){
+        String unlinkUrl = "https://kapi.kakao.com/v1/user/unlink";
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + kakaoToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response =
+                restTemplate.postForEntity(unlinkUrl, entity, String.class);
+
+        log.info("카카오 연결 해제 결과: {}", response.getBody());
+    }
+
 }

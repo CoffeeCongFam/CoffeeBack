@@ -2,6 +2,10 @@ package com.ucamp.coffee.domain.member.service;
 
 import java.time.LocalDateTime;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +17,7 @@ import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.store.repository.StoreRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -61,5 +66,4 @@ public class MemberService {
         memberRepository.save(member);
 
     }
-
 }

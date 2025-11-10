@@ -2,6 +2,7 @@ package com.ucamp.coffee.domain.member.controller;
 
 import com.ucamp.coffee.common.exception.CommonException;
 import com.ucamp.coffee.common.response.ApiStatus;
+import com.ucamp.coffee.common.response.ResponseMapper;
 import com.ucamp.coffee.common.security.JwtTokenProvider;
 import com.ucamp.coffee.domain.member.dto.KakaoUserDto;
 import com.ucamp.coffee.domain.member.entity.Member;
@@ -16,10 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -88,6 +86,7 @@ public class KakaoController {
 
             } else {
                 // 회원이면 로그인 처리
+                boolean isActiveStatus = false;
                 Member member = memberOptional.get();
                 log.info("KC 3: 회원 존재, memberId={}, memberType={}", member.getMemberId(), member.getMemberType());
 
@@ -96,14 +95,17 @@ public class KakaoController {
                     LocalDateTime deleteAt = member.getDeletedAt();
                     LocalDateTime rejoinDeadline = deleteAt.plusDays(90);
 
+                    // 90일이 지나지 않았을 때
                     if(LocalDateTime.now().isBefore(rejoinDeadline)){
-                        member.setDeletedAt(null);
-                        member.setActiveStatus(ActiveStatusType.ACTIVE);
-                        memberRepository.save(member);
+                        isActiveStatus = true;
                         log.info("KC 3: 탈퇴 후 90일 이내, 재활성화 완료");
+
+                        result.put("isActiveStatus", isActiveStatus);
+                        result.put("memberId", member.getMemberId());
                     } else {
                         throw new CommonException(ApiStatus.FORBIDDEN, "탈퇴 후 90일이 지나 로그인이 불가합니다.");
                     }
+                    return ResponseEntity.ok(result);
                 }
 
                 // JWT 발급 및 쿠키 설정
@@ -126,6 +128,7 @@ public class KakaoController {
                 result.put("isMember", true);
                 result.put("memberType", member.getMemberType().name());
                 result.put("state", state);
+                result.put("kakaoToken", accessToken);
             }
 
             log.info("KC 4: JSON 반환 준비 완료, result={}", result);
