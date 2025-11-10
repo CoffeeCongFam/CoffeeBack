@@ -27,6 +27,8 @@ public class PurchaseAllResponseDTO {
 	private String usageStatus;
 	private LocalDateTime refundedAt;
 	private String storeName;
+	private String merchantUid;
+	private String purchaseType;
 
 	private List<RefundReasonType> refundReasons = new ArrayList<>();
 
