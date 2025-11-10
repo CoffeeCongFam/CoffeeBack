@@ -78,7 +78,7 @@ public class PurchaseService {
 				.orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "구독권 정보가 존재하지 않습니다."));
 
 		// 주문 고유번호 생성(Portone merchant_uid에 매핑)
-		String merchantUid = "Purchase_" + System.currentTimeMillis();
+		String merchantUid = "ORD_" + System.currentTimeMillis();
 
 		// Purchase Entity 생성
 		Purchase purchase = Purchase.builder().buyer(buyer).receiver(receiver).subscription(subscription).isGift(isGift)
