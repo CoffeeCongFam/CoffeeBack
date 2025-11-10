@@ -11,7 +11,7 @@ public class CustomerStoreListResponseDTO {
     private Long storeId;
     private String storeName;
     private String storeStatus;
-    private String storeImage;
+    private String storeImg;
     private String roadAddress;
     private String detailAddress;
     private Double xPoint;
