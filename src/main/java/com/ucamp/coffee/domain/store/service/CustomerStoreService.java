@@ -184,7 +184,7 @@ public class CustomerStoreService {
             .storeId(store.getPartnerStoreId())
             .storeName(store.getStoreName())
             .storeStatus(storeStatusMap.getOrDefault(store.getPartnerStoreId(), "UNKNOWN"))
-            .storeImage(store.getStoreImg())
+            .storeImg(store.getStoreImg())
             .roadAddress(store.getRoadAddress())
             .detailAddress(store.getDetailAddress())
             .xPoint(store.getXPoint())
