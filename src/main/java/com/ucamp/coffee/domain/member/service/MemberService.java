@@ -1,7 +1,11 @@
 package com.ucamp.coffee.domain.member.service;
 
-import com.ucamp.coffee.domain.store.entity.Store;
-import com.ucamp.coffee.domain.store.repository.StoreRepository;
+import java.time.LocalDateTime;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,8 +13,11 @@ import com.ucamp.coffee.domain.member.dto.MemberDto;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.repository.MemberRepository;
 import com.ucamp.coffee.domain.member.type.ActiveStatusType;
+import com.ucamp.coffee.domain.store.entity.Store;
+import com.ucamp.coffee.domain.store.repository.StoreRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -47,5 +54,16 @@ public class MemberService {
         return storeRepository.findByMember_MemberId(memberId)
                 .orElse(null);
     }
+    
+    // 회원 탈퇴
+    public void withdraw(Long memberId) {
+        // 회원 상태 변경
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
 
+        member.setActiveStatus(ActiveStatusType.WITHDRAW);
+        member.setDeletedAt(LocalDateTime.now());
+        memberRepository.save(member);
+
+    }
 }
