@@ -161,10 +161,6 @@ public class OwnerSubscriptionService {
         // 해당 멤버가 매장의 점주가 아니라면 예외 처리
         if (!Objects.equals(store.getMember().getMemberId(), memberId)) throw new CommonException(ApiStatus.UNAUTHORIZED);
 
-        // 유효한 구독권 쓰고 있는 사람 존재한다면 예외 처리
-        long count = memberSubscriptionRepository.countActiveSubscriptions(subscriptionId, LocalDateTime.now());
-        if (count > 0) throw new CommonException(ApiStatus.CONFLICT);
-
         // 구독권 정보 조회 및 수정
         Subscription subscription = repository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
