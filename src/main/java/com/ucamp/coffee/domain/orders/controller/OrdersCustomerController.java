@@ -63,9 +63,11 @@ public class OrdersCustomerController {
 	 * @return
 	 */
 	@GetMapping("/{orderId}")
-	public ResponseEntity<ApiResponse<?>> searchOrder(@PathVariable Long orderId) {
+	public ResponseEntity<ApiResponse<?>> searchOrder(@PathVariable Long orderId, @AuthenticationPrincipal MemberDetails member) {
 
-		OrdersDetailResponseDTO response = ordersService.selectOrdersById(orderId);
+		Long memberId = member.getMemberId();
+		
+		OrdersDetailResponseDTO response = ordersService.selectOrdersById(orderId, memberId);
 
 		return ResponseMapper.successOf(response);
 	}

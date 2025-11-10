@@ -18,6 +18,7 @@ public class CustomerStoreResponseDTO {
     private String roadAddress;
     private String detailAddress;
     private String detailInfo;
+    private String storeImg;
     private List<StoreHoursResponseDTO> storeHours;
     private List<MenuResponseDTO> menus;
     private List<CustomerSubscriptionResponseDTO> subscriptions;

@@ -13,7 +13,7 @@ public class SubscriptionScheduler {
 
 	private final  MemberSubscriptionService memberSubscriptionService;
 	
-	@Scheduled(cron = "0 00 12 * * *", zone = "Asia/Seoul")
+	@Scheduled(cron = "0 00 8 * * *", zone = "Asia/Seoul")
 	public void sendSubscriptionNotification() {
 		
 		memberSubscriptionService.notificationBefore7Days();

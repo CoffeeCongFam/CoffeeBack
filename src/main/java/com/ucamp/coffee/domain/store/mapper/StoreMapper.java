@@ -52,6 +52,7 @@ public class StoreMapper {
                 .detailInfo(store.getDetailInfo())
                 .storeHours(toStoreHoursResponseDto(storeHoursList))
                 .menus(menus)
+                .storeImg(store.getStoreImg())
                 .subscriptions(subscriptions)
                 .build();
     }
