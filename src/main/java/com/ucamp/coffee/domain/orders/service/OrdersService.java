@@ -121,8 +121,14 @@ public class OrdersService {
 	 * @return
 	 */
 	@Transactional(readOnly = true)
-	public OrdersDetailResponseDTO selectOrdersById(Long orderId) {
+	public OrdersDetailResponseDTO selectOrdersById(Long orderId, Long memberId) {
 
+		Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new CommonException(ApiStatus.NOT_FOUND, "해당 주문 정보를 찾을 수 없습니다."));
+		
+		if(order.getMember().getMemberId() != memberId) {
+			throw new CommonException(ApiStatus.FORBIDDEN, "접근 권한이 없습니다.");
+		}
+		
 		OrdersDetailResponseDTO response = ordersMapper.selectOrderDetailResponse(orderId);
 
 		if (response == null) {
