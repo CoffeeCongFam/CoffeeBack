@@ -148,10 +148,23 @@ public class CustomerStoreService {
             .collect(Collectors.toMap(
                 sh -> sh.getStore().getPartnerStoreId(),
                 sh -> {
-                    if ("Y".equals(sh.getIsClosed())) return "HOLIDAY";
+                    // 휴무일이면 HOLIDAY
+                    if ("Y".equalsIgnoreCase(sh.getIsClosed())) {
+                        return "HOLIDAY";
+                    }
+
+                    // 영업인데 시간 정보가 없으면 UNKNOWN
+                    String openTimeStr = sh.getOpenTime();
+                    String closeTimeStr = sh.getCloseTime();
+                    if (openTimeStr == null || openTimeStr.isBlank() || closeTimeStr == null || closeTimeStr.isBlank()) {
+                        return "UNKNOWN";
+                    }
+
+                    // 시간 비교로 OPEN / CLOSED 판단
                     LocalTime now = LocalTime.now();
-                    LocalTime open = LocalTime.parse(sh.getOpenTime());
-                    LocalTime close = LocalTime.parse(sh.getCloseTime());
+                    LocalTime open = LocalTime.parse(openTimeStr);
+                    LocalTime close = LocalTime.parse(closeTimeStr);
+
                     return (now.isAfter(open) && now.isBefore(close)) ? "OPEN" : "CLOSED";
                 }
             ));
@@ -170,7 +183,7 @@ public class CustomerStoreService {
         return CustomerStoreListResponseDTO.builder()
             .storeId(store.getPartnerStoreId())
             .storeName(store.getStoreName())
-            .storeStatus(storeStatusMap.getOrDefault(store.getPartnerStoreId(), "CLOSED"))
+            .storeStatus(storeStatusMap.getOrDefault(store.getPartnerStoreId(), "UNKNOWN"))
             .storeImage(store.getStoreImg())
             .roadAddress(store.getRoadAddress())
             .detailAddress(store.getDetailAddress())

@@ -122,6 +122,7 @@ public class OwnerSubscriptionService {
                     .subscriptionStatus(subscription.getSubscriptionStatus() != null ? subscription.getSubscriptionStatus().name() : null)
                     .menus(menus)
                     .deletedAt(DateTimeUtil.toUtcDateTime(subscription.getDeletedAt()))
+                    .expiredAt(DateTimeUtil.toUtcDateTime(memberSubscriptionRepository.findLatestSubscriptionEnd(subscription.getSubscriptionId())))
                     .build();
             })
             .collect(Collectors.toList());
@@ -145,7 +146,7 @@ public class OwnerSubscriptionService {
             .toList();
 
         long count = memberSubscriptionRepository.countActiveSubscriptions(subscriptionId, LocalDateTime.now());
-        LocalDateTime expiredAt = memberSubscriptionRepository.findLatestSubscriptionEnd(subscriptionId, LocalDateTime.now());
+        LocalDateTime expiredAt = memberSubscriptionRepository.findLatestSubscriptionEnd(subscriptionId);
         return SubscriptionMapper.toOwnerResponseDto(subscription, menus, count <= 0, expiredAt);
     }
 
@@ -159,10 +160,6 @@ public class OwnerSubscriptionService {
 
         // 해당 멤버가 매장의 점주가 아니라면 예외 처리
         if (!Objects.equals(store.getMember().getMemberId(), memberId)) throw new CommonException(ApiStatus.UNAUTHORIZED);
-
-        // 유효한 구독권 쓰고 있는 사람 존재한다면 예외 처리
-        long count = memberSubscriptionRepository.countActiveSubscriptions(subscriptionId, LocalDateTime.now());
-        if (count > 0) throw new CommonException(ApiStatus.CONFLICT);
 
         // 구독권 정보 조회 및 수정
         Subscription subscription = repository.findById(subscriptionId)

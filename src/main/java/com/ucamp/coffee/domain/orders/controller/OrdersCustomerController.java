@@ -117,7 +117,7 @@ public class OrdersCustomerController {
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime nextCursor) {
 
-		Long memberId = 32L;
+		Long memberId = member.getMemberId();
 
 		OrdersListResponseDTO response = ordersService.selectAllOrdersHistory(memberId, period, startDate, endDate,
 				nextCursor);

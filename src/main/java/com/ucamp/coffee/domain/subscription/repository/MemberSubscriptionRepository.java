@@ -84,7 +84,6 @@ public interface MemberSubscriptionRepository extends JpaRepository<MemberSubscr
         WHERE p.subscription.subscriptionId = :subscriptionId
     """)
     LocalDateTime findLatestSubscriptionEnd(
-        @Param("subscriptionId") Long subscriptionId,
-        @Param("now") LocalDateTime now
+        @Param("subscriptionId") Long subscriptionId
     );
 }

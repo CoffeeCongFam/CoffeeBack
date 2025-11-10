@@ -280,10 +280,10 @@ public class OrdersService {
 				.lastCreatedAt(lastCreatedAt).period(period).build();
 
 
-		 // 1️⃣ 주문 목록 조회
+		 // 주문 목록 조회
 	    List<OrderListItemDTO> ordersList = ordersMapper.selectOrdersHistoryList(search);
 
-	    // 2️⃣ 각 주문별 메뉴 조회 및 매핑
+	    // 각 주문별 메뉴 조회 및 매핑
 	    for (OrderListItemDTO order : ordersList) {
 	        List<OrdersMenuResponseDTO> menus = ordersMapper.selectMenusByOrderId(order.getOrderId());
 	        order.setMenuList(menus);
