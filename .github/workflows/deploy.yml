@@ -1,0 +1,30 @@
+name: BE CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy on server via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/app/CoffeeBack
+
+            git fetch origin
+            git reset --hard origin/develop
+
+            chmod +x mvnw
+            ./mvnw clean package -DskipTests
+
+            docker compose down || true
+            docker compose up -d --build

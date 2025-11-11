@@ -1,0 +1,56 @@
+package com.ucamp.coffee.domain.notification.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ucamp.coffee.common.response.ApiResponse;
+import com.ucamp.coffee.common.response.ResponseMapper;
+import com.ucamp.coffee.common.security.MemberDetails;
+import com.ucamp.coffee.domain.notification.dto.NotificationResponseDTO;
+import com.ucamp.coffee.domain.notification.service.NotificationService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/common/notification")
+public class NotificationController {
+
+	private final NotificationService notificationService;
+
+	// 알림 모두 조회(날짜순) - 삭제 안된 알림만
+	@GetMapping()
+	public ResponseEntity<ApiResponse<?>> searchAllNotification(@AuthenticationPrincipal MemberDetails member) {
+
+		Long memberId = member.getMemberId();
+		List<NotificationResponseDTO> response = notificationService.selectAllNotification(memberId);
+
+		return ResponseMapper.successOf(response);
+	}
+
+	// 알림 읽음 처리
+	@PatchMapping("/{notificationId}")
+	public ResponseEntity<ApiResponse<?>> readNotification(@PathVariable Long notificationId) {
+
+		notificationService.updateNotificationRead(notificationId);
+
+		return ResponseMapper.successOf(null);
+	}
+
+	// 알림 모두 삭제
+	@DeleteMapping("/{notificationId}")
+	public ResponseEntity<ApiResponse<?>> deleteNotification(@PathVariable Long notificationId) {
+
+		notificationService.deleteNotification(notificationId);
+
+		return ResponseMapper.successOf(null);
+	}
+}

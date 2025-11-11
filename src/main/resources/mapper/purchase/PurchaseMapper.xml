@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.ucamp.coffee.domain.purchase.mapper.PurchaseMapper">
+
+	<!-- 소비자의 단건 구매 조회 -->
+	<select id="selectPurchase" parameterType="long"
+		resultType="PurchaseAllResponseDTO">
+		SELECT bm.NAME AS sender, rm.NAME AS receiver,
+		s.SUBSCRIPTION_NAME,
+		s.SUBSCRIPTION_ID,
+		p.CREATED_AT as paidAt,
+		p.PURCHASE_ID,
+		ms.MEMBER_SUBSCRIPTION_ID,
+		p.PAYMENT_STATUS, p.IS_GIFT,
+		s.PRICE As
+		paymentAmount,
+		p.GIFT_MESSAGE,
+		ms.USAGE_STATUS,
+		p.REFUNDED_AT,
+		ps.STORE_NAME,
+		p.MERCHANT_UID,
+		P.PURCHASE_TYPE
+		FROM
+		PURCHASE p
+		JOIN MEMBER bm ON
+		p.MEMBER_ID = bm.MEMBER_ID
+		JOIN MEMBER rm ON
+		p.RECEIVER_MEMBER_ID =
+		rm.MEMBER_ID
+		JOIN SUBSCRIPTION s
+		ON
+		p.SUBSCRIPTION_ID =
+		s.SUBSCRIPTION_ID
+		JOIN MEMBER_SUBSCRIPTION ms ON
+		p.PURCHASE_ID =
+		ms.PURCHASE_ID
+		JOIN PARTNER_STORE ps ON
+		ps.PARTNER_STORE_ID = s.PARTNER_STORE_ID
+		WHERE p.PURCHASE_ID =
+		#{purchaseId}
+	</select>
+	<!-- 소비자의 전체 구매 조회 -->
+	<select id="selectAllPurchase" parameterType="map"
+		resultType="PurchaseAllResponseDTO">
+		SELECT bm.NAME AS sender, rm.NAME AS receiver,
+		s.SUBSCRIPTION_NAME,
+		s.SUBSCRIPTION_ID,
+		p.CREATED_AT as paidAt, p.PURCHASE_ID,
+		ms.MEMBER_SUBSCRIPTION_ID,
+		p.PAYMENT_STATUS, p.IS_GIFT, s.PRICE As
+		paymentAmount,
+		p.GIFT_MESSAGE,
+		ms.USAGE_STATUS,
+		p.REFUNDED_AT,
+		ps.STORE_NAME
+		FROM
+		PURCHASE p
+		JOIN MEMBER bm ON
+		p.MEMBER_ID = bm.MEMBER_ID
+		JOIN MEMBER rm ON
+		p.RECEIVER_MEMBER_ID =
+		rm.MEMBER_ID
+		JOIN SUBSCRIPTION s
+		ON
+		p.SUBSCRIPTION_ID =
+		s.SUBSCRIPTION_ID
+		JOIN MEMBER_SUBSCRIPTION ms ON
+		p.PURCHASE_ID =
+		ms.PURCHASE_ID
+		JOIN PARTNER_STORE ps ON
+		ps.PARTNER_STORE_ID = s.PARTNER_STORE_ID
+		WHERE bm.MEMBER_ID =
+		#{memberId}
+
+		<if test="type == 'gift'">
+			AND p.IS_GIFT = 'Y'
+		</if>
+		<if test="type == 'mine'">
+			AND p.IS_GIFT = 'N'
+		</if>
+
+		ORDER BY
+		p.created_at desc
+	</select>
+
+	<!-- 소비자의 모든 선물 목록 조회 -->
+	<select id="selectAllGift" parameterType="long"
+		resultType="PurchaseAllGiftDTO">
+		SELECT
+		p.IS_GIFT, sm.NAME AS sender, rm.NAME AS receiver,
+		s.SUBSCRIPTION_ID , s.SUBSCRIPTION_NAME, p.CREATED_AT, p.PURCHASE_ID,
+		ms.MEMBER_SUBSCRIPTION_ID, sm.MEMBER_ID as senderId, rm.MEMBER_ID as
+		receiverId
+		FROM PURCHASE p
+		JOIN MEMBER sm ON p.MEMBER_ID
+		= sm.MEMBER_ID
+		JOIN MEMBER rm ON p.RECEIVER_MEMBER_ID = rm.MEMBER_ID
+		JOIN SUBSCRIPTION
+		s ON p.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN
+		MEMBER_SUBSCRIPTION ms
+		ON p.PURCHASE_ID = ms.PURCHASE_ID
+		WHERE
+		p.IS_GIFT = 'Y' AND
+		(sm.MEMBER_ID = #{memberId} OR rm.MEMBER_ID =
+		#{memberId})
+		order by
+		p.CREATED_AT DESC
+	</select>
+
+	<!-- 소비자의 보낸 선물 조회 -->
+	<resultMap type="PurchaseSendGiftDTO"
+		id="PurchaseSendGiftMap">
+		<id property="purchaseId" column="PURCHASE_ID" />
+		<result property="memberSubscriptionId"
+			column="MEMBER_SUBSCRIPTION_ID" />
+		<result property="sender" column="sender" />
+		<result property="receiver" column="receiver" />
+		<result property="subscriptionName" column="SUBSCRIPTION_NAME" />
+		<result property="price" column="PRICE" />
+		<result property="subscriptionPeriod"
+			column="SUBSCRIPTION_PERIOD" />
+		<result property="storeName" column="STORE_NAME" />
+		<result property="paidAt" column="paidAt" />
+		<result property="purchaseType" column="PURCHASE_TYPE" />
+		<result property="giftMessage" column="GIFT_MESSAGE" />
+		<result property="subscriptionType" column="SUBSCRIPTION_TYPE" />
+		<result property="subscriptionImg" column="SUBSCRIPTION_IMG" />
+		<result property="maxDailyUsage" column="MAX_DAILY_USAGE" />
+		<result property="refundedAt" column="REFUNDED_AT" />
+		<collection property="menuList"
+			ofType="com.ucamp.coffee.domain.purchase.dto.PurchaseSendGiftDTO$MenuDTO">
+			<id property="menuId" column="MENU_ID" />
+			<result property="menuName" column="MENU_NAME" />
+		</collection>
+	</resultMap>
+	<select id="selectAllSendGift" parameterType="long"
+		resultMap="PurchaseSendGiftMap">
+		SELECT
+		p.PURCHASE_ID, bm.NAME AS sender,
+		ms.MEMBER_SUBSCRIPTION_ID, rm.NAME AS
+		receiver,
+		s.SUBSCRIPTION_NAME ,
+		s.PRICE, s.SUBSCRIPTION_PERIOD,
+		ps.STORE_NAME,
+		p.CREATED_AT AS paidAt,
+		p.PURCHASE_TYPE,
+		p.GIFT_MESSAGE,
+		s.SUBSCRIPTION_TYPE,
+		s.SUBSCRIPTION_IMG,
+		s.MAX_DAILY_USAGE,
+		m.MENU_ID ,
+		m.MENU_NAME,
+		p.REFUNDED_AT
+		FROM PURCHASE p
+		JOIN MEMBER bm
+		ON p.MEMBER_ID =
+		bm.MEMBER_ID
+		JOIN MEMBER rm
+		ON
+		p.RECEIVER_MEMBER_ID =
+		rm.MEMBER_ID
+		JOIN
+		SUBSCRIPTION s
+		ON
+		p.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN
+		PARTNER_STORE ps ON
+		s.PARTNER_STORE_ID = ps.PARTNER_STORE_ID
+		JOIN
+		SUBSCRIPTION_MENU sm ON
+		sm.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN MENU
+		m ON
+		m.MENU_ID =
+		sm.MENU_ID
+		JOIN MEMBER_SUBSCRIPTION ms ON
+		ms.PURCHASE_ID
+		= p.PURCHASE_ID
+		WHERE
+		p.IS_GIFT = 'Y' AND
+		bm.MEMBER_ID =
+		#{memberId}
+		ORDER
+		BY
+		p.CREATED_AT DESC
+	</select>
+
+	<!-- 소비자의 보낸 선물 상세 조회 -->
+	<select id="selectSendGiftDetail" parameterType="long"
+		resultMap="PurchaseSendGiftMap">
+		SELECT
+		p.PURCHASE_ID, ms.MEMBER_SUBSCRIPTION_ID,
+		bm.NAME AS
+		sender, rm.NAME AS
+		receiver,
+		s.SUBSCRIPTION_NAME , s.PRICE,
+		s.SUBSCRIPTION_PERIOD,
+		ps.STORE_NAME,
+		p.CREATED_AT AS paidAt,
+		p.PURCHASE_TYPE,
+		p.GIFT_MESSAGE,
+		s.SUBSCRIPTION_TYPE,
+		s.SUBSCRIPTION_IMG,
+		s.MAX_DAILY_USAGE,
+		m.MENU_ID ,
+		m.MENU_NAME,
+		p.REFUNDED_AT
+		FROM PURCHASE p
+		JOIN MEMBER bm
+		ON p.MEMBER_ID =
+		bm.MEMBER_ID
+		JOIN MEMBER rm
+		ON
+		p.RECEIVER_MEMBER_ID =
+		rm.MEMBER_ID
+		JOIN
+		SUBSCRIPTION s
+		ON
+		p.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN
+		PARTNER_STORE ps ON
+		s.PARTNER_STORE_ID = ps.PARTNER_STORE_ID
+		JOIN
+		SUBSCRIPTION_MENU sm ON
+		sm.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN MENU
+		m ON
+		m.MENU_ID =
+		sm.MENU_ID
+		JOIN MEMBER_SUBSCRIPTION ms ON
+		ms.PURCHASE_ID
+		= p.PURCHASE_ID
+		WHERE
+		p.IS_GIFT = 'Y' AND
+		p.PURCHASE_ID =
+		#{purchaseId}
+		ORDER
+		BY
+		p.CREATED_AT DESC
+	</select>
+
+	<!-- 소비자의 받은 선물 조회 -->
+	<resultMap type="PurchaseReceiveGiftDTO"
+		id="PurchaseReceiveGiftMap">
+		<id property="purchaseId" column="PURCHASE_ID" />
+		<result property="memberSubscriptionId" column="MEMBER_SUBSCRIPTION_ID" />
+		<result property="sender" column="sender" />
+		<result property="receiver" column="receiver" />
+		<result property="subscriptionName" column="SUBSCRIPTION_NAME" />
+		<result property="price" column="PRICE" />
+		<result property="subscriptionPeriod"
+			column="SUBSCRIPTION_PERIOD" />
+		<result property="subscriptionStart"
+			column="SUBSCRIPTION_START" />
+		<result property="subscriptionEnd" column="SUBSCRIPTION_END" />
+		<result property="storeName" column="STORE_NAME" />
+		<result property="subscriptionType" column="SUBSCRIPTION_TYPE" />
+		<result property="subscriptionImg" column="SUBSCRIPTION_IMG" />
+		<result property="giftMessage" column="GIFT_MESSAGE" />
+		<result property="usageStatus" column="USAGE_STATUS" />
+		<result property="dailyRemainCount" column="DAILY_REMAIN_COUNT" />
+		<result property="refundedAt" column="REFUNDED_AT" />
+		<collection property="menuList"
+			ofType="com.ucamp.coffee.domain.purchase.dto.PurchaseReceiveGiftDTO$MenuDTO">
+			<id property="menuId" column="MENU_ID" />
+			<result property="menuName" column="MENU_NAME" />
+		</collection>
+	</resultMap>
+
+	<select id="selectAllReceivedGift" parameterType="long"
+		resultMap="PurchaseReceiveGiftMap">
+		SELECT
+		p.PURCHASE_ID,
+		ms.MEMBER_SUBSCRIPTION_ID,
+		bm.NAME AS sender,
+		rm.NAME AS
+		receiver,
+		s.SUBSCRIPTION_NAME,
+		s.PRICE,
+		s.SUBSCRIPTION_PERIOD,
+		ms.SUBSCRIPTION_START,
+		ms.SUBSCRIPTION_END,
+		ps.STORE_NAME,
+		p.GIFT_MESSAGE,
+		s.SUBSCRIPTION_TYPE,
+		s.SUBSCRIPTION_IMG,
+		ms.USAGE_STATUS,
+		ms.DAILY_REMAIN_COUNT,
+		m.MENU_ID, m.MENU_NAME,
+		p.REFUNDED_AT
+		FROM
+		PURCHASE p
+		JOIN MEMBER bm ON p.MEMBER_ID =
+		bm.MEMBER_ID
+		JOIN MEMBER rm
+		ON p.RECEIVER_MEMBER_ID = rm.MEMBER_ID
+		JOIN
+		SUBSCRIPTION s ON
+		p.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN
+		PARTNER_STORE ps ON
+		s.PARTNER_STORE_ID = ps.PARTNER_STORE_ID
+		JOIN
+		MEMBER_SUBSCRIPTION ms ON
+		p.PURCHASE_ID = ms.PURCHASE_ID
+		JOIN
+		SUBSCRIPTION_MENU sm ON
+		sm.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN MENU
+		m ON m.MENU_ID =
+		sm.MENU_ID
+		WHERE p.IS_GIFT = 'Y' AND rm.MEMBER_ID =
+		#{memberId}
+		ORDER BY
+		p.CREATED_AT DESC
+	</select>
+
+	<!-- 소비자의 받은 선물 상세 조회 -->
+	<select id="selectReceivedGiftDetail" parameterType="long"
+		resultMap="PurchaseReceiveGiftMap">
+		SELECT
+		p.PURCHASE_ID,
+		ms.MEMBER_SUBSCRIPTION_ID,
+		bm.NAME AS sender,
+		rm.NAME AS
+		receiver,
+		s.SUBSCRIPTION_NAME,
+		s.PRICE,
+		s.SUBSCRIPTION_PERIOD,
+		ms.SUBSCRIPTION_START,
+		ms.SUBSCRIPTION_END,
+		ps.STORE_NAME,
+		p.GIFT_MESSAGE,
+		s.SUBSCRIPTION_TYPE,
+		s.SUBSCRIPTION_IMG,
+		ms.USAGE_STATUS,
+		ms.DAILY_REMAIN_COUNT,
+		m.MENU_ID, m.MENU_NAME,
+		p.REFUNDED_AT
+		FROM
+		PURCHASE p
+		JOIN MEMBER bm ON p.MEMBER_ID =
+		bm.MEMBER_ID
+		JOIN MEMBER rm
+		ON p.RECEIVER_MEMBER_ID = rm.MEMBER_ID
+		JOIN
+		SUBSCRIPTION s ON
+		p.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN
+		PARTNER_STORE ps ON
+		s.PARTNER_STORE_ID = ps.PARTNER_STORE_ID
+		JOIN
+		MEMBER_SUBSCRIPTION ms ON
+		p.PURCHASE_ID = ms.PURCHASE_ID
+		JOIN
+		SUBSCRIPTION_MENU sm ON
+		sm.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN MENU
+		m ON m.MENU_ID =
+		sm.MENU_ID
+		WHERE p.IS_GIFT = 'Y' AND
+		ms.MEMBER_SUBSCRIPTION_ID =
+		#{memberSubscriptionId}
+		ORDER BY
+		p.CREATED_AT DESC
+	</select>
+
+	<!-- 소비자의 구독권 사용 내역 조회(받은 선물 조회랑 매칭용) -->
+	<select id="selectUsageReceiveHistoryBySubscriptionId"
+		parameterType="long"
+		resultType="com.ucamp.coffee.domain.purchase.dto.PurchaseReceiveGiftDTO$UsageHistoryDTO">
+		SELECT
+		SUBSCRIPTION_USAGE_HISTORY_ID AS usageHistoryId,
+		CREATED_AT AS usedAt
+		FROM SUBSCRIPTION_USAGE_HISTORY
+		WHERE
+		MEMBER_SUBSCRIPTION_ID = #{memberSubscriptionId}
+		ORDER BY usedAt desc
+	</select>
+	<!-- 소비자의 구독권 사용 내역 조회(보낸 선물 조회랑 매칭용) -->
+	<select id="selectUsageSendHistoryBySubscriptionId"
+		parameterType="long"
+		resultType="com.ucamp.coffee.domain.purchase.dto.PurchaseSendGiftDTO$UsageHistoryDTO">
+		SELECT
+		SUBSCRIPTION_USAGE_HISTORY_ID AS usageHistoryId,
+		CREATED_AT AS usedAt
+		FROM SUBSCRIPTION_USAGE_HISTORY
+		WHERE
+		MEMBER_SUBSCRIPTION_ID = #{memberSubscriptionId}
+		ORDER BY usedAt desc
+	</select>
+
+	<!-- 소비자의 보낸 특정 선물 상세 조회 -->
+	<select id="selectDetailSendGift" parameterType="long"
+		resultType="PurchaseSendGiftDTO">
+		SELECT
+		p.PURCHASE_ID, sm.NAME AS sender, rm.NAME AS
+		receiver,
+		s.SUBSCRIPTION_NAME , s.PRICE, s.SUBSCRIPTION_PERIOD,
+		ps.STORE_NAME, p.CREATED_AT AS paidAt, p.PURCHASE_TYPE,
+		p.GIFT_MESSAGE, s.SUBSCRIPTION_TYPE, s.SUBSCRIPTION_IMG
+		FROM PURCHASE
+		p
+		JOIN MEMBER sm ON p.MEMBER_ID = sm.MEMBER_ID
+		JOIN MEMBER rm ON
+		p.RECEIVER_MEMBER_ID = rm.MEMBER_ID
+		JOIN SUBSCRIPTION s ON
+		p.SUBSCRIPTION_ID = s.SUBSCRIPTION_ID
+		JOIN PARTNER_STORE ps ON
+		s.PARTNER_STORE_ID = ps.PARTNER_STORE_ID
+		WHERE p.PURCHASE_ID =
+		#{purchaseId}
+	</select>
+
+</mapper>
