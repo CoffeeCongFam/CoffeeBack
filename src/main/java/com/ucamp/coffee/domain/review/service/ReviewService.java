@@ -1,5 +1,6 @@
 package com.ucamp.coffee.domain.review.service;
 
+import com.ucamp.coffee.common.service.OciUploaderService;
 import com.ucamp.coffee.domain.member.entity.Member;
 import com.ucamp.coffee.domain.member.service.MemberHelperService;
 import com.ucamp.coffee.domain.review.dto.ReviewCreateDTO;
@@ -15,6 +16,7 @@ import com.ucamp.coffee.domain.subscription.service.SubscriptionHelperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,9 +29,10 @@ public class ReviewService {
     private final SubscriptionHelperService subscriptionHelperService;
     private final ReviewRepository repository;
     private final MemberHelperService memberHelperService;
+    private final OciUploaderService ociUploaderService;
 
     @Transactional
-    public void createReviewInfo(ReviewCreateDTO dto, Long memberId) {
+    public void createReviewInfo(ReviewCreateDTO dto, Long memberId, MultipartFile file) {
         // 요청 점주 및 매장, 해당 매장의 구독권 정보 조회
         Member member = memberHelperService.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
@@ -37,7 +40,15 @@ public class ReviewService {
         Subscription subscription = subscriptionHelperService.findById(dto.getSubscriptionId())
             .orElseThrow(() -> new IllegalArgumentException("해당 구독권이 존재하지 않습니다."));
 
-        repository.save(ReviewMapper.toEntity(dto, member, store, subscription));
+        // 이미지 스토리지에 저장
+        String imageUrl = null;
+        try {
+            imageUrl = ociUploaderService.uploadSafely(file);
+        } catch (Exception e) {
+            imageUrl = "";
+        }
+
+        repository.save(ReviewMapper.toEntity(dto, member, store, subscription, imageUrl));
     }
 
     public List<ReviewResponseDTO> readReviewListByStore(Long partnerStoreId) {

@@ -7,9 +7,11 @@ import com.ucamp.coffee.domain.review.dto.ReviewCreateDTO;
 import com.ucamp.coffee.domain.review.dto.ReviewUpdateDTO;
 import com.ucamp.coffee.domain.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -17,12 +19,13 @@ import org.springframework.web.bind.annotation.*;
 public class ReviewController {
     private final ReviewService service;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<?>> createReviewInfo(
         @AuthenticationPrincipal MemberDetails user,
-        @RequestBody ReviewCreateDTO dto
+        @RequestPart("data")ReviewCreateDTO dto,
+        @RequestPart(value = "file", required = false) MultipartFile file
     ) {
-        service.createReviewInfo(dto, user.getMemberId());
+        service.createReviewInfo(dto, user.getMemberId(), file);
         return ResponseMapper.successOf(null);
     }
 

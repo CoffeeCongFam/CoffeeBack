@@ -13,5 +13,4 @@ public class ReviewCreateDTO {
     private Long subscriptionId;
     private String reviewContent;
     private Integer rating;
-    private String reviewImg;
 }
