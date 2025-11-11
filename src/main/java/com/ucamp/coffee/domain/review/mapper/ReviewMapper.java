@@ -8,14 +8,14 @@ import com.ucamp.coffee.domain.store.entity.Store;
 import com.ucamp.coffee.domain.subscription.entity.Subscription;
 
 public class ReviewMapper {
-    public static Review toEntity(ReviewCreateDTO dto, Member member, Store store, Subscription subscription) {
+    public static Review toEntity(ReviewCreateDTO dto, Member member, Store store, Subscription subscription, String imageUrl) {
         return Review.builder()
             .member(member)
             .store(store)
             .subscription(subscription)
             .reviewContent(dto.getReviewContent())
             .rating(dto.getRating())
-            .reviewImg(dto.getReviewImg())
+            .reviewImg(imageUrl)
             .build();
     }
 
