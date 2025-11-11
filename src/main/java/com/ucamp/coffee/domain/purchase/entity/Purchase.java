@@ -79,6 +79,7 @@ public class Purchase extends BaseEntity {
 		this.paymentStatus = PaymentStatus.PAID;
 		this.paidAt = LocalDateTime.ofInstant(Instant.ofEpochSecond(paidAt), ZoneId.systemDefault());
 		this.impUid = impUid;
+		this.paidAt = Instant.ofEpochSecond(paidAt).atZone(ZoneId.of("Asia/Seoul")).toLocalDateTime();
 		this.purchaseType = purchaseType;
 	}
 
